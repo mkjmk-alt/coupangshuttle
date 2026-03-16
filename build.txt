@@ -1,0 +1,34 @@
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\JEONG\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\JEONG\.gemini\antigravity\scratch\coupang-shuttle-map-migration-test\package-lock.json
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 1 errors:
+./.gemini/antigravity/scratch/coupang-shuttle-map-migration-test/app/page.tsx:4:25
+Ecmascript file had an error
+[0m [90m  2 |[39m [36mimport[39m { [33mShuttleStop[39m } [36mfrom[39m [32m'@/types/shuttle'[39m[33m;[39m
+ [90m  3 |[39m
+[31m[1m>[22m[39m[90m  4 |[39m [36mconst[39m [33mKakaoMapWrapper[39m [33m=[39m dynamic(() [33m=>[39m [36mimport[39m([32m'@/components/KakaoMapWrapper'[39m)[33m,[39m {
+ [90m    |[39m                         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m  5 |[39m   ssr[33m:[39m [36mfalse[39m[33m,[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m  6 |[39m   loading[33m:[39m () [33m=>[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"w-full h-96 bg-gray-200 animate-pulse flex items-center justify-center text-gray-500"[39m[33m>[39m지도 모듈 로딩 중[33m...[39m[33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m  7 |[39m })[33m;[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m  8 |[39m
+ [90m  9 |[39m [36mconst[39m [33mDUMMY_STOPS[39m[33m:[39m [33mShuttleStop[39m[] [33m=[39m [
+ [90m 10 |[39m   { id[33m:[39m [32m'1'[39m[33m,[39m name[33m:[39m [32m'사당역 4번 출구'[39m[33m,[39m lat[33m:[39m [35m37.476538[39m[33m,[39m lng[33m:[39m [35m126.981627[39m[33m,[39m time[33m:[39m [32m'06:10'[39m[33m,[39m description[33m:[39m [32m'사당역 4번 출구 앞 공영주차장'[39m }[33m,[39m[0m
+
+`ssr: false` is not allowed with `next/dynamic` in Server Components. Please move it into a Client Component.
+
+
+    at <unknown> (./.gemini/antigravity/scratch/coupang-shuttle-map-migration-test/app/page.tsx:4:25)

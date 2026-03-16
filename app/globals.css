@@ -1,26 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-outfit: 'Outfit', sans-serif;
+  
+  --shadow-premium: 0 8px 32px rgba(0,0,0,0.04);
+  --shadow-premium-hover: 0 12px 48px rgba(67,56,202,0.08);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --foreground-rgb: 15, 23, 42;
+  --background-start-rgb: 248, 250, 252;
+  --background-end-rgb: 241, 245, 249;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
+
+h1, h2, h3, h4, .font-outfit {
+  font-family: var(--font-outfit);
+}
+
+/* Premium Component Classes using standard CSS to avoid @apply issues in build */
+.premium-card {
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: var(--shadow-premium);
+  border-radius: 2rem;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-card:hover {
+  box-shadow: var(--shadow-premium-hover);
+  border-color: rgba(67, 56, 202, 0.1);
+}
+
+.premium-input {
+  width: 100%;
+  padding: 1rem;
+  background-color: rgba(249, 250, 251, 0.5);
+  border: 1px solid rgb(243, 244, 246);
+  border-radius: 1rem;
+  outline: none;
+  transition: all 300ms;
+  font-weight: 500;
+}
+
+.premium-input:focus {
+  background-color: white;
+  border-color: rgba(67, 56, 202, 0.5);
+  box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.1);
+}
+
+.glass-effect {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(to bottom right, rgb(15, 23, 42), rgb(67, 56, 202));
+}
+
+.nav-link {
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  transition: all 200ms;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(71, 85, 105);
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+  color: rgb(67, 56, 202);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(226, 232, 240);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(203, 213, 225);
+}
+
+/* Map specific tweaks */
+.kakao-map-container {
+  border-radius: 2.5rem;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(67, 56, 202, 0.1);
+  border: 4px solid white;
+}
+
+.map-pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.pin-bubble {
+  background: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border: 1px solid rgba(0,0,0,0.05);
+  font-size: 11px;
+  font-weight: 800;
+  color: #4338ca;
+  white-space: nowrap;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.pin-marker {
+  width: 34px;
+  height: 34px;
+  background: #4338ca;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(67, 56, 202, 0.4);
+  border: 2px solid white;
+}
+
+.pin-number {
+  transform: rotate(45deg);
+  color: white;
+  font-weight: 900;
+  font-size: 13px;
+  font-family: 'Outfit', sans-serif;
+}
+
