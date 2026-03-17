@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="antialiased selection:bg-indigo-100 selection:text-indigo-900">
-        <nav className="fixed top-0 left-0 right-0 z-[100] glass-effect py-4 px-6 md:px-12 flex items-center justify-between">
+        <nav className="fixed top-0 left-0 right-0 z-[100] glass-effect py-4 px-4 md:px-12 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2 group">
                 <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg group-hover:rotate-12 transition-transform">
                     <span className="font-black text-xs">CS</span>

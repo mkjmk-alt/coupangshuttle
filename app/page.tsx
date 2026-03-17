@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function Home() {
   return (
-    <main className="max-w-7xl mx-auto px-6 lg:px-12 font-sans overflow-x-hidden">
+    <main className="max-w-7xl mx-auto px-4 md:px-6 lg:px-12 font-sans overflow-x-hidden">
       {/* Premium Hero Header */}
       <header className="relative pt-20 pb-24 text-center">
         {/* Decorative elements */}
@@ -19,7 +19,7 @@ export default function Home() {
             <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em]">Latest Update: Mar 2026</span>
         </div>
         
-        <h1 className="text-6xl md:text-7xl font-[900] text-slate-900 mb-8 tracking-tighter leading-[1.05] animate-in slide-in-from-bottom duration-700 delay-100">
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-[900] text-slate-900 mb-8 tracking-tighter leading-[1.1] md:leading-[1.05] animate-in slide-in-from-bottom duration-700 delay-100">
             당신의 출퇴근이 <br />
             <span className="text-gradient">더욱 완벽해지도록</span>
         </h1>

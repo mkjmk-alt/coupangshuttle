@@ -161,7 +161,7 @@ export default function ShuttleExplorer() {
   return (
     <div className="space-y-12 pb-20">
       {/* Search Console */}
-      <section className="premium-card p-8 lg:p-10 relative overflow-hidden">
+      <section className="premium-card p-5 sm:p-8 lg:p-10 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/50 rounded-full blur-3xl -mr-32 -mt-32"></div>
         <div className="relative z-10">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between items-start gap-4 mb-8">
@@ -192,7 +192,7 @@ export default function ShuttleExplorer() {
                 )}
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
             <div className="group space-y-3">
                 <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">Center Division</label>
                 <div className="relative">
@@ -263,7 +263,7 @@ export default function ShuttleExplorer() {
       </section>
 
       {/* Map Display */}
-      <section className="kakao-map-container relative">
+      <section className="kakao-map-container relative mx-[-4px] sm:mx-0">
           <div className="h-[550px] w-full relative group">
             <KakaoMapWrapper stops={mapStops.length > 0 ? mapStops : []} />
             {!selectedFC && (
@@ -294,9 +294,9 @@ export default function ShuttleExplorer() {
           </div>
       </section>
 
-      {/* Table Results */}
+      {/* Results Section */}
       <section className="premium-card overflow-hidden">
-        <div className="px-10 py-8 bg-slate-50/50 backdrop-blur-sm border-b border-gray-100 flex items-center justify-between">
+        <div className="px-6 sm:px-10 py-6 sm:py-8 bg-slate-50/50 backdrop-blur-sm border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
                 <div className="w-1.5 h-8 bg-indigo-600 rounded-full"></div>
                 <div>
@@ -312,7 +312,52 @@ export default function ShuttleExplorer() {
             )}
         </div>
         
-        <div className="overflow-x-auto min-h-[450px]">
+        {/* Mobile-Optimized List (visible only on mobile) */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {stopsForResults.length > 0 ? (
+            stopsForResults.map((stop, index) => (
+              <div key={`${stop.route}-${index}`} className="p-5 space-y-3 hover:bg-indigo-50/30 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-black text-slate-300 font-outfit">
+                      {String(stop.routeIndex).padStart(2, '0')}
+                    </span>
+                    <h4 className="font-bold text-slate-900 text-base uppercase tracking-tight">{stop.Name}</h4>
+                  </div>
+                  <span className="text-sm font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg border border-indigo-100/50 font-outfit">
+                    {stop.Time}
+                  </span>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  <div className="px-2.5 py-0.5 bg-slate-900 text-white rounded-md text-[9px] font-black tracking-widest uppercase">
+                    {stop.route}
+                  </div>
+                  <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-tighter mt-0.5">{stop.shift}</span>
+                </div>
+
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                  {stop.Address}
+                </p>
+
+                {stop.Info && (
+                  <div className="flex items-start gap-2 text-[10px] text-orange-600 font-bold bg-orange-50/50 p-2 rounded-lg border border-orange-100 italic">
+                    <span>🔔</span>
+                    <span className="leading-tight">{stop.Info}</span>
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+             <div className="py-20 text-center px-6">
+                <p className="text-slate-900 font-black text-lg tracking-tight">조회된 노선이 없습니다</p>
+                <p className="text-slate-400 text-xs font-medium mt-2">물류센터와 근무조를 선택해 주세요.</p>
+             </div>
+          )}
+        </div>
+
+        {/* Desktop Table (hidden on mobile) */}
+        <div className="hidden md:block overflow-x-auto min-h-[450px]">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-transparent text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black border-b border-slate-50">
