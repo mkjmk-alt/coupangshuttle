@@ -6,6 +6,9 @@ import Script from 'next/script';
 export const metadata: Metadata = {
   title: "Coupang Shuttle Map | 인텔리전트 셔틀 가이드",
   description: "전국 쿠팡 물류센터 셔틀버스 통합 노선 안내 시스템",
+  other: {
+    "google-adsense-account": "ca-pub-7954802956462064",
+  },
 };
 
 export default function RootLayout({
