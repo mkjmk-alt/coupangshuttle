@@ -10,14 +10,35 @@ export default function KakaoMapWrapper({ stops }: { stops: ShuttleStop[] }) {
     libraries: ['services', 'clusterer', 'drawing'],
   });
 
+  const appKey = process.env.NEXT_PUBLIC_KAKAO_APP_KEY;
+
+  if (!appKey) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-amber-50 text-center">
+        <div className="text-4xl mb-4">🔑</div>
+        <h3 className="text-lg font-bold text-amber-900 mb-2">API 키 누락 (환경 변수)</h3>
+        <p className="text-sm text-amber-600 break-keep max-w-xs mb-4">
+          환경 변수 `NEXT_PUBLIC_KAKAO_APP_KEY`가 설정되지 않았습니다.
+        </p>
+        <div className="text-[11px] text-amber-700 bg-white p-3 rounded-xl border border-amber-200 shadow-sm leading-relaxed">
+           Cloudflare Pages 설정 &gt; Environment Variables에서 <br/> 
+           <b>Build</b> 환경에 변수를 추가하고 다시 배포해 주세요.
+        </div>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-red-50 text-center">
-        <div className="text-4xl mb-4">⚠️</div>
-        <h3 className="text-lg font-bold text-red-900 mb-2">지도 엔진 로드 실패</h3>
-        <p className="text-sm text-red-600 break-keep max-w-xs">
-          카카오맵 키가 올바르지 않거나, 카카오 개발자 콘솔에 <b>현재 도메인(localhost)</b>이 등록되어 있지 않을 수 있습니다.
+        <div className="text-4xl mb-4">🚫</div>
+        <h3 className="text-lg font-bold text-red-900 mb-2">도메인 등록 확인 필요</h3>
+        <p className="text-sm text-red-600 break-keep max-w-xs mb-4">
+          카카오 개발자 콘솔에서 <b>'플랫폼'</b> 메뉴에 현재 배포된 도메인(pages.dev)을 추가해 주세요.
         </p>
+        <code className="text-[10px] bg-red-100 px-2 py-1 rounded text-red-800">
+           SDK Load Error
+        </code>
       </div>
     );
   }
