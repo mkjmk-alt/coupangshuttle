@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Link from 'next/link';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: "Coupang Shuttle Map | 인텔리전트 셔틀 가이드",
@@ -15,6 +16,12 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="antialiased selection:bg-indigo-100 selection:text-indigo-900">
+        <Script 
+          async 
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7954802956462064"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <nav className="fixed top-0 left-0 right-0 z-[100] glass-effect py-4 px-4 md:px-12 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2 group">
                 <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg group-hover:rotate-12 transition-transform">
