@@ -171,10 +171,10 @@ function EditorContent() {
       if (result.success) {
         setMessage({ type: 'success', text: '데이터가 저장되었습니다!' });
       } else {
-        setMessage({ type: 'error', text: result.message || '저장 중 오류가 발생했습니다.' });
+        setMessage({ type: 'error', text: result.message || `에러 코드 ${res.status}: 저장 중 오류가 발생했습니다.` });
       }
-    } catch (err) {
-      setMessage({ type: 'error', text: '서버 통신 중 오류가 발생했습니다.' });
+    } catch (err: any) {
+      setMessage({ type: 'error', text: `서버 통신 중 치명적 오류가 발생했습니다: ${err.message}` });
     } finally {
       setSaving(false);
     }
