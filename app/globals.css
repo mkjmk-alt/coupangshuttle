@@ -64,6 +64,33 @@ h1, h2, h3, h4, .font-outfit {
   box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.1);
 }
 
+.premium-btn {
+  background: linear-gradient(135deg, #4338ca 0%, #312e81 100%);
+  color: white;
+  font-weight: 800;
+  border-radius: 1rem;
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 4px 12px rgba(67, 56, 202, 0.2);
+  transition: all 300ms;
+}
+
+.premium-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(67, 56, 202, 0.3);
+  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+}
+
+.premium-btn:active {
+  transform: scale(0.98);
+}
+
+.premium-btn:disabled {
+  background: #cbd5e1;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .glass-effect {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
