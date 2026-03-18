@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface Stop {
   'Center (EN)': string;
@@ -45,7 +45,20 @@ interface ShuttleData {
   [fcCode: string]: FCCard;
 }
 
-export default function DataEditor() {
+function EditorContent() {
+  const searchParams = useSearchParams();
+  const key = searchParams.get('key');
+  
+  if (key !== 'mkjmkcpstadmin') {
+      return (
+          <div className="flex flex-col items-center justify-center min-h-[80vh] gap-6 px-6 text-center">
+              <div className="text-8xl grayscale opacity-30">🛡️</div>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight font-outfit uppercase">Restricted Access</h1>
+              <p className="text-slate-500 font-medium max-w-sm">주소창의 비밀 키가 올바르지 않습니다. <br />관리자 링크를 통해 다시 접속해 주세요.</p>
+          </div>
+      );
+  }
+
   const [data, setData] = useState<ShuttleData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedFC, setSelectedFC] = useState<string>('');
@@ -94,7 +107,7 @@ export default function DataEditor() {
   const handleStopChange = (index: number, field: keyof Stop, value: string | number) => {
     if (!data || !selectedFC || !selectedShift || !selectedRoute) return;
 
-    const newData = JSON.parse(JSON.stringify(data)); // Deep copy is slow for massive JSON
+    const newData = JSON.parse(JSON.stringify(data));
     const stops = newData[selectedFC].shifts[selectedShift][selectedRoute];
     
     stops[index] = {
@@ -135,7 +148,6 @@ export default function DataEditor() {
     const newData = JSON.parse(JSON.stringify(data));
     newData[selectedFC].shifts[selectedShift][selectedRoute].splice(index, 1);
     
-    // Re-order
     newData[selectedFC].shifts[selectedShift][selectedRoute].forEach((stop: Stop, idx: number) => {
         stop.Order = idx + 1;
     });
@@ -149,14 +161,17 @@ export default function DataEditor() {
     try {
       const res = await fetch('/api/save-data', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'x-editor-key': 'mkjmkcpstadmin'
+        },
         body: JSON.stringify(data),
       });
       const result = await res.json();
       if (result.success) {
         setMessage({ type: 'success', text: '데이터가 저장되었습니다!' });
       } else {
-        setMessage({ type: 'error', text: '저장 중 오류가 발생했습니다.' });
+        setMessage({ type: 'error', text: result.message || '저장 중 오류가 발생했습니다.' });
       }
     } catch (err) {
       setMessage({ type: 'error', text: '서버 통신 중 오류가 발생했습니다.' });
@@ -169,7 +184,7 @@ export default function DataEditor() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-slate-500 font-bold">대용량 JSON 로딩 중... (최대 수십만 줄)</p>
+        <p className="text-slate-500 font-bold">대용량 JSON 로딩 중...</p>
       </div>
     );
   }
@@ -286,7 +301,7 @@ export default function DataEditor() {
                   {currentStops.map((stop, idx) => (
                       <div key={idx} className="premium-card p-6 hover:border-indigo-200 transition-colors group">
                           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-                              <div className="md:col-span-1 flex flex-col items-center justify-center">
+                              <div className="md:col-span-1 flex flex-col items-center justify-center pt-2">
                                   <span className="text-xs font-black text-slate-300 font-outfit">#{idx+1}</span>
                               </div>
                               
@@ -320,7 +335,17 @@ export default function DataEditor() {
                                   </div>
                                   
                                   <div className="space-y-2">
-                                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Lat</label>
+                                      <div className="flex items-center justify-between mb-1">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Lat</label>
+                                        <a 
+                                            href={`https://map.naver.com/v5/search/${stop.Latitude},${stop.Longitude}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-[9px] font-bold text-emerald-600 hover:underline"
+                                        >
+                                            NAVER MAP
+                                        </a>
+                                      </div>
                                       <input 
                                         type="text" 
                                         className="premium-input py-2.5 px-4 text-xs font-medium bg-slate-50/50"
@@ -329,7 +354,17 @@ export default function DataEditor() {
                                       />
                                   </div>
                                   <div className="space-y-2">
-                                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Lng</label>
+                                      <div className="flex items-center justify-between mb-1">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Lng</label>
+                                        <a 
+                                            href={`https://map.kakao.com/link/map/${encodeURIComponent(stop.Name)},${stop.Latitude},${stop.Longitude}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-[9px] font-bold text-yellow-600 hover:underline"
+                                        >
+                                            KAKAO MAP
+                                        </a>
+                                      </div>
                                       <input 
                                         type="text" 
                                         className="premium-input py-2.5 px-4 text-xs font-medium bg-slate-50/50"
@@ -370,5 +405,17 @@ export default function DataEditor() {
           </div>
       )}
     </div>
+  );
+}
+
+export default function DataEditor() {
+  return (
+    <Suspense fallback={
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+    }>
+      <EditorContent />
+    </Suspense>
   );
 }

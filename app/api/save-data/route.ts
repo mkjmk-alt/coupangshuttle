@@ -4,6 +4,11 @@ import path from 'path';
 
 export async function POST(request: Request) {
   try {
+    const key = request.headers.get('x-editor-key');
+    if (key !== 'mkjmkcpstadmin') {
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+    }
+
     const data = await request.json();
     const filePath = path.join(process.cwd(), 'public', 'data', 'shuttle_data.json');
     
