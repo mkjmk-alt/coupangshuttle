@@ -231,7 +231,19 @@ function EditorContent() {
       <section className="premium-card p-6 md:p-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="space-y-3">
-                <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1">Center</label>
+                <div className="flex items-center justify-between px-1">
+                    <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Center</label>
+                    {selectedFC && (
+                        <a 
+                            href={`https://coufc.coupang.com/${selectedFC.toLowerCase()}/shuttle`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[9px] font-bold text-indigo-400 hover:text-indigo-600 hover:underline"
+                        >
+                            OFFICIAL PAGE ↗
+                        </a>
+                    )}
+                </div>
                 <select 
                     className="premium-input cursor-pointer"
                     value={selectedFC}
