@@ -159,22 +159,37 @@ function EditorContent() {
     setSaving(true);
     setMessage(null);
     try {
+      // Use pretty-printing (null, 2) since we are writing raw text on the server for speed
+      const body = JSON.stringify(data, null, 2);
+      
       const res = await fetch('/api/save-data', {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
             'x-editor-key': 'mkjmkcpstadmin'
         },
-        body: JSON.stringify(data),
+        body: body,
       });
-      const result = await res.json();
-      if (result.success) {
-        setMessage({ type: 'success', text: '데이터가 저장되었습니다!' });
+
+      // Safely read response text first (to avoid parsing error if empty or not JSON)
+      const resText = await res.text();
+      let result;
+
+      try {
+        result = resText ? JSON.parse(resText) : null;
+      } catch (e) {
+        console.error('Non-JSON response:', resText);
+        throw new Error(`서버가 JSON이 아닌 응답을 보냈습니다 (코드: ${res.status})`);
+      }
+
+      if (res.ok && result?.success) {
+        setMessage({ type: 'success', text: `성공! ${Math.round(body.length / 1024 / 1024 * 10) / 10}MB 데이터가 저장되었습니다.` });
       } else {
-        setMessage({ type: 'error', text: result.message || `에러 코드 ${res.status}: 저장 중 오류가 발생했습니다.` });
+        setMessage({ type: 'error', text: result?.message || `서버 오류 (HTTP ${res.status}): 저장에 실패했습니다.` });
       }
     } catch (err: any) {
-      setMessage({ type: 'error', text: `서버 통신 중 치명적 오류가 발생했습니다: ${err.message}` });
+      console.error('Save failed:', err);
+      setMessage({ type: 'error', text: `저장 도중 문제가 발생했습니다: ${err.message}` });
     } finally {
       setSaving(false);
     }

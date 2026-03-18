@@ -6,38 +6,40 @@ export async function POST(request: Request) {
   try {
     const key = request.headers.get('x-editor-key');
     if (key !== 'mkjmkcpstadmin') {
-      return NextResponse.json({ success: false, message: 'Unauthorized (비밀 키가 올바르지 않습니다)' }, { status: 401 });
+      return NextResponse.json({ success: false, message: 'Unauthorized (Access Denied)' }, { status: 401 });
     }
 
-    // Use .text() for large body as .json() might have internal limits or fail mid-stream
+    // High performance approach: Get raw text stream
+    // Using .text() followed by writeFileSync is much more memory efficient than manual JSON parse/stringify cycles
     const bodyText = await request.text();
-    if (!bodyText) {
-      return NextResponse.json({ success: false, message: 'Request body is empty' }, { status: 400 });
+    
+    if (!bodyText || bodyText.trim().length === 0) {
+      return NextResponse.json({ success: false, message: 'Empty JSON body' }, { status: 400 });
     }
 
-    const data = JSON.parse(bodyText);
+    // Basic validity check (should start with { and end with })
+    if (!bodyText.trim().startsWith('{')) {
+      return NextResponse.json({ success: false, message: 'Invalid JSON format received' }, { status: 400 });
+    }
+
     const filePath = path.join(process.cwd(), 'public', 'data', 'shuttle_data.json');
-    
     const dir = path.dirname(filePath);
+    
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
 
-    // Write file - using JSON.stringify with indent 2 makes it very large but easy to read (16MB+)
-    // If memory is tight, stringify can be slow
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+    // Write raw text directly to file. This avoids memory overhead of JSON objects (up to 3x the text size)
+    fs.writeFileSync(filePath, bodyText, 'utf-8');
     
-    console.log(`Successfully saved ${bodyText.length} bytes to ${filePath}`);
+    console.log(`[SaveAPI] Saved ${Math.round(bodyText.length / 1024 / 1024 * 100) / 100} MB of data.`);
+    
     return NextResponse.json({ success: true, message: 'Data saved successfully' });
   } catch (error: any) {
-    console.error('Error saving shuttle data:', error);
+    console.error('[SaveAPI] Critical error:', error);
     return NextResponse.json(
-      { success: false, message: `Server Error: ${error.message}` },
+      { success: false, message: `System Error: ${error.message}` },
       { status: 500 }
     );
   }
 }
-
-// Next.js App Router does not support exports named `config` for body parser limits.
-// It relies on the runtime (e.g. Vercel, Node.js stand-alone) limits.
-// For local execution, it should be high by default in Node, but let's be careful.
