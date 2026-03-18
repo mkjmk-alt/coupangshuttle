@@ -273,7 +273,7 @@ export default function ShuttleExplorer() {
                     <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover/box:scale-110 transition-transform duration-500">
                         <span className="text-4xl">🗺️</span>
                     </div>
-                    <h3 className="font-black text-slate-900 text-2xl mb-3 tracking-tight">지도를 활성화해 주세요</h3>
+                    <h3 className="font-black text-slate-900 text-2xl mb-3 tracking-tight">물류센터를 선택해주세요</h3>
                     <p className="text-slate-500 font-medium leading-relaxed">
                         상단에서 물류센터를 먼저 선택하시면,<br />
                         해당 지역의 모든 셔틀 노선이 지도에 즉시 표시됩니다.
