@@ -66,7 +66,19 @@ export default function ShuttleDashboard() {
 
   const shiftList = useMemo(() => {
     if (!data || !selectedFC) return [];
-    return Object.keys(data[selectedFC]?.shifts || {}).sort();
+    const shifts = Object.keys(data[selectedFC]?.shifts || {});
+    
+    const priority: Record<string, number> = {
+      '주간조': 1,
+      '오후조': 2,
+    };
+
+    return shifts.sort((a, b) => {
+      const pA = priority[a] || 3;
+      const pB = priority[b] || 3;
+      if (pA !== pB) return pA - pB;
+      return a.localeCompare(b, 'ko-KR');
+    });
   }, [data, selectedFC]);
 
   const routeList = useMemo(() => {

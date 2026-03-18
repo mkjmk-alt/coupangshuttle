@@ -91,7 +91,19 @@ function EditorContent() {
 
   const shiftList = useMemo(() => {
     if (!data || !selectedFC) return [];
-    return Object.keys(data[selectedFC]?.shifts || {}).sort();
+    const shifts = Object.keys(data[selectedFC]?.shifts || {});
+    
+    const priority: Record<string, number> = {
+      '주간조': 1,
+      '오후조': 2,
+    };
+
+    return shifts.sort((a, b) => {
+      const pA = priority[a] || 3;
+      const pB = priority[b] || 3;
+      if (pA !== pB) return pA - pB;
+      return a.localeCompare(b, 'ko-KR');
+    });
   }, [data, selectedFC]);
 
   const routeList = useMemo(() => {
@@ -162,7 +174,7 @@ function EditorContent() {
       // Use pretty-printing (null, 2) since we are writing raw text on the server for speed
       const body = JSON.stringify(data, null, 2);
       
-      const res = await fetch('/api/save-data', {
+      const res = await fetch('/api/save-data/', {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
