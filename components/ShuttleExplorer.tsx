@@ -104,10 +104,11 @@ export default function ShuttleExplorer() {
 
   const routeList = useMemo(() => {
     if (!data || !selectedFC) return [];
-    const shifts = data[selectedFC].shifts;
-    if (selectedShift) {
-        return Object.keys(shifts[selectedShift] || {}).sort();
+    const shifts = data[selectedFC]?.shifts;
+    if (shifts && selectedShift) {
+        return Object.keys(shifts || {}).sort();
     }
+    if (!shifts) return [];
     const allRoutes = new Set<string>();
     Object.values(shifts).forEach(routes => {
         Object.keys(routes).forEach(r => allRoutes.add(r));
@@ -117,7 +118,8 @@ export default function ShuttleExplorer() {
 
   const stopsForResults = useMemo(() => {
     if (!data || !selectedFC) return [];
-    const shifts = data[selectedFC].shifts;
+    const shifts = data[selectedFC]?.shifts;
+    if (!shifts) return [];
     let stops: (Stop & { shift: string; route: string; routeIndex: number })[] = [];
 
     Object.entries(shifts).forEach(([shiftName, routes]) => {
@@ -287,7 +289,7 @@ export default function ShuttleExplorer() {
                 <div className="absolute top-6 left-6 z-20 hidden md:block">
                     <div className="glass-effect px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3">
                         <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
-                        <span className="text-sm font-black text-slate-800 tracking-tight">{data[selectedFC].center.name} - {selectedShift || '전체'}</span>
+                        <span className="text-sm font-black text-slate-800 tracking-tight">{data[selectedFC]?.center?.name} - {selectedShift || '전체'}</span>
                     </div>
                 </div>
             )}
@@ -304,7 +306,7 @@ export default function ShuttleExplorer() {
                    <p className="text-xs font-bold text-slate-400 mt-0.5">운행 순서 및 상세 도착 시간 안내</p>
                 </div>
             </div>
-            {data && selectedFC && (
+            {data && selectedFC && data[selectedFC] && (
                 <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-indigo-100 shadow-sm">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{selectedFC} DB CONNECTED</span>
