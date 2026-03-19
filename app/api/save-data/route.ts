@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
 
-// Force use of Node.js runtime for file system & GitHub API access
-export const runtime = 'nodejs';
+// Edge Runtime is required for Cloudflare Pages with API
+export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // GitHub Settings
@@ -91,24 +89,12 @@ export async function POST(request: Request) {
       }
     }
 
-    // --- 2. LOCAL FILE SYSTEM MODE (Used in Development) ---
-    console.log('[SaveAPI] Local FS Mode active.');
-    const filePath = path.join(process.cwd(), 'public', 'data', 'shuttle_data.json');
-    const dir = path.dirname(filePath);
-    
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    fs.writeFileSync(filePath, bodyText, 'utf-8');
-    
-    const sizeMB = (bodyText.length / 1024 / 1024).toFixed(2);
-    console.log(`[SaveAPI] Saved ${sizeMB} MB to local disk.`);
-    
+    // --- 2. LOCAL FILE SYSTEM MODE (Disabled on Edge) ---
+    console.warn('[SaveAPI] Local FS Mode is disabled in this environment.');
     return NextResponse.json({ 
-        success: true, 
-        message: `로컬 컴퓨터에 저장되었습니다. (${sizeMB}MB)` 
-    });
+        success: false, 
+        message: '저장 실패: 클라우드 환경에서는 깃허브 토큰이 활성화되어야 합니다.'
+    }, { status: 501 });
 
   } catch (error: any) {
     console.error('[SaveAPI] Fatal Error:', error);
