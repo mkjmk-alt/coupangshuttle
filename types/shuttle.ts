@@ -7,4 +7,5 @@ export interface ShuttleStop {
   description?: string;
   route?: string;
   index?: number;
+  color?: string;
 }

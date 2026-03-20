@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { ShuttleStop } from '../types/shuttle';
+import { getRouteColor } from '../utils/color';
 
 // Dynamically import the map to ensure it stays client-side
 const KakaoMapWrapper = dynamic(() => import('./KakaoMapWrapper'), {
@@ -143,7 +144,8 @@ export default function ShuttleExplorer() {
       time: s.Time,
       description: s.Address,
       route: s.route,
-      index: s.routeIndex
+      index: s.routeIndex,
+      color: getRouteColor(s.route)
     }));
   }, [stopsForResults]);
 

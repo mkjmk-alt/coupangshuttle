@@ -67,11 +67,11 @@ export default function KakaoMapWrapper({ stops }: { stops: ShuttleStop[] }) {
           >
             <div className="map-pin">
                 {/* Route Label */}
-                 <div className="pin-bubble">
+                 <div className="pin-bubble" style={{ color: stop.color, borderColor: stop.color + '40' }}>
                     {stop.route}
                 </div>
                 {/* Droplet Shape Pin with Index */}
-                <div className="pin-marker">
+                <div className="pin-marker" style={{ background: stop.color, boxShadow: `0 4px 15px ${stop.color}66` }}>
                     <span className="pin-number">{stop.index}</span>
                 </div>
             </div>
