@@ -106,7 +106,7 @@ export default function ShuttleExplorer() {
     if (!data || !selectedFC) return [];
     const shifts = data[selectedFC]?.shifts;
     if (shifts && selectedShift) {
-        return Object.keys(shifts || {}).sort();
+        return Object.keys(shifts[selectedShift] || {}).sort();
     }
     if (!shifts) return [];
     const allRoutes = new Set<string>();
