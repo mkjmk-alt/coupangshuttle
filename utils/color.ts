@@ -2,26 +2,28 @@
  * List of vibrant, premium colors for shuttle routes.
  */
 const ROUTE_COLORS = [
-    '#4338ca', // Indigo
-    '#059669', // Emerald
-    '#e11d48', // Rose
-    '#d97706', // Amber
-    '#7c3aed', // Violet
-    '#0891b2', // Cyan
-    '#ea580c', // Orange
-    '#db2777', // Pink
-    '#2563eb', // Blue
-    '#9333ea', // Purple
-    '#16a34a', // Green
-    '#ca8a04', // Yellow
-    '#be185d', // Deep Pink
-    '#4f46e5', // Brand Indigo
+    '#4F46E5', // Indigo
+    '#10B981', // Emerald
+    '#F43F5E', // Rose
+    '#F59E0B', // Amber
+    '#8B5CF6', // Violet
+    '#06B6D4', // Cyan
+    '#F97316', // Orange
+    '#EC4899', // Pink
+    '#3B82F6', // Blue
+    '#84CC16', // Lime
+    '#D946EF', // Fuchsia
+    '#14B8A6', // Teal
 ];
 
 /**
- * Returns a consistent color for a given route name.
+ * Returns a consistent color for a given route name or index.
  */
-export const getRouteColor = (routeName: string | undefined): string => {
+export const getRouteColor = (routeName: string | undefined, index?: number): string => {
+    if (typeof index === 'number') {
+        return ROUTE_COLORS[index % ROUTE_COLORS.length];
+    }
+    
     if (!routeName) return ROUTE_COLORS[0];
     
     let hash = 0;
@@ -29,6 +31,7 @@ export const getRouteColor = (routeName: string | undefined): string => {
         hash = routeName.charCodeAt(i) + ((hash << 5) - hash);
     }
     
-    const index = Math.abs(hash) % ROUTE_COLORS.length;
-    return ROUTE_COLORS[index];
+    // Use a large prime to spread colors more effectively
+    const spreadIndex = Math.abs(hash * 31) % ROUTE_COLORS.length;
+    return ROUTE_COLORS[spreadIndex];
 };

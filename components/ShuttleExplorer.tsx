@@ -145,9 +145,9 @@ export default function ShuttleExplorer() {
       description: s.Address,
       route: s.route,
       index: s.routeIndex,
-      color: getRouteColor(s.route)
+      color: getRouteColor(s.route, routeList.indexOf(s.route || ''))
     }));
-  }, [stopsForResults]);
+  }, [stopsForResults, routeList]);
 
   if (loading) {
     return (
