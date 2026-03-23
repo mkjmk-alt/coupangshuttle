@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "merge-data": "python scripts/shuttle_merger.py"
   },
   "dependencies": {
     "next": "16.1.6",

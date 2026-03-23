@@ -7,7 +7,8 @@ export const dynamic = 'force-dynamic';
 // GitHub Settings
 const OWNER = 'mkjmk-alt';
 const REPO = 'coupangshuttle';
-const FILE_PATH = 'public/data/shuttle_data.json';
+const DATA_PATH = 'public/data/shuttle_data.json';
+const MANUAL_PATH = 'public/data/shuttle_manual.json';
 const BRANCH = 'main';
 
 export async function GET() {
@@ -33,9 +34,9 @@ export async function POST(request: Request) {
     if (token) {
       console.log('[SaveAPI] GitHub Integration Mode active.');
       
-      try {
+      const pushToFile = async (path: string, content: string) => {
         // Step A: Get the latest file SHA from GitHub (Required for Update)
-        const getFileRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}?ref=${BRANCH}`, {
+        const getFileRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`, {
           headers: {
             'Authorization': `token ${token}`,
             'Accept': 'application/vnd.github.v3+json',
@@ -49,15 +50,14 @@ export async function POST(request: Request) {
           sha = fileInfo.sha;
         } else if (getFileRes.status !== 404) {
           const errData = await getFileRes.json();
-          throw new Error(`GitHub GET Error: ${errData.message}`);
+          throw new Error(`GitHub GET Error (${path}): ${errData.message}`);
         }
 
         // Step B: Encode to Base64 (GitHub requirement)
-        // 16MB -> ~22MB Base64. Ensure environment has enough RAM.
-        const contentBase64 = Buffer.from(bodyText).toString('base64');
+        const contentBase64 = Buffer.from(content).toString('base64');
         
         // Step C: Create/Update file on GitHub
-        const commitRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
+        const commitRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`, {
           method: 'PUT',
           headers: {
             'Authorization': `token ${token}`,
@@ -65,24 +65,33 @@ export async function POST(request: Request) {
             'User-Agent': 'NextJS-DataEditor'
           },
           body: JSON.stringify({
-            message: '📝 Update shuttle_data.json via Web Editor',
+            message: `📝 Update ${path.split('/').pop()} via Web Editor`,
             content: contentBase64,
             sha: sha,
             branch: BRANCH,
           })
         });
 
-        const commitData = await commitRes.json();
-        
-        if (commitRes.ok) {
-          console.log('[SaveAPI] GitHub Commit Success!');
-          return NextResponse.json({ 
-            success: true, 
-            message: '🎉 깃허브 저장소에 직접 저장되었습니다. (수분 내에 주소창 정보가 최신화됩니다)' 
-          });
-        } else {
-          throw new Error(`GitHub Commit Error: ${commitData.message}`);
+        if (!commitRes.ok) {
+          const commitData = await commitRes.json();
+          throw new Error(`GitHub Commit Error (${path}): ${commitData.message}`);
         }
+        
+        return await commitRes.json();
+      };
+
+      try {
+        // We push to both the main data and the manual override file
+        console.log('[SaveAPI] Pushing to shuttle_data.json and shuttle_manual.json...');
+        await pushToFile(DATA_PATH, bodyText);
+        await pushToFile(MANUAL_PATH, bodyText);
+        
+        console.log('[SaveAPI] Dual GitHub Commit Success!');
+        return NextResponse.json({ 
+          success: true, 
+          message: '🎉 깃허브 저장소에 직접 저장되었습니다. (Source: Data & Manual)' 
+        });
+
       } catch (ghError: any) {
         console.error('[SaveAPI] GitHub Error:', ghError);
         return NextResponse.json({ success: false, message: `깃허브 연동 실패: ${ghError.message}` }, { status: 502 });

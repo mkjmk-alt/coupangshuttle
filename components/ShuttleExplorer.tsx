@@ -317,7 +317,7 @@ export default function ShuttleExplorer() {
         </div>
         
         {/* Mobile-Optimized List (visible only on mobile) */}
-        <div className="md:hidden divide-y divide-slate-100">
+        <div className="md:hidden divide-y divide-slate-100 max-h-[500px] overflow-y-auto relative">
           {stopsForResults.length > 0 ? (
             stopsForResults.map((stop, index) => (
               <div key={`${stop.route}-${index}`} className="p-5 space-y-3 hover:bg-indigo-50/30 transition-colors">
@@ -361,10 +361,10 @@ export default function ShuttleExplorer() {
         </div>
 
         {/* Desktop Table (hidden on mobile) */}
-        <div className="hidden md:block overflow-x-auto min-h-[450px]">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-transparent text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black border-b border-slate-50">
+        <div className="hidden md:block overflow-auto max-h-[550px] relative">
+          <table className="w-full text-left border-collapse">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-slate-50/95 backdrop-blur-md text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black border-b border-slate-200 shadow-sm">
                 <th className="pl-10 pr-4 py-6 w-20 text-center">SEQ</th>
                 <th className="px-6 py-6 w-40">Timing</th>
                 <th className="px-6 py-6">Station / Hub Name</th>
