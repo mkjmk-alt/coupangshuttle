@@ -48,18 +48,9 @@ interface ShuttleData {
 function EditorContent() {
   const searchParams = useSearchParams();
   const key = searchParams.get('key');
-  
-  if (key !== 'mkjmkcpstadmin') {
-      return (
-          <div className="flex flex-col items-center justify-center min-h-[80vh] gap-6 px-6 text-center">
-              <div className="text-8xl grayscale opacity-30">🛡️</div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight font-outfit uppercase">Restricted Access</h1>
-              <p className="text-slate-500 font-medium max-w-sm">주소창의 비밀 키가 올바르지 않습니다. <br />관리자 링크를 통해 다시 접속해 주세요.</p>
-          </div>
-      );
-  }
 
   const [data, setData] = useState<ShuttleData | null>(null);
+  const [baseData, setBaseData] = useState<ShuttleData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedFC, setSelectedFC] = useState<string>('');
   const [selectedShift, setSelectedShift] = useState<string>('');
@@ -69,16 +60,27 @@ function EditorContent() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch('/data/shuttle_data.json')
-      .then((res) => res.json())
-      .then((json) => {
-        setData(json);
-        setLoading(false);
-      })
-      .catch((err) => {
+    // Load both current and base data for rollback feature
+    const loadData = async () => {
+      try {
+        const [resCurrent, resBase] = await Promise.all([
+          fetch('/data/shuttle_data.json'),
+          fetch('/data/shuttle_base.json')
+        ]);
+
+        const jsonCurrent = await resCurrent.json();
+        const jsonBase = await resBase.json();
+
+        setData(jsonCurrent);
+        setBaseData(jsonBase);
+      } catch (err) {
         console.error('Error loading shuttle data:', err);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    loadData();
   }, []);
 
   const fcList = useMemo(() => {
@@ -130,6 +132,25 @@ function EditorContent() {
     setData(newData);
   };
 
+  const handleRollback = () => {
+    if (!data || !baseData || !selectedFC || !selectedShift || !selectedRoute) return;
+
+    const baseStops = baseData[selectedFC]?.shifts?.[selectedShift]?.[selectedRoute];
+    
+    if (!baseStops) {
+      alert('기본 데이터에 해당 노선 정보가 없습니다.');
+      return;
+    }
+
+    if (!confirm(`'${selectedRoute}' 노선을 처음 데이터 상태로 되돌리시겠습니까?\n현재 수정중인 내용은 사라집니다.`)) return;
+
+    const newData = JSON.parse(JSON.stringify(data));
+    newData[selectedFC].shifts[selectedShift][selectedRoute] = JSON.parse(JSON.stringify(baseStops));
+    
+    setData(newData);
+    setMessage({ type: 'success', text: '기본 데이터로 롤백되었습니다. 변경사항을 저장해 주세요.' });
+  };
+
   const handleAddStop = () => {
     if (!data || !selectedFC || !selectedShift || !selectedRoute) return;
 
@@ -145,7 +166,7 @@ function EditorContent() {
       Type: 'Stop',
       Time: lastStop ? lastStop.Time : '00:00',
       Name: '신규 정류장',
-      Address: '서울시...',
+      Address: '주소 입력',
       Latitude: lastStop ? lastStop.Latitude : '37.5',
       Longitude: lastStop ? lastStop.Longitude : '127.0',
     };
@@ -171,7 +192,6 @@ function EditorContent() {
     setSaving(true);
     setMessage(null);
     try {
-      // Use pretty-printing (null, 2) since we are writing raw text on the server for speed
       const body = JSON.stringify(data, null, 2);
       
       const res = await fetch('/api/save-data/', {
@@ -183,29 +203,41 @@ function EditorContent() {
         body: body,
       });
 
-      // Safely read response text first (to avoid parsing error if empty or not JSON)
       const resText = await res.text();
       let result;
 
       try {
         result = resText ? JSON.parse(resText) : null;
-      } catch (e) {
+      } catch {
         console.error('Non-JSON response:', resText);
-        throw new Error(`서버가 JSON이 아닌 응답을 보냈습니다 (코드: ${res.status})`);
+        throw new Error(`서버가 JSON이 아닌 응답을 보냈습니다. (코드: ${res.status})`);
       }
 
       if (res.ok && result?.success) {
-        setMessage({ type: 'success', text: `성공! ${Math.round(body.length / 1024 / 1024 * 10) / 10}MB 데이터가 저장되었습니다.` });
+        setMessage({ type: 'success', text: `저장 성공! ${Math.round(body.length / 1024 / 1024 * 10) / 10}MB 데이터가 저장되었습니다.` });
       } else {
         setMessage({ type: 'error', text: result?.message || `서버 오류 (HTTP ${res.status}): 저장에 실패했습니다.` });
       }
-    } catch (err: any) {
-      console.error('Save failed:', err);
-      setMessage({ type: 'error', text: `저장 도중 문제가 발생했습니다: ${err.message}` });
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.error('Save failed:', error);
+      setMessage({ type: 'error', text: `저장 중 문제가 발생했습니다: ${error.message}` });
     } finally {
       setSaving(false);
     }
   };
+
+  if (key !== 'mkjmkcpstadmin') {
+      return (
+          <div className="flex flex-col items-center justify-center min-h-[80vh] gap-6 px-6 text-center">
+              <div className="text-8xl grayscale opacity-30">🔒</div>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Restricted Access</h1>
+              <p className="text-slate-500 font-medium max-w-sm">
+                주소창의 비밀키가 올바르지 않습니다. <br /> 관리자 링크를 확인해 주세요.
+              </p>
+          </div>
+      );
+  }
 
   if (loading) {
     return (
@@ -221,7 +253,7 @@ function EditorContent() {
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Data Management System</h1>
-          <p className="text-slate-400 font-medium mt-1">셔틀 노선 데이터를 실시간으로 수정하고 반영합니다.</p>
+          <p className="text-slate-400 font-medium mt-1">전체 노선 데이터를 실시간으로 수정하고 반영합니다.</p>
         </div>
         <div className="flex gap-4">
             <button 
@@ -233,7 +265,7 @@ function EditorContent() {
             <button 
                 onClick={handleSave}
                 disabled={saving}
-                className="premium-btn flex items-center gap-2 !py-3 !px-8"
+                className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-50"
             >
                 {saving ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -255,7 +287,7 @@ function EditorContent() {
       )}
 
       {/* Editor Main Controls */}
-      <section className="premium-card p-6 md:p-10">
+      <section className="bg-white p-6 md:p-10 rounded-3xl border border-slate-100 shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="space-y-3">
                 <div className="flex items-center justify-between px-1">
@@ -272,7 +304,7 @@ function EditorContent() {
                     )}
                 </div>
                 <select 
-                    className="premium-input cursor-pointer"
+                    className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500"
                     value={selectedFC}
                     onChange={(e) => {
                         setSelectedFC(e.target.value);
@@ -290,7 +322,7 @@ function EditorContent() {
             <div className="space-y-3">
                 <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1">Shift</label>
                 <select 
-                    className="premium-input cursor-pointer disabled:opacity-50"
+                    className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                     value={selectedShift}
                     disabled={!selectedFC}
                     onChange={(e) => {
@@ -308,7 +340,7 @@ function EditorContent() {
             <div className="space-y-3">
                 <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1">Route</label>
                 <select 
-                    className="premium-input cursor-pointer disabled:opacity-50"
+                    className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                     value={selectedRoute}
                     disabled={!selectedShift}
                     onChange={(e) => setSelectedRoute(e.target.value)}
@@ -327,21 +359,29 @@ function EditorContent() {
           <section className="space-y-6">
               <div className="flex items-center justify-between">
                   <h2 className="text-xl font-black text-slate-800 tracking-tight">STATION CONFIGURATION ({currentStops.length})</h2>
-                  <button 
-                    onClick={handleAddStop}
-                    className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-all border border-indigo-100"
-                  >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
-                      정류장 추가
-                  </button>
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={handleRollback}
+                      className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all"
+                    >
+                      초기화
+                    </button>
+                    <button 
+                      onClick={handleAddStop}
+                      className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-all border border-indigo-100"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
+                        정류장 추가
+                    </button>
+                  </div>
               </div>
 
               <div className="space-y-4">
                   {currentStops.map((stop, idx) => (
-                      <div key={idx} className="premium-card p-6 hover:border-indigo-200 transition-colors group">
+                      <div key={idx} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:border-indigo-200 transition-colors group">
                           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                               <div className="md:col-span-1 flex flex-col items-center justify-center pt-2">
-                                  <span className="text-xs font-black text-slate-300 font-outfit">#{idx+1}</span>
+                                  <span className="text-xs font-black text-slate-300">#{idx+1}</span>
                               </div>
                               
                               <div className="md:col-span-11 grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -349,7 +389,7 @@ function EditorContent() {
                                       <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Station Name</label>
                                       <input 
                                         type="text" 
-                                        className="premium-input py-2.5 px-4 text-sm font-bold"
+                                        className="w-full px-4 py-2 bg-slate-50 border-none rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 text-sm"
                                         value={stop.Name}
                                         onChange={(e) => handleStopChange(idx, 'Name', e.target.value)}
                                       />
@@ -358,7 +398,7 @@ function EditorContent() {
                                       <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Arrival Time</label>
                                       <input 
                                         type="text" 
-                                        className="premium-input py-2.5 px-4 text-sm font-bold font-mono"
+                                        className="w-full px-4 py-2 bg-slate-50 border-none rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 text-sm font-mono"
                                         value={stop.Time}
                                         onChange={(e) => handleStopChange(idx, 'Time', e.target.value)}
                                       />
@@ -367,7 +407,7 @@ function EditorContent() {
                                       <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Exact Address</label>
                                       <input 
                                         type="text" 
-                                        className="premium-input py-2.5 px-4 text-sm font-bold"
+                                        className="w-full px-4 py-2 bg-slate-50 border-none rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 text-sm"
                                         value={stop.Address}
                                         onChange={(e) => handleStopChange(idx, 'Address', e.target.value)}
                                       />
@@ -387,7 +427,7 @@ function EditorContent() {
                                       </div>
                                       <input 
                                         type="text" 
-                                        className="premium-input py-2.5 px-4 text-xs font-medium bg-slate-50/50"
+                                        className="w-full px-4 py-2 bg-slate-50/50 border-none rounded-xl font-medium text-slate-600 text-xs"
                                         value={stop.Latitude}
                                         onChange={(e) => handleStopChange(idx, 'Latitude', e.target.value)}
                                       />
@@ -406,7 +446,7 @@ function EditorContent() {
                                       </div>
                                       <input 
                                         type="text" 
-                                        className="premium-input py-2.5 px-4 text-xs font-medium bg-slate-50/50"
+                                        className="w-full px-4 py-2 bg-slate-50/50 border-none rounded-xl font-medium text-slate-600 text-xs"
                                         value={stop.Longitude}
                                         onChange={(e) => handleStopChange(idx, 'Longitude', e.target.value)}
                                       />
@@ -416,17 +456,17 @@ function EditorContent() {
                                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Remarks (Info)</label>
                                         <input 
                                             type="text" 
-                                            className="premium-input py-2.5 px-4 text-xs font-medium"
+                                            className="w-full px-4 py-2 bg-slate-50 border-none rounded-xl font-medium text-slate-600 text-xs"
                                             value={stop.Remarks || ''}
-                                            placeholder="비고란 (정류장 상세 정보)"
+                                            placeholder="비고 (정류장 상세 정보)"
                                             onChange={(e) => handleStopChange(idx, 'Remarks', e.target.value)}
                                         />
                                       </div>
                                       <button 
                                         onClick={() => handleRemoveStop(idx)}
-                                        className="p-2.5 text-red-400 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all"
+                                        className="p-2.5 text-red-300 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
                                       >
-                                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                       </button>
                                   </div>
                               </div>
@@ -438,9 +478,9 @@ function EditorContent() {
       )}
 
       {!selectedRoute && (
-          <div className="premium-card p-32 text-center opacity-40">
-              <div className="text-6xl mb-6 grayscale text-slate-400">📝</div>
-              <p className="text-xl font-bold text-slate-900">수정할 노선을 먼저 선택해 주세요.</p>
+          <div className="bg-slate-50 p-32 text-center rounded-[40px] border-2 border-dashed border-slate-200">
+              <div className="text-6xl mb-6 grayscale opacity-20">📍</div>
+              <p className="text-xl font-bold text-slate-400">수정할 노선을 먼저 선택해 주세요.</p>
           </div>
       )}
     </div>
