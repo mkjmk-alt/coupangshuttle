@@ -86,7 +86,7 @@ function EditorContent() {
     return Object.keys(data).map(key => ({
       code: key,
       name: data[key].center?.name || key
-    })).sort((a, b) => a.name.localeCompare(b.name, 'ko-KR'));
+    })).sort((a, b) => a.name.localeCompare(b.name, 'ko-KR', { numeric: true }));
   }, [data]);
 
   const shiftList = useMemo(() => {
@@ -102,13 +102,13 @@ function EditorContent() {
       const pA = priority[a] || 3;
       const pB = priority[b] || 3;
       if (pA !== pB) return pA - pB;
-      return a.localeCompare(b, 'ko-KR');
+      return a.localeCompare(b, 'ko-KR', { numeric: true });
     });
   }, [data, selectedFC]);
 
   const routeList = useMemo(() => {
     if (!data || !selectedFC || !selectedShift) return [];
-    return Object.keys(data[selectedFC].shifts[selectedShift] || {}).sort();
+    return Object.keys(data[selectedFC].shifts[selectedShift] || {}).sort((a, b) => a.localeCompare(b, 'ko-KR', { numeric: true }));
   }, [data, selectedFC, selectedShift]);
 
   const currentStops = useMemo(() => {

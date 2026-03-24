@@ -75,7 +75,7 @@ export default function ShuttleExplorer() {
     return Object.keys(data).map(key => ({
       code: key,
       name: data[key].center?.name || key
-    })).sort((a, b) => a.name.localeCompare(b.name, 'ko-KR'));
+    })).sort((a, b) => a.name.localeCompare(b.name, 'ko-KR', { numeric: true }));
   }, [data]);
 
   const shiftList = useMemo(() => {
@@ -91,7 +91,7 @@ export default function ShuttleExplorer() {
       const pA = priority[a] || 3;
       const pB = priority[b] || 3;
       if (pA !== pB) return pA - pB;
-      return a.localeCompare(b, 'ko-KR');
+      return a.localeCompare(b, 'ko-KR', { numeric: true });
     });
   }, [data, selectedFC]);
 
@@ -107,14 +107,14 @@ export default function ShuttleExplorer() {
     if (!data || !selectedFC) return [];
     const shifts = data[selectedFC]?.shifts;
     if (shifts && selectedShift) {
-        return Object.keys(shifts[selectedShift] || {}).sort();
+        return Object.keys(shifts[selectedShift] || {}).sort((a, b) => a.localeCompare(b, 'ko-KR', { numeric: true }));
     }
     if (!shifts) return [];
     const allRoutes = new Set<string>();
     Object.values(shifts).forEach(routes => {
         Object.keys(routes).forEach(r => allRoutes.add(r));
     });
-    return Array.from(allRoutes).sort();
+    return Array.from(allRoutes).sort((a, b) => a.localeCompare(b, 'ko-KR', { numeric: true }));
   }, [data, selectedFC, selectedShift]);
 
   const stopsForResults = useMemo(() => {
