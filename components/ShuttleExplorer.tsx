@@ -85,8 +85,8 @@ export default function ShuttleExplorer() {
   }, []);
 
   const handleUnlockComparison = () => {
-    // Affiliate Link (User can change this)
-    const affiliateUrl = 'https://link.coupang.com/a/bCDeFgH'; // Replace with real link
+    // Uses the URL from .env.local (NEXT_PUBLIC_AFFILIATE_URL)
+    const affiliateUrl = process.env.NEXT_PUBLIC_AFFILIATE_URL || 'https://link.coupang.com/a/bCDeFgH'; 
     window.open(affiliateUrl, '_blank');
     
     const now = new Date().getTime();
