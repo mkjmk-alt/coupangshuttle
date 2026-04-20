@@ -71,17 +71,28 @@ export default function ShuttleExplorer() {
         setLoading(false);
       });
 
-    // Load unlock status from localStorage
-    const unlocked = localStorage.getItem('shuttle_comparison_unlocked') === 'true';
-    if (unlocked) setIsComparisonUnlocked(true);
+    // Load unlock status from localStorage with 1-hour expiry (3600000ms)
+    const unlockTime = localStorage.getItem('shuttle_comparison_unlock_time');
+    if (unlockTime) {
+      const now = new Date().getTime();
+      const diff = now - parseInt(unlockTime);
+      if (diff < 3600000) {
+        setIsComparisonUnlocked(true);
+      } else {
+        localStorage.removeItem('shuttle_comparison_unlock_time');
+      }
+    }
   }, []);
 
   const handleUnlockComparison = () => {
     // Affiliate Link (User can change this)
     const affiliateUrl = 'https://link.coupang.com/a/bCDeFgH'; // Replace with real link
     window.open(affiliateUrl, '_blank');
+    
+    const now = new Date().getTime();
     setIsComparisonUnlocked(true);
-    localStorage.setItem('shuttle_comparison_unlocked', 'true');
+    localStorage.setItem('shuttle_comparison_unlock_time', now.toString());
+    alert('비교 기능이 1시간 동안 활성화되었습니다!');
   };
 
   const handleAddRoute = () => {
