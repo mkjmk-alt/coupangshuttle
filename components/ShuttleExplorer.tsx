@@ -56,6 +56,8 @@ export default function ShuttleExplorer() {
   const [selectedFC, setSelectedFC] = useState<string>('');
   const [selectedShift, setSelectedShift] = useState<string>('');
   const [selectedRoute, setSelectedRoute] = useState<string>('');
+  const [selectedRoutes, setSelectedRoutes] = useState<string[]>([]);
+  const [isComparisonUnlocked, setIsComparisonUnlocked] = useState<boolean>(false);
 
   useEffect(() => {
     fetch('/data/shuttle_data.json')
@@ -68,7 +70,29 @@ export default function ShuttleExplorer() {
         console.error('Error loading shuttle data:', err);
         setLoading(false);
       });
+
+    // Load unlock status from localStorage
+    const unlocked = localStorage.getItem('shuttle_comparison_unlocked') === 'true';
+    if (unlocked) setIsComparisonUnlocked(true);
   }, []);
+
+  const handleUnlockComparison = () => {
+    // Affiliate Link (User can change this)
+    const affiliateUrl = 'https://link.coupang.com/a/bCDeFgH'; // Replace with real link
+    window.open(affiliateUrl, '_blank');
+    setIsComparisonUnlocked(true);
+    localStorage.setItem('shuttle_comparison_unlocked', 'true');
+  };
+
+  const handleAddRoute = () => {
+    if (selectedRoute && !selectedRoutes.includes(selectedRoute)) {
+      setSelectedRoutes([...selectedRoutes, selectedRoute]);
+    }
+  };
+
+  const handleRemoveRoute = (route: string) => {
+    setSelectedRoutes(selectedRoutes.filter(r => r !== route));
+  };
 
   const fcList = useMemo(() => {
     if (!data) return [];
@@ -117,23 +141,42 @@ export default function ShuttleExplorer() {
     return Array.from(allRoutes).sort((a, b) => a.localeCompare(b, 'ko-KR', { numeric: true }));
   }, [data, selectedFC, selectedShift]);
 
+  useEffect(() => {
+    if (routeList.length > 0 && !selectedRoute) {
+      setSelectedRoute(routeList[0]);
+    } else if (routeList.length > 0 && !routeList.includes(selectedRoute)) {
+      setSelectedRoute(routeList[0]);
+    } else if (routeList.length === 0) {
+      setSelectedRoute('');
+    }
+  }, [routeList, selectedRoute]);
+
   const stopsForResults = useMemo(() => {
     if (!data || !selectedFC) return [];
     const shifts = data[selectedFC]?.shifts;
     if (!shifts) return [];
     let stops: (Stop & { shift: string; route: string; routeIndex: number })[] = [];
 
+    // Determine target routes: if comparison is active and we have multiple routes, use them.
+    // Otherwise fallback to the single selectedRoute.
+    const targetRoutes = (isComparisonUnlocked && selectedRoutes.length > 0) 
+        ? selectedRoutes 
+        : (selectedRoute ? [selectedRoute] : []);
+
+    if (targetRoutes.length === 0 && !selectedRoute) return [];
+
     Object.entries(shifts).forEach(([shiftName, routes]) => {
       if (selectedShift && shiftName !== selectedShift) return;
       Object.entries(routes).forEach(([routeName, routeStops]) => {
-        if (selectedRoute && routeName !== selectedRoute) return;
-        routeStops.forEach((stop, idx) => {
-          stops.push({ ...stop, shift: shiftName, route: routeName, routeIndex: idx + 1 });
-        });
+        if (targetRoutes.includes(routeName)) {
+          routeStops.forEach((stop, idx) => {
+            stops.push({ ...stop, shift: shiftName, route: routeName, routeIndex: idx + 1 });
+          });
+        }
       });
     });
     return stops;
-  }, [data, selectedFC, selectedShift, selectedRoute]);
+  }, [data, selectedFC, selectedShift, selectedRoute, selectedRoutes, isComparisonUnlocked]);
 
   const mapStops = useMemo((): ShuttleStop[] => {
     return stopsForResults.map((s, idx) => ({
@@ -181,88 +224,123 @@ export default function ShuttleExplorer() {
                     </div>
                 </div>
 
-                {selectedFC && (
-                    <a 
-                        href={`https://coufc.coupang.com/${selectedFC.toLowerCase()}/shuttle`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-2xl text-[11px] font-black text-slate-500 hover:text-indigo-600 hover:border-indigo-100 hover:shadow-md transition-all uppercase tracking-wider"
+                {!isComparisonUnlocked ? (
+                    <button 
+                        onClick={handleUnlockComparison}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-[10px] font-black text-white rounded-2xl hover:bg-slate-800 hover:shadow-xl transition-all uppercase tracking-widest animate-bounce mt-4 md:mt-0"
                     >
-                        <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                        Official Shuttle Page
-                    </a>
+                        <span className="text-lg">💰</span>
+                        Unlock Multi-Route Compare
+                    </button>
+                ) : (
+                    <div className="flex items-center gap-2 bg-indigo-50 px-5 py-2.5 rounded-2xl border border-indigo-100">
+                        <span className="text-lg">🔥</span>
+                        <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Multi-Compare Mode Active</span>
+                    </div>
                 )}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
-            <div className="group space-y-3">
-                <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">Center Division</label>
-                <div className="relative">
-                    <select 
-                    className="premium-input appearance-none pr-12 cursor-pointer"
-                    value={selectedFC}
-                    onChange={(e) => {
-                        setSelectedFC(e.target.value);
-                        setSelectedShift('');
-                        setSelectedRoute('');
-                    }}
-                    >
-                    <option value="">물류센터를 선택하세요</option>
-                    {fcList.map(fc => (
-                        <option key={fc.code} value={fc.code}>{fc.name}</option>
-                    ))}
-                    </select>
-                    <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-indigo-500 transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
+                <div className="group space-y-3">
+                    <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">Center Division</label>
+                    <div className="relative">
+                        <select 
+                        className="premium-input appearance-none pr-12 cursor-pointer"
+                        value={selectedFC}
+                        onChange={(e) => {
+                            setSelectedFC(e.target.value);
+                            setSelectedShift('');
+                            setSelectedRoute('');
+                            setSelectedRoutes([]);
+                        }}
+                        >
+                        <option value="">물류센터를 선택하세요</option>
+                        {fcList.map(fc => (
+                            <option key={fc.code} value={fc.code}>{fc.name}</option>
+                        ))}
+                        </select>
+                        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-indigo-500 transition-colors">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="group space-y-3">
+                    <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">Service Shift</label>
+                    <div className="relative">
+                        <select 
+                        className="premium-input appearance-none pr-12 cursor-pointer disabled:bg-slate-50 disabled:text-slate-300 disabled:border-slate-100"
+                        value={selectedShift}
+                        disabled={!selectedFC}
+                        onChange={(e) => {
+                            setSelectedShift(e.target.value);
+                            setSelectedRoute('');
+                            setSelectedRoutes([]);
+                        }}
+                        >
+                        {shiftList.map(shift => (
+                            <option key={shift} value={shift}>{shift}</option>
+                        ))}
+                        <option value="">전체 근무조</option>
+                        </select>
+                        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-indigo-500 transition-colors">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="group space-y-3">
+                    <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">Route Segment</label>
+                    <div className="flex gap-2">
+                        <div className="relative flex-1">
+                            <select 
+                            className="premium-input appearance-none pr-12 cursor-pointer disabled:bg-slate-50 disabled:text-slate-300 disabled:border-slate-100"
+                            value={selectedRoute}
+                            disabled={!selectedFC}
+                            onChange={(e) => setSelectedRoute(e.target.value)}
+                            >
+                            {routeList.map(route => (
+                                <option key={route} value={route}>{route}</option>
+                            ))}
+                            </select>
+                            <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                        </div>
+                        {isComparisonUnlocked && selectedFC && (
+                            <button 
+                                onClick={handleAddRoute}
+                                className="px-6 py-2 bg-indigo-600 text-white rounded-2xl font-black text-xl hover:bg-slate-900 transition-all flex items-center justify-center shrink-0"
+                            >
+                                +
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
 
-            <div className="group space-y-3">
-                <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">Service Shift</label>
-                <div className="relative">
-                    <select 
-                    className="premium-input appearance-none pr-12 cursor-pointer disabled:bg-slate-50 disabled:text-slate-300 disabled:border-slate-100"
-                    value={selectedShift}
-                    disabled={!selectedFC}
-                    onChange={(e) => {
-                        setSelectedShift(e.target.value);
-                        setSelectedRoute('');
-                    }}
-                    >
-                    {shiftList.map(shift => (
-                        <option key={shift} value={shift}>{shift}</option>
+            {/* Selected Routes Comparison Bar */}
+            {isComparisonUnlocked && selectedRoutes.length > 0 && (
+                <div className="mt-8 flex flex-wrap gap-2 pt-6 border-t border-slate-100">
+                    {selectedRoutes.map(route => (
+                        <div key={route} className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-wider animate-in zoom-in duration-300">
+                            <span>#{route}</span>
+                            <button 
+                                onClick={() => handleRemoveRoute(route)}
+                                className="w-5 h-5 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors"
+                            >
+                                ✕
+                            </button>
+                        </div>
                     ))}
-                    <option value="">전체 근무조</option>
-                    </select>
-                    <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-indigo-500 transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
-                    </div>
-                </div>
-            </div>
-
-            <div className="group space-y-3">
-                <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">Route Segment</label>
-                <div className="relative">
-                    <select 
-                    className="premium-input appearance-none pr-12 cursor-pointer disabled:bg-slate-50 disabled:text-slate-300 disabled:border-slate-100"
-                    value={selectedRoute}
-                    disabled={!selectedFC}
-                    onChange={(e) => setSelectedRoute(e.target.value)}
+                    <button 
+                        onClick={() => setSelectedRoutes([])}
+                        className="px-4 py-2 text-slate-400 hover:text-red-500 text-[10px] font-black uppercase tracking-wider transition-colors"
                     >
-                    <option value="">전체 운행 노선</option>
-                    {routeList.map(route => (
-                        <option key={route} value={route}>{route}</option>
-                    ))}
-                    </select>
-                    <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-indigo-500 transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
-                    </div>
+                        Clear All
+                    </button>
                 </div>
-            </div>
-            </div>
+            )}
         </div>
       </section>
 
