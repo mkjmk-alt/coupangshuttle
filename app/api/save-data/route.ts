@@ -36,9 +36,10 @@ export async function POST(request: Request) {
       
       const pushToFile = async (path: string, content: string) => {
         // Step A: Get the latest file SHA from GitHub (Required for Update)
+        console.log(`[SaveAPI] Fetching SHA for ${path}...`);
         const getFileRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`, {
           headers: {
-            'Authorization': `token ${token}`,
+            'Authorization': `Bearer ${token.trim()}`,
             'Accept': 'application/vnd.github.v3+json',
             'User-Agent': 'NextJS-DataEditor'
           }
@@ -48,19 +49,23 @@ export async function POST(request: Request) {
         if (getFileRes.ok) {
           const fileInfo = await getFileRes.json();
           sha = fileInfo.sha;
+          console.log(`[SaveAPI] Found SHA for ${path}: ${sha}`);
         } else if (getFileRes.status !== 404) {
+          const errStatus = getFileRes.status;
           const errData = await getFileRes.json();
-          throw new Error(`GitHub GET Error (${path}): ${errData.message}`);
+          console.error(`[SaveAPI] GET Error (${path}):`, errData);
+          throw new Error(`GitHub GET Error (${path}) [HTTP ${errStatus}]: ${errData.message}`);
         }
 
         // Step B: Encode to Base64 (GitHub requirement)
         const contentBase64 = Buffer.from(content).toString('base64');
         
         // Step C: Create/Update file on GitHub
+        console.log(`[SaveAPI] Committing changes to ${path}...`);
         const commitRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`, {
           method: 'PUT',
           headers: {
-            'Authorization': `token ${token}`,
+            'Authorization': `Bearer ${token.trim()}`,
             'Content-Type': 'application/json',
             'User-Agent': 'NextJS-DataEditor'
           },
