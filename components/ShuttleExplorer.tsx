@@ -56,8 +56,6 @@ export default function ShuttleExplorer() {
   const [selectedFC, setSelectedFC] = useState<string>('');
   const [selectedShift, setSelectedShift] = useState<string>('');
   const [selectedRoute, setSelectedRoute] = useState<string>('');
-  const [selectedRoutes, setSelectedRoutes] = useState<string[]>([]);
-  const [isComparisonUnlocked, setIsComparisonUnlocked] = useState<boolean>(false);
 
   useEffect(() => {
     fetch('/data/shuttle_data.json')
@@ -70,40 +68,7 @@ export default function ShuttleExplorer() {
         console.error('Error loading shuttle data:', err);
         setLoading(false);
       });
-
-    // Load unlock status from localStorage with 1-hour expiry (3600000ms)
-    const unlockTime = localStorage.getItem('shuttle_comparison_unlock_time');
-    if (unlockTime) {
-      const now = new Date().getTime();
-      const diff = now - parseInt(unlockTime);
-      if (diff < 3600000) {
-        setIsComparisonUnlocked(true);
-      } else {
-        localStorage.removeItem('shuttle_comparison_unlock_time');
-      }
-    }
   }, []);
-
-  const handleUnlockComparison = () => {
-    // Uses the URL from .env.local (NEXT_PUBLIC_AFFILIATE_URL)
-    const affiliateUrl = process.env.NEXT_PUBLIC_AFFILIATE_URL || 'https://link.coupang.com/a/bCDeFgH'; 
-    window.open(affiliateUrl, '_blank');
-    
-    const now = new Date().getTime();
-    setIsComparisonUnlocked(true);
-    localStorage.setItem('shuttle_comparison_unlock_time', now.toString());
-    alert('비교 기능이 1시간 동안 활성화되었습니다!');
-  };
-
-  const handleAddRoute = () => {
-    if (selectedRoute && !selectedRoutes.includes(selectedRoute)) {
-      setSelectedRoutes([...selectedRoutes, selectedRoute]);
-    }
-  };
-
-  const handleRemoveRoute = (route: string) => {
-    setSelectedRoutes(selectedRoutes.filter(r => r !== route));
-  };
 
   const fcList = useMemo(() => {
     if (!data) return [];
@@ -152,6 +117,7 @@ export default function ShuttleExplorer() {
     return Array.from(allRoutes).sort((a, b) => a.localeCompare(b, 'ko-KR', { numeric: true }));
   }, [data, selectedFC, selectedShift]);
 
+  // Handle auto-selecting the first route when center or shift changes
   useEffect(() => {
     if (routeList.length > 0 && !selectedRoute) {
       setSelectedRoute(routeList[0]);
@@ -168,26 +134,17 @@ export default function ShuttleExplorer() {
     if (!shifts) return [];
     let stops: (Stop & { shift: string; route: string; routeIndex: number })[] = [];
 
-    // Determine target routes: if comparison is active and we have multiple routes, use them.
-    // Otherwise fallback to the single selectedRoute.
-    const targetRoutes = (isComparisonUnlocked && selectedRoutes.length > 0) 
-        ? selectedRoutes 
-        : (selectedRoute ? [selectedRoute] : []);
-
-    if (targetRoutes.length === 0 && !selectedRoute) return [];
-
     Object.entries(shifts).forEach(([shiftName, routes]) => {
       if (selectedShift && shiftName !== selectedShift) return;
       Object.entries(routes).forEach(([routeName, routeStops]) => {
-        if (targetRoutes.includes(routeName)) {
-          routeStops.forEach((stop, idx) => {
-            stops.push({ ...stop, shift: shiftName, route: routeName, routeIndex: idx + 1 });
-          });
-        }
+        if (!selectedRoute || routeName !== selectedRoute) return;
+        routeStops.forEach((stop, idx) => {
+          stops.push({ ...stop, shift: shiftName, route: routeName, routeIndex: idx + 1 });
+        });
       });
     });
     return stops;
-  }, [data, selectedFC, selectedShift, selectedRoute, selectedRoutes, isComparisonUnlocked]);
+  }, [data, selectedFC, selectedShift, selectedRoute]);
 
   const mapStops = useMemo((): ShuttleStop[] => {
     return stopsForResults.map((s, idx) => ({
@@ -231,23 +188,22 @@ export default function ShuttleExplorer() {
                     </div>
                     <div>
                         <h2 className="text-2xl font-black text-slate-900 tracking-tight">셔틀 노선 조회</h2>
-                        <p className="text-sm font-semibold text-slate-400">원하시는 물류센터와 근무조를 선택해 실시간 조회를 시작하세요.</p>
+                        <p className="text-sm font-semibold text-slate-400">물류센터와 근무조를 선택해 실시간 조회를 시작하세요.</p>
                     </div>
                 </div>
 
-                {!isComparisonUnlocked ? (
-                    <button 
-                        onClick={handleUnlockComparison}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-[10px] font-black text-white rounded-2xl hover:bg-slate-800 hover:shadow-xl transition-all uppercase tracking-widest animate-bounce mt-4 md:mt-0"
+                {selectedFC && (
+                    <a 
+                        href={`https://coufc.coupang.com/${selectedFC.toLowerCase()}/shuttle`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-2xl text-[11px] font-black text-slate-500 hover:text-indigo-600 hover:border-indigo-100 hover:shadow-md transition-all uppercase tracking-wider"
                     >
-                        <span className="text-lg">💰</span>
-                        Unlock Multi-Route Compare
-                    </button>
-                ) : (
-                    <div className="flex items-center gap-2 bg-indigo-50 px-5 py-2.5 rounded-2xl border border-indigo-100">
-                        <span className="text-lg">🔥</span>
-                        <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Multi-Compare Mode Active</span>
-                    </div>
+                        <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        Official Shuttle Page
+                    </a>
                 )}
             </div>
             
@@ -262,7 +218,6 @@ export default function ShuttleExplorer() {
                             setSelectedFC(e.target.value);
                             setSelectedShift('');
                             setSelectedRoute('');
-                            setSelectedRoutes([]);
                         }}
                         >
                         <option value="">물류센터를 선택하세요</option>
@@ -286,7 +241,6 @@ export default function ShuttleExplorer() {
                         onChange={(e) => {
                             setSelectedShift(e.target.value);
                             setSelectedRoute('');
-                            setSelectedRoutes([]);
                         }}
                         >
                         {shiftList.map(shift => (
@@ -302,56 +256,23 @@ export default function ShuttleExplorer() {
 
                 <div className="group space-y-3">
                     <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">Route Segment</label>
-                    <div className="flex gap-2">
-                        <div className="relative flex-1">
-                            <select 
-                            className="premium-input appearance-none pr-12 cursor-pointer disabled:bg-slate-50 disabled:text-slate-300 disabled:border-slate-100"
-                            value={selectedRoute}
-                            disabled={!selectedFC}
-                            onChange={(e) => setSelectedRoute(e.target.value)}
-                            >
-                            {routeList.map(route => (
-                                <option key={route} value={route}>{route}</option>
-                            ))}
-                            </select>
-                            <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
-                            </div>
+                    <div className="relative">
+                        <select 
+                        className="premium-input appearance-none pr-12 cursor-pointer disabled:bg-slate-50 disabled:text-slate-300 disabled:border-slate-100"
+                        value={selectedRoute}
+                        disabled={!selectedFC}
+                        onChange={(e) => setSelectedRoute(e.target.value)}
+                        >
+                        {routeList.map(route => (
+                            <option key={route} value={route}>{route}</option>
+                        ))}
+                        </select>
+                        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-indigo-500 transition-colors">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
                         </div>
-                        {isComparisonUnlocked && selectedFC && (
-                            <button 
-                                onClick={handleAddRoute}
-                                className="px-6 py-2 bg-indigo-600 text-white rounded-2xl font-black text-xl hover:bg-slate-900 transition-all flex items-center justify-center shrink-0"
-                            >
-                                +
-                            </button>
-                        )}
                     </div>
                 </div>
             </div>
-
-            {/* Selected Routes Comparison Bar */}
-            {isComparisonUnlocked && selectedRoutes.length > 0 && (
-                <div className="mt-8 flex flex-wrap gap-2 pt-6 border-t border-slate-100">
-                    {selectedRoutes.map(route => (
-                        <div key={route} className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-wider animate-in zoom-in duration-300">
-                            <span>#{route}</span>
-                            <button 
-                                onClick={() => handleRemoveRoute(route)}
-                                className="w-5 h-5 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                    ))}
-                    <button 
-                        onClick={() => setSelectedRoutes([])}
-                        className="px-4 py-2 text-slate-400 hover:text-red-500 text-[10px] font-black uppercase tracking-wider transition-colors"
-                    >
-                        Clear All
-                    </button>
-                </div>
-            )}
         </div>
       </section>
 
@@ -369,7 +290,7 @@ export default function ShuttleExplorer() {
                     <h3 className="font-black text-slate-900 text-2xl mb-3 tracking-tight">물류센터를 선택해주세요</h3>
                     <p className="text-slate-500 font-medium leading-relaxed">
                         상단에서 물류센터를 먼저 선택하시면,<br />
-                        해당 지역의 모든 셔틀 노선이 지도에 즉시 표시됩니다.
+                        해당 지역의 상세 셔틀 노선이 지도에 표시됩니다.
                     </p>
                  </div>
               </div>
