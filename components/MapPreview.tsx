@@ -7,10 +7,14 @@ import 'leaflet/dist/leaflet.css';
 
 // Fix for default marker icons in Leaflet + Next.js
 const DefaultIcon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon.png',
+  iconRetinaUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  shadowUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  tooltipAnchor: [16, -28],
+  shadowSize: [41, 41]
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
@@ -19,11 +23,18 @@ interface MapPreviewProps {
   highlightIndex: number | null;
 }
 
-function ChangeView({ center, zoom }: { center: [number, number], zoom: number }) {
+// Fixed: Invalidate size on load to fix "gray screen" issue
+function MapController({ center, zoom }: { center: [number, number], zoom: number }) {
   const map = useMap();
+  
+  useEffect(() => {
+    map.invalidateSize();
+  }, [map]);
+
   useEffect(() => {
     map.setView(center, zoom);
   }, [center, zoom, map]);
+  
   return null;
 }
 
@@ -41,25 +52,25 @@ export default function MapPreview({ stops, highlightIndex }: MapPreviewProps) {
         setMapCenter([lat, lng]);
         setZoom(16);
       }
-    } else if (stops.length > 0) {
-        // Fit all stops
     }
   }, [highlightIndex, stops]);
 
   const validStops = stops.filter(s => !isNaN(parseFloat(s.Latitude)) && !isNaN(parseFloat(s.Longitude)));
   const polylinePoints = validStops.map(s => [parseFloat(s.Latitude), parseFloat(s.Longitude)] as [number, number]);
 
+  if (typeof window === 'undefined') return null;
+
   return (
-    <div className="h-full w-full rounded-3xl overflow-hidden shadow-inner border border-slate-200 relative">
+    <div className="h-full w-full rounded-[2.5rem] overflow-hidden shadow-inner border border-slate-200 relative bg-slate-50">
       <MapContainer 
         center={mapCenter} 
         zoom={zoom} 
-        style={{ height: '100%', width: '100%' }}
-        zoomControl={false}
+        style={{ height: '100%', width: '100%', background: '#f8fafc' }}
+        zoomControl={true}
       >
-        <ChangeView center={mapCenter} zoom={zoom} />
+        <MapController center={mapCenter} zoom={zoom} />
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          attribution='&copy; OpenStreetMap'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
