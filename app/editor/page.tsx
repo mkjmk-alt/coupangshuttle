@@ -235,12 +235,48 @@ function EditorContent() {
     }
   };
 
+  // Helper: Calculate distance between two coordinates (km)
+  const calculateDistance = (lat1: string, lon1: string, lat2: string, lon2: string) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (parseFloat(lat2) - parseFloat(lat1)) * Math.PI / 180;
+    const dLon = (parseFloat(lon2) - parseFloat(lon1)) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(parseFloat(lat1) * Math.PI / 180) * Math.cos(parseFloat(lat2) * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  // Helper: Get speed between two stops (km/h)
+  const getSpeedInfo = (stop1: Stop, stop2: Stop) => {
+    const dist = calculateDistance(stop1.Latitude, stop1.Longitude, stop2.Latitude, stop2.Longitude);
+    
+    // Parse times (HH:mm)
+    const t1 = stop1.Time.split(':').map(Number);
+    const t2 = stop2.Time.split(':').map(Number);
+    
+    if (t1.length !== 2 || t2.length !== 2) return { dist, speed: 0, timeDiff: 0 };
+    
+    let m1 = t1[0] * 60 + t1[1];
+    let m2 = t2[0] * 60 + t2[1];
+    
+    // Handle midnight wrap if needed (e.g. 23:50 -> 00:10)
+    if (m2 < m1) m2 += 1440; 
+    
+    const timeDiff = m2 - m1;
+    if (timeDiff <= 0) return { dist, speed: 999, timeDiff }; // Stop logic error
+    
+    const speed = (dist / timeDiff) * 60;
+    return { dist, speed, timeDiff };
+  };
+
   if (key !== 'mkjmkcpstadmin') {
       return (
           <div className="flex flex-col items-center justify-center min-h-[80vh] gap-6 text-center">
               <div className="text-8xl opacity-30">🔒</div>
               <h1 className="text-2xl font-black text-slate-900 uppercase">Restricted Access</h1>
-              <p className="text-slate-500 font-medium">관리자 전용 링크가 아닙니다.</p>
+              <p className="text-slate-500 font-medium tracking-tight">관리자 전용 링크가 아닙니다.</p>
           </div>
       );
   }
@@ -249,7 +285,7 @@ function EditorContent() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-slate-500 font-bold">전체 정류장 데이터 로딩 중 (Large JSON)...</p>
+        <p className="text-slate-500 font-bold tracking-tight">전체 정류장 데이터 로딩 중 (Large JSON)...</p>
       </div>
     );
   }
@@ -262,7 +298,7 @@ function EditorContent() {
           <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-xl">🚀</div>
           <div>
             <h1 className="text-xl font-black text-slate-900 tracking-tight">Shuttle Data Master</h1>
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-0.5">Route Optimization Engine</p>
+            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-0.5">Route Integrity & Optimization</p>
           </div>
         </div>
         <div className="flex gap-3">
@@ -375,107 +411,133 @@ function EditorContent() {
                   </div>
 
                   <div className="space-y-4 pb-20">
-                      {currentStops.map((stop, idx) => (
-                          <div 
-                            key={idx} 
-                            className={`bg-white p-6 rounded-[2rem] border transition-all ${highlightedStopIndex === idx ? 'border-indigo-500 shadow-xl shadow-indigo-100 ring-1 ring-indigo-500' : 'border-slate-100 shadow-sm hover:border-indigo-200'}`}
-                            onClick={() => setHighlightedStopIndex(idx)}
-                          >
-                              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-                                  <div className="md:col-span-1 flex flex-col items-center justify-center pt-2">
-                                      <span className={`text-[10px] font-black ${highlightedStopIndex === idx ? 'text-indigo-500' : 'text-slate-200'}`}>#{idx+1}</span>
-                                  </div>
-                                  
-                                  <div className="md:col-span-11 grid grid-cols-1 md:grid-cols-4 gap-4">
-                                      <div className="md:col-span-2 space-y-1.5">
-                                          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Name</label>
-                                          <input 
-                                            type="text" 
-                                            className="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl font-bold text-slate-700 text-sm"
-                                            value={stop.Name}
-                                            onFocus={() => setHighlightedStopIndex(idx)}
-                                            onChange={(e) => handleStopChange(idx, 'Name', e.target.value)}
-                                          />
-                                      </div>
-                                      <div className="space-y-1.5">
-                                          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Arrival</label>
-                                          <input 
-                                            type="text" 
-                                            className="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl font-black text-indigo-600 text-sm font-mono text-center"
-                                            value={stop.Time}
-                                            onFocus={() => setHighlightedStopIndex(idx)}
-                                            onChange={(e) => handleStopChange(idx, 'Time', e.target.value)}
-                                          />
-                                      </div>
-                                      <div className="space-y-1.5">
-                                          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Remarks</label>
-                                          <input 
-                                              type="text" 
-                                              className="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl font-bold text-slate-500 text-xs"
-                                              value={stop.Remarks || ''}
-                                              onFocus={() => setHighlightedStopIndex(idx)}
-                                              onChange={(e) => handleStopChange(idx, 'Remarks', e.target.value)}
-                                          />
-                                      </div>
-
-                                      <div className="md:col-span-4 space-y-1.5">
-                                          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Address</label>
-                                          <input 
-                                            type="text" 
-                                            className="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl font-bold text-slate-600 text-xs"
-                                            value={stop.Address}
-                                            onFocus={() => setHighlightedStopIndex(idx)}
-                                            onChange={(e) => handleStopChange(idx, 'Address', e.target.value)}
-                                          />
-                                      </div>
-                                      
-                                      <div className="md:col-span-2 grid grid-cols-2 gap-3">
-                                        <div className="space-y-1.5">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Lat</label>
-                                            <input 
-                                              type="text" 
-                                              className="w-full px-4 py-2 bg-slate-50/50 border-none rounded-xl font-bold text-slate-600 text-[10px] font-mono"
-                                              value={stop.Latitude}
-                                              onFocus={() => setHighlightedStopIndex(idx)}
-                                              onChange={(e) => handleStopChange(idx, 'Latitude', e.target.value)}
-                                            />
+                      {currentStops.map((stop, idx) => {
+                          const prevStop = idx > 0 ? currentStops[idx - 1] : null;
+                          const speedStatus = prevStop ? getSpeedInfo(prevStop, stop) : null;
+                          
+                          return (
+                            <div key={idx} className="space-y-4">
+                                {speedStatus && (
+                                    <div className="flex items-center justify-center gap-6 py-2 px-10">
+                                        <div className="flex-1 h-px bg-slate-100"></div>
+                                        <div className={`flex items-center gap-4 text-[10px] font-black uppercase tracking-widest ${speedStatus.speed > 100 ? 'text-red-500 animate-pulse' : 'text-slate-300'}`}>
+                                            <div className="flex items-center gap-1.5">
+                                                <span>📏</span>
+                                                <span>{speedStatus.dist.toFixed(2)} km</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <span>⏱️</span>
+                                                <span>{speedStatus.timeDiff} min</span>
+                                            </div>
+                                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${speedStatus.speed > 100 ? 'bg-red-50 border-red-100' : 'bg-slate-50 border-slate-100'}`}>
+                                                <span>⚡</span>
+                                                <span>{speedStatus.speed > 900 ? 'TIME ERROR' : `${speedStatus.speed.toFixed(1)} km/h`}</span>
+                                            </div>
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Lng</label>
-                                            <input 
-                                              type="text" 
-                                              className="w-full px-4 py-2 bg-slate-50/50 border-none rounded-xl font-bold text-slate-600 text-[10px] font-mono"
-                                              value={stop.Longitude}
-                                              onFocus={() => setHighlightedStopIndex(idx)}
-                                              onChange={(e) => handleStopChange(idx, 'Longitude', e.target.value)}
-                                            />
+                                        <div className="flex-1 h-px bg-slate-100"></div>
+                                    </div>
+                                )}
+                                <div 
+                                    className={`bg-white p-6 rounded-[2rem] border transition-all ${highlightedStopIndex === idx ? 'border-indigo-500 shadow-xl shadow-indigo-100 ring-1 ring-indigo-500' : 'border-slate-100 shadow-sm hover:border-indigo-200'}`}
+                                    onClick={() => setHighlightedStopIndex(idx)}
+                                >
+                                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                                        <div className="md:col-span-1 flex flex-col items-center justify-center pt-2">
+                                            <span className={`text-[10px] font-black ${highlightedStopIndex === idx ? 'text-indigo-500' : 'text-slate-200'}`}>#{idx+1}</span>
                                         </div>
-                                      </div>
+                                        
+                                        <div className="md:col-span-11 grid grid-cols-1 md:grid-cols-4 gap-4">
+                                            <div className="md:col-span-2 space-y-1.5">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Name</label>
+                                                <input 
+                                                    type="text" 
+                                                    className="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl font-bold text-slate-700 text-sm"
+                                                    value={stop.Name}
+                                                    onFocus={() => setHighlightedStopIndex(idx)}
+                                                    onChange={(e) => handleStopChange(idx, 'Name', e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Arrival</label>
+                                                <input 
+                                                    type="text" 
+                                                    className="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl font-black text-indigo-600 text-sm font-mono text-center"
+                                                    value={stop.Time}
+                                                    onFocus={() => setHighlightedStopIndex(idx)}
+                                                    onChange={(e) => handleStopChange(idx, 'Time', e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Remarks</label>
+                                                <input 
+                                                    type="text" 
+                                                    className="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl font-bold text-slate-500 text-xs"
+                                                    value={stop.Remarks || ''}
+                                                    onFocus={() => setHighlightedStopIndex(idx)}
+                                                    onChange={(e) => handleStopChange(idx, 'Remarks', e.target.value)}
+                                                />
+                                            </div>
 
-                                      <div className="md:col-span-2 flex items-end justify-between">
-                                          <div className="flex gap-2 mb-0.5">
-                                            <a 
-                                                href={`https://map.naver.com/v5/search/${stop.Latitude},${stop.Longitude}`}
-                                                target="_blank" rel="noopener noreferrer"
-                                                className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-black"
-                                            >NAVER</a>
-                                            <a 
-                                                href={`https://map.kakao.com/link/map/${encodeURIComponent(stop.Name)},${stop.Latitude},${stop.Longitude}`}
-                                                target="_blank" rel="noopener noreferrer"
-                                                className="px-2 py-1 bg-yellow-50 text-yellow-700 rounded-lg text-[9px] font-black"
-                                            >KAKAO</a>
-                                          </div>
-                                          <button 
-                                            onClick={(e) => { e.stopPropagation(); handleRemoveStop(idx); }}
-                                            className="p-2 text-red-200 hover:text-red-500 transition-all"
-                                          >
-                                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                          </button>
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-                      ))}
+                                            <div className="md:col-span-4 space-y-1.5">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Address</label>
+                                                <input 
+                                                    type="text" 
+                                                    className="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl font-bold text-slate-600 text-xs"
+                                                    value={stop.Address}
+                                                    onFocus={() => setHighlightedStopIndex(idx)}
+                                                    onChange={(e) => handleStopChange(idx, 'Address', e.target.value)}
+                                                />
+                                            </div>
+                                            
+                                            <div className="md:col-span-2 grid grid-cols-2 gap-3">
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Lat</label>
+                                                    <input 
+                                                        type="text" 
+                                                        className="w-full px-4 py-2 bg-slate-50/50 border-none rounded-xl font-bold text-slate-600 text-[10px] font-mono"
+                                                        value={stop.Latitude}
+                                                        onFocus={() => setHighlightedStopIndex(idx)}
+                                                        onChange={(e) => handleStopChange(idx, 'Latitude', e.target.value)}
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Lng</label>
+                                                    <input 
+                                                        type="text" 
+                                                        className="w-full px-4 py-2 bg-slate-50/50 border-none rounded-xl font-bold text-slate-600 text-[10px] font-mono"
+                                                        value={stop.Longitude}
+                                                        onFocus={() => setHighlightedStopIndex(idx)}
+                                                        onChange={(e) => handleStopChange(idx, 'Longitude', e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="md:col-span-2 flex items-end justify-between">
+                                                <div className="flex gap-2 mb-0.5">
+                                                    <a 
+                                                        href={`https://map.naver.com/v5/search/${stop.Latitude},${stop.Longitude}`}
+                                                        target="_blank" rel="noopener noreferrer"
+                                                        className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-black"
+                                                    >NAVER</a>
+                                                    <a 
+                                                        href={`https://map.kakao.com/link/map/${encodeURIComponent(stop.Name)},${stop.Latitude},${stop.Longitude}`}
+                                                        target="_blank" rel="noopener noreferrer"
+                                                        className="px-2 py-1 bg-yellow-50 text-yellow-700 rounded-lg text-[9px] font-black"
+                                                    >KAKAO</a>
+                                                </div>
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); handleRemoveStop(idx); }}
+                                                    className="p-2 text-red-200 hover:text-red-500 transition-all"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                          );
+                      })}
                   </div>
               </section>
           ) : (
