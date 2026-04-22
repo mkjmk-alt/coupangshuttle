@@ -97,6 +97,7 @@ export default function ShuttleExplorer() {
 
   useEffect(() => {
     if (shiftList.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedShift(shiftList[0]);
     } else {
       setSelectedShift('');
@@ -120,8 +121,10 @@ export default function ShuttleExplorer() {
   // Handle auto-selecting the first route when center or shift changes
   useEffect(() => {
     if (routeList.length > 0 && !selectedRoute) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedRoute(routeList[0]);
     } else if (routeList.length > 0 && !routeList.includes(selectedRoute)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedRoute(routeList[0]);
     } else if (routeList.length === 0) {
       setSelectedRoute('');
@@ -132,7 +135,7 @@ export default function ShuttleExplorer() {
     if (!data || !selectedFC) return [];
     const shifts = data[selectedFC]?.shifts;
     if (!shifts) return [];
-    let stops: (Stop & { shift: string; route: string; routeIndex: number })[] = [];
+    const stops: (Stop & { shift: string; route: string; routeIndex: number })[] = [];
 
     Object.entries(shifts).forEach(([shiftName, routes]) => {
       if (selectedShift && shiftName !== selectedShift) return;

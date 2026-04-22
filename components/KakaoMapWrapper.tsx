@@ -34,7 +34,7 @@ export default function KakaoMapWrapper({ stops }: { stops: ShuttleStop[] }) {
         <div className="text-4xl mb-4">🚫</div>
         <h3 className="text-lg font-bold text-red-900 mb-2">도메인 등록 확인 필요</h3>
         <p className="text-sm text-red-600 break-keep max-w-xs mb-4">
-          카카오 개발자 콘솔에서 <b>'플랫폼'</b> 메뉴에 현재 배포된 도메인(pages.dev)을 추가해 주세요.
+          카카오 개발자 콘솔에서 <b>&apos;플랫폼&apos;</b> 메뉴에 현재 배포된 도메인(pages.dev)을 추가해 주세요.
         </p>
         <code className="text-[10px] bg-red-100 px-2 py-1 rounded text-red-800">
            SDK Load Error

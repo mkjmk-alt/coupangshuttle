@@ -167,25 +167,25 @@ export default function Home() {
                             <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
                                 <span className="text-indigo-600 font-black">01</span> 센터별 앱 확인
                             </h4>
-                            <p className="text-sm text-slate-500 leading-relaxed break-keep">대부분의 센터가 <b>'헬로버스'</b> 앱을 사용하지만, <b>고양 센터</b> 등 일부는 <b>'모빌리티지'</b> 앱을 개별적으로 사용하니 반드시 센터 공지를 확인하세요.</p>
+                            <p className="text-sm text-slate-500 leading-relaxed break-keep">대부분의 센터가 <b>&apos;헬로버스&apos;</b> 앱을 사용하지만, <b>고양 센터</b> 등 일부는 <b>&apos;모빌리티지&apos;</b> 앱을 개별적으로 사용하니 반드시 센터 공지를 확인하세요.</p>
                         </div>
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-50 hover:shadow-md transition-shadow">
                             <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
                                 <span className="text-indigo-600 font-black">02</span> 신규 이용 승인
                             </h4>
-                            <p className="text-sm text-slate-500 leading-relaxed break-keep">처음 이용 시 앱 설치 후 <b>'사용 신청'</b>을 해야 하며, 담당자 승인까지 시간이 소요될 수 있으므로 확정 문자를 받자마자 미리 신청하는 것이 좋습니다.</p>
+                            <p className="text-sm text-slate-500 leading-relaxed break-keep">처음 이용 시 앱 설치 후 <b>&apos;사용 신청&apos;</b>을 해야 하며, 담당자 승인까지 시간이 소요될 수 있으므로 확정 문자를 받자마자 미리 신청하는 것이 좋습니다.</p>
                         </div>
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-50 hover:shadow-md transition-shadow">
                             <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
                                 <span className="text-indigo-600 font-black">03</span> 첫 탑승 예외 허용
                             </h4>
-                            <p className="text-sm text-slate-500 leading-relaxed break-keep">승차권을 미리 발급하지 못한 <b>첫 출근자</b>의 경우, 기사님께 '처음 와서 앱 승인 대기 중'이라고 말씀드리면 탑승을 도와주시는 경우가 많습니다.</p>
+                            <p className="text-sm text-slate-500 leading-relaxed break-keep">승차권을 미리 발급하지 못한 <b>첫 출근자</b>의 경우, 기사님께 &apos;처음 와서 앱 승인 대기 중&apos;이라고 말씀드리면 탑승을 도와주시는 경우가 많습니다.</p>
                         </div>
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-50 hover:shadow-md transition-shadow">
                             <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
                                 <span className="text-indigo-600 font-black">04</span> 출근 확정 필수
                             </h4>
-                            <p className="text-sm text-slate-500 leading-relaxed break-keep">셔틀은 무료로 운영되지만 <b>'쿠팡 펀치(Coupang Punch)'</b> 또는 채용 확정 문자가 없는 상태에서 무단 탑승 시 사원 번호 조회를 통해 불이익이 발생할 수 있습니다.</p>
+                            <p className="text-sm text-slate-500 leading-relaxed break-keep">셔틀은 무료로 운영되지만 <b>&apos;쿠팡 펀치(Coupang Punch)&apos;</b> 또는 채용 확정 문자가 없는 상태에서 무단 탑승 시 사원 번호 조회를 통해 불이익이 발생할 수 있습니다.</p>
                         </div>
                     </div>
                 </div>

@@ -704,7 +704,7 @@ function EditorContent() {
                                                 <div className="flex gap-2 mb-0.5">
                                                     {stop['Image URL'] && (
                                                         <button 
-                                                            onClick={(e) => { e.stopPropagation(); setSelectedImage(stop['Image URL']); }}
+                                                            onClick={(e) => { e.stopPropagation(); setSelectedImage(stop['Image URL'] || null); }}
                                                             className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-black hover:bg-indigo-500 hover:text-white transition-all shadow-sm shadow-indigo-100"
                                                         >PHOTO</button>
                                                     )}

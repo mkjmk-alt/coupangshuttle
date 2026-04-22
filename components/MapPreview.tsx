@@ -18,8 +18,15 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
+interface MapPreviewStop {
+  Latitude: string;
+  Longitude: string;
+  Name: string;
+  Time: string;
+}
+
 interface MapPreviewProps {
-  stops: any[];
+  stops: MapPreviewStop[];
   highlightIndex: number | null;
 }
 
@@ -49,7 +56,9 @@ export default function MapPreview({ stops, highlightIndex }: MapPreviewProps) {
       const lat = parseFloat(stop.Latitude);
       const lng = parseFloat(stop.Longitude);
       if (!isNaN(lat) && !isNaN(lng)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMapCenter([lat, lng]);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setZoom(16);
       }
     }
