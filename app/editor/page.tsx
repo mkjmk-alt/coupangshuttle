@@ -371,6 +371,61 @@ function EditorContent() {
           </div>
       )}
 
+      {/* Error Dashboard Panel */}
+      {selectedRoute && currentStops.length > 0 && (
+          <section className="bg-slate-900 p-6 rounded-[2.5rem] text-white shadow-xl shadow-slate-200 animate-in zoom-in duration-500">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="space-y-1">
+                      <h3 className="text-sm font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+                        <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
+                        Route Integrity Report
+                      </h3>
+                      <p className="text-slate-400 text-xs font-bold font-sans">현재 노선의 실시간 데이터 무결성을 검사한 결과입니다.</p>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-3">
+                      {(() => {
+                          const errors = currentStops.map((stop, i) => {
+                              if (i === 0) return null;
+                              const info = getSpeedInfo(currentStops[i-1], stop);
+                              if (info.speed > 100 || info.speed > 900) return { idx: i, ...info };
+                              return null;
+                          }).filter(Boolean);
+
+                          if (errors.length === 0) {
+                              return (
+                                  <div className="flex items-center gap-3 px-6 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+                                      <span className="text-xl">✅</span>
+                                      <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400 italic">All Valid: No Data Anomalies</span>
+                                  </div>
+                              );
+                          }
+
+                          return errors.map((err, i) => (
+                              <button 
+                                  key={i}
+                                  onClick={() => {
+                                      setHighlightedStopIndex(err!.idx);
+                                      const el = document.getElementById(`stop-row-${err!.idx}`);
+                                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                  }}
+                                  className="group flex items-center gap-3 px-5 py-3 bg-red-500/10 border border-red-500/30 rounded-2xl hover:bg-red-500 transition-all text-left"
+                              >
+                                  <span className="text-lg group-hover:scale-125 transition-transform">⚠️</span>
+                                  <div className="flex flex-col">
+                                      <span className="text-[10px] font-black text-red-400 group-hover:text-white uppercase">Stop #{err!.idx + 1} Error</span>
+                                      <span className="text-[11px] font-black text-white">
+                                          {err!.speed > 900 ? 'Time/Logic Error' : `Over-speed: ${err!.speed.toFixed(1)}km/h`}
+                                      </span>
+                                  </div>
+                              </button>
+                          ));
+                      })()}
+                  </div>
+              </div>
+          </section>
+      )}
+
       {/* Main Layout */}
       <div className="flex flex-col lg:flex-row gap-6 items-start min-h-[800px]">
         {/* Left Side: Editor Form */}
@@ -483,6 +538,7 @@ function EditorContent() {
                                     </div>
                                 )}
                                 <div 
+                                    id={`stop-row-${idx}`}
                                     className={`bg-white p-6 rounded-[2rem] border transition-all ${highlightedStopIndex === idx ? 'border-indigo-500 shadow-xl shadow-indigo-100 ring-1 ring-indigo-500' : 'border-slate-100 shadow-sm hover:border-indigo-200'}`}
                                     onClick={() => setHighlightedStopIndex(idx)}
                                 >
