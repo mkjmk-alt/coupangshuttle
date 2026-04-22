@@ -309,6 +309,7 @@ function EditorContent() {
   };
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [errorFilter, setErrorFilter] = useState<'ALL' | 'SPEED' | 'TIME'>('ALL');
 
   if (key !== 'mkjmkcpstadmin') {
       return (
@@ -396,22 +397,41 @@ function EditorContent() {
                                       stops.forEach((stop, i) => {
                                           if (i === 0) return;
                                           const info = getSpeedInfo(stops[i-1], stop);
-                                          if (info.speed > 100 || info.speed > 900) {
-                                              allErrors.push({ fc: fcCode, fcName: fcCard.center?.name, shift: shiftName, route: routeName, idx: i, ...info });
+                                          const isSpeed = info.speed > 100 && info.speed <= 900;
+                                          const isTime = info.speed > 900;
+                                          if (isSpeed || isTime) {
+                                              allErrors.push({ fc: fcCode, fcName: fcCard.center?.name, shift: shiftName, route: routeName, idx: i, type: isTime ? 'TIME' : 'SPEED', ...info });
                                           }
                                       });
                                   });
                               });
                           });
 
-                          const errorCount = allErrors.length;
-                          
+                          const filtered = allErrors.filter(e => {
+                              if (errorFilter === 'ALL') return true;
+                              return e.type === errorFilter;
+                          });
+
                           return (
-                              <div className="flex items-center gap-4">
-                                  <div className={`px-5 py-2 rounded-2xl border flex items-center gap-3 ${errorCount > 0 ? 'bg-red-500/10 border-red-500/30' : 'bg-emerald-500/10 border-emerald-500/20'}`}>
-                                      <span className="text-lg">{errorCount > 0 ? '🚨' : '✨'}</span>
-                                      <span className={`text-xs font-black uppercase tracking-widest ${errorCount > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
-                                          {errorCount > 0 ? `${errorCount} Total Anomalies Detected` : 'All Systems Nominal'}
+                              <div className="flex flex-wrap items-center gap-4">
+                                  <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10">
+                                      <button 
+                                          onClick={() => setErrorFilter('ALL')}
+                                          className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${errorFilter === 'ALL' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                      >ALL ({allErrors.length})</button>
+                                      <button 
+                                          onClick={() => setErrorFilter('SPEED')}
+                                          className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${errorFilter === 'SPEED' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                      >SPEED ({allErrors.filter(e => e.type === 'SPEED').length})</button>
+                                      <button 
+                                          onClick={() => setErrorFilter('TIME')}
+                                          className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${errorFilter === 'TIME' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                      >TIME ({allErrors.filter(e => e.type === 'TIME').length})</button>
+                                  </div>
+                                  <div className={`px-5 py-2 rounded-2xl border flex items-center gap-3 ${filtered.length > 0 ? 'bg-red-500/10 border-red-500/30' : 'bg-emerald-500/10 border-emerald-500/20'}`}>
+                                      <span className="text-lg">{filtered.length > 0 ? '🚨' : '✨'}</span>
+                                      <span className={`text-xs font-black uppercase tracking-widest ${filtered.length > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                                          {filtered.length} {errorFilter} Found
                                       </span>
                                   </div>
                               </div>
@@ -429,17 +449,30 @@ function EditorContent() {
                                       stops.forEach((stop, i) => {
                                           if (i === 0) return;
                                           const info = getSpeedInfo(stops[i-1], stop);
-                                          if (info.speed > 100 || info.speed > 900) {
-                                              allErrors.push({ fc: fcCode, fcName: fcCard.center?.name || fcCode, shift: shiftName, route: routeName, idx: i, stopName: stop.Name, ...info });
+                                          const isSpeed = info.speed > 100 && info.speed <= 900;
+                                          const isTime = info.speed > 900;
+                                          if (isSpeed || isTime) {
+                                              allErrors.push({ fc: fcCode, fcName: fcCard.center?.name || fcCode, shift: shiftName, route: routeName, idx: i, stopName: stop.Name, type: isTime ? 'TIME' : 'SPEED', ...info });
                                           }
                                       });
                                   });
                               });
                           });
 
-                          if (allErrors.length === 0) return null;
+                          const filtered = allErrors.filter(e => {
+                              if (errorFilter === 'ALL') return true;
+                              return e.type === errorFilter;
+                          });
 
-                          return allErrors.map((err, i) => (
+                          if (filtered.length === 0) {
+                              return (
+                                  <div className="flex-1 py-10 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/10">
+                                      <p className="text-slate-500 font-black text-[11px] uppercase tracking-widest">No errors in this category</p>
+                                  </div>
+                              );
+                          }
+
+                          return filtered.map((err, i) => (
                               <button 
                                   key={i}
                                   onClick={() => {
@@ -455,14 +488,14 @@ function EditorContent() {
                                           }, 300);
                                       }, 100);
                                   }}
-                                  className="flex-shrink-0 group w-[280px] bg-white/5 border border-white/10 p-5 rounded-3xl hover:bg-white/10 hover:border-indigo-500/50 transition-all text-left space-y-3 relative overflow-hidden"
+                                  className={`flex-shrink-0 group w-[280px] border p-5 rounded-3xl transition-all text-left space-y-3 relative overflow-hidden ${err.type === 'TIME' ? 'bg-amber-500/5 border-amber-500/10 hover:border-amber-500/50' : 'bg-red-500/5 border-red-500/10 hover:border-red-500/50'}`}
                               >
                                   <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-100 transition-opacity">
-                                      <span className="text-xl">📍</span>
+                                      <span className="text-xl">{err.type === 'TIME' ? '⏰' : '⚡'}</span>
                                   </div>
                                   <div className="space-y-1">
                                       <div className="flex items-center gap-2">
-                                          <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-400 rounded text-[9px] font-black uppercase tracking-tighter">
+                                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter ${err.type === 'TIME' ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}`}>
                                               {err.fcName}
                                           </span>
                                           <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">{err.shift}</span>
@@ -472,9 +505,9 @@ function EditorContent() {
                                   
                                   <div className="flex items-center justify-between pt-2 border-t border-white/5">
                                       <div className="flex flex-col">
-                                          <span className="text-[9px] font-black text-red-400 uppercase tracking-widest">#{err.idx+1} {err.stopName}</span>
+                                          <span className={`text-[9px] font-black uppercase tracking-widest ${err.type === 'TIME' ? 'text-amber-400' : 'text-red-400'}`}>#{err.idx+1} {err.stopName}</span>
                                           <span className="text-[11px] font-black text-white">
-                                              {err.speed > 900 ? 'Time Error' : `${err.speed.toFixed(1)}km/h`}
+                                              {err.type === 'TIME' ? 'Logic/Time Error' : `${err.speed.toFixed(1)}km/h`}
                                           </span>
                                       </div>
                                       <div className="p-2 bg-white/5 rounded-xl text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-all">
