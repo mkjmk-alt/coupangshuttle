@@ -308,6 +308,8 @@ function EditorContent() {
     document.body.removeChild(link);
   };
 
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   if (key !== 'mkjmkcpstadmin') {
       return (
           <div className="flex flex-col items-center justify-center min-h-[80vh] gap-6 text-center">
@@ -371,52 +373,113 @@ function EditorContent() {
           </div>
       )}
 
-      {/* Error Dashboard Panel */}
-      {selectedRoute && currentStops.length > 0 && (
-          <section className="bg-slate-900 p-6 rounded-[2.5rem] text-white shadow-xl shadow-slate-200 animate-in zoom-in duration-500">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="space-y-1">
-                      <h3 className="text-sm font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
-                        <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
-                        Route Integrity Report
-                      </h3>
-                      <p className="text-slate-400 text-xs font-bold font-sans">현재 노선의 실시간 데이터 무결성을 검사한 결과입니다.</p>
+      {/* Global Error Dashboard Panel */}
+      {data && (
+          <section className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-100/20 animate-in zoom-in duration-500 overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] -mr-48 -mt-48"></div>
+              
+              <div className="relative z-10 space-y-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="space-y-1">
+                          <h3 className="text-sm font-black text-indigo-400 uppercase tracking-[0.2em] flex items-center gap-3">
+                            <span className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,102,241,0.8)]"></span>
+                            Global Shuttle Health Monitor
+                          </h3>
+                          <p className="text-slate-400 text-[11px] font-bold font-sans uppercase tracking-tight">전국 물류센터 노선 데이터의 무결성을 실시간으로 감시 중입니다.</p>
+                      </div>
+
+                      {(() => {
+                          const allErrors: any[] = [];
+                          Object.entries(data).forEach(([fcCode, fcCard]) => {
+                              Object.entries(fcCard.shifts || {}).forEach(([shiftName, routes]) => {
+                                  Object.entries(routes).forEach(([routeName, stops]) => {
+                                      stops.forEach((stop, i) => {
+                                          if (i === 0) return;
+                                          const info = getSpeedInfo(stops[i-1], stop);
+                                          if (info.speed > 100 || info.speed > 900) {
+                                              allErrors.push({ fc: fcCode, fcName: fcCard.center?.name, shift: shiftName, route: routeName, idx: i, ...info });
+                                          }
+                                      });
+                                  });
+                              });
+                          });
+
+                          const errorCount = allErrors.length;
+                          
+                          return (
+                              <div className="flex items-center gap-4">
+                                  <div className={`px-5 py-2 rounded-2xl border flex items-center gap-3 ${errorCount > 0 ? 'bg-red-500/10 border-red-500/30' : 'bg-emerald-500/10 border-emerald-500/20'}`}>
+                                      <span className="text-lg">{errorCount > 0 ? '🚨' : '✨'}</span>
+                                      <span className={`text-xs font-black uppercase tracking-widest ${errorCount > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                                          {errorCount > 0 ? `${errorCount} Total Anomalies Detected` : 'All Systems Nominal'}
+                                      </span>
+                                  </div>
+                              </div>
+                          );
+                      })()}
                   </div>
                   
-                  <div className="flex flex-wrap gap-3">
+                  {/* Global Error List Horizontal Scroll */}
+                  <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
                       {(() => {
-                          const errors = currentStops.map((stop, i) => {
-                              if (i === 0) return null;
-                              const info = getSpeedInfo(currentStops[i-1], stop);
-                              if (info.speed > 100 || info.speed > 900) return { idx: i, ...info };
-                              return null;
-                          }).filter(Boolean);
+                          const allErrors: any[] = [];
+                          Object.entries(data).forEach(([fcCode, fcCard]) => {
+                              Object.entries(fcCard.shifts || {}).forEach(([shiftName, routes]) => {
+                                  Object.entries(routes).forEach(([routeName, stops]) => {
+                                      stops.forEach((stop, i) => {
+                                          if (i === 0) return;
+                                          const info = getSpeedInfo(stops[i-1], stop);
+                                          if (info.speed > 100 || info.speed > 900) {
+                                              allErrors.push({ fc: fcCode, fcName: fcCard.center?.name || fcCode, shift: shiftName, route: routeName, idx: i, stopName: stop.Name, ...info });
+                                          }
+                                      });
+                                  });
+                              });
+                          });
 
-                          if (errors.length === 0) {
-                              return (
-                                  <div className="flex items-center gap-3 px-6 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
-                                      <span className="text-xl">✅</span>
-                                      <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400 italic">All Valid: No Data Anomalies</span>
-                                  </div>
-                              );
-                          }
+                          if (allErrors.length === 0) return null;
 
-                          return errors.map((err, i) => (
+                          return allErrors.map((err, i) => (
                               <button 
                                   key={i}
                                   onClick={() => {
-                                      setHighlightedStopIndex(err!.idx);
-                                      const el = document.getElementById(`stop-row-${err!.idx}`);
-                                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                      // Multi-step jump logic
+                                      setSelectedFC(err.fc);
+                                      setSelectedShift(err.shift);
+                                      setTimeout(() => {
+                                          setSelectedRoute(err.route);
+                                          setHighlightedStopIndex(err.idx);
+                                          setTimeout(() => {
+                                              const el = document.getElementById(`stop-row-${err.idx}`);
+                                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                          }, 300);
+                                      }, 100);
                                   }}
-                                  className="group flex items-center gap-3 px-5 py-3 bg-red-500/10 border border-red-500/30 rounded-2xl hover:bg-red-500 transition-all text-left"
+                                  className="flex-shrink-0 group w-[280px] bg-white/5 border border-white/10 p-5 rounded-3xl hover:bg-white/10 hover:border-indigo-500/50 transition-all text-left space-y-3 relative overflow-hidden"
                               >
-                                  <span className="text-lg group-hover:scale-125 transition-transform">⚠️</span>
-                                  <div className="flex flex-col">
-                                      <span className="text-[10px] font-black text-red-400 group-hover:text-white uppercase">Stop #{err!.idx + 1} Error</span>
-                                      <span className="text-[11px] font-black text-white">
-                                          {err!.speed > 900 ? 'Time/Logic Error' : `Over-speed: ${err!.speed.toFixed(1)}km/h`}
-                                      </span>
+                                  <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-100 transition-opacity">
+                                      <span className="text-xl">📍</span>
+                                  </div>
+                                  <div className="space-y-1">
+                                      <div className="flex items-center gap-2">
+                                          <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-400 rounded text-[9px] font-black uppercase tracking-tighter">
+                                              {err.fcName}
+                                          </span>
+                                          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">{err.shift}</span>
+                                      </div>
+                                      <h4 className="text-[12px] font-bold text-white truncate group-hover:text-indigo-300 transition-colors">{err.route}</h4>
+                                  </div>
+                                  
+                                  <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                                      <div className="flex flex-col">
+                                          <span className="text-[9px] font-black text-red-400 uppercase tracking-widest">#{err.idx+1} {err.stopName}</span>
+                                          <span className="text-[11px] font-black text-white">
+                                              {err.speed > 900 ? 'Time Error' : `${err.speed.toFixed(1)}km/h`}
+                                          </span>
+                                      </div>
+                                      <div className="p-2 bg-white/5 rounded-xl text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-all">
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                                      </div>
                                   </div>
                               </button>
                           ));
@@ -433,7 +496,20 @@ function EditorContent() {
           <section className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                    <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1">Center</label>
+                    <div className="flex items-center justify-between px-1">
+                        <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Center</label>
+                        {selectedFC && (
+                            <a 
+                                href={`https://coufc.coupang.com/${selectedFC.toLowerCase()}/shuttle`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[9px] font-black text-slate-400 hover:text-indigo-600 flex items-center gap-1 transition-colors uppercase"
+                            >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                Official Site
+                            </a>
+                        )}
+                    </div>
                     <select 
                         className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 text-sm"
                         value={selectedFC}
@@ -471,7 +547,18 @@ function EditorContent() {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1">Route</label>
+                    <div className="flex items-center justify-between px-1">
+                        <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Route</label>
+                        {selectedRoute && currentStops.some(s => s['Image URL']) && (
+                            <button 
+                                onClick={() => setSelectedImage('GALLERY')}
+                                className="text-[9px] font-black text-indigo-400 hover:text-indigo-600 flex items-center gap-1 transition-colors uppercase"
+                            >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                Route Gallery
+                            </button>
+                        )}
+                    </div>
                     <select 
                         className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 text-sm disabled:opacity-50"
                         value={selectedRoute}
@@ -615,6 +702,12 @@ function EditorContent() {
 
                                             <div className="md:col-span-2 flex items-end justify-between">
                                                 <div className="flex gap-2 mb-0.5">
+                                                    {stop['Image URL'] && (
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); setSelectedImage(stop['Image URL']); }}
+                                                            className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-black hover:bg-indigo-500 hover:text-white transition-all shadow-sm shadow-indigo-100"
+                                                        >PHOTO</button>
+                                                    )}
                                                     <a 
                                                         href={`https://map.naver.com/v5/search/${stop.Latitude},${stop.Longitude}`}
                                                         target="_blank" rel="noopener noreferrer"
