@@ -271,6 +271,43 @@ function EditorContent() {
     return { dist, speed, timeDiff };
   };
 
+  const handleExportExcel = () => {
+    if (!currentStops || currentStops.length === 0) {
+      alert('추출할 데이터가 없습니다.');
+      return;
+    }
+
+    // Header definition
+    const headers = ['Center', 'Shift', 'Route', 'Order', 'Name', 'Time', 'Latitude', 'Longitude', 'Address'];
+    
+    // Data mapping
+    const rows = currentStops.map(stop => [
+      selectedFC,
+      selectedShift,
+      selectedRoute,
+      stop.Order,
+      `"${stop.Name}"`, // Wrap in quotes to handle commas in names
+      stop.Time,
+      stop.Latitude,
+      stop.Longitude,
+      `"${stop.Address}"`
+    ]);
+
+    // CSV Content generation
+    const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+    
+    // Add UTF-8 BOM for Excel Korean support
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `shuttle_${selectedFC}_${selectedRoute}_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (key !== 'mkjmkcpstadmin') {
       return (
           <div className="flex flex-col items-center justify-center min-h-[80vh] gap-6 text-center">
@@ -303,8 +340,16 @@ function EditorContent() {
         </div>
         <div className="flex gap-3">
             <button 
+                onClick={handleExportExcel}
+                disabled={!selectedRoute}
+                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-50 text-emerald-600 font-black text-[11px] rounded-xl hover:bg-emerald-100 transition-all uppercase tracking-wider disabled:opacity-30"
+            >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                Export CSV
+            </button>
+            <button 
                 onClick={() => router.push('/')}
-                className="px-5 py-2.5 bg-slate-50 text-slate-500 font-black text-[11px] rounded-xl hover:bg-slate-100 transition-all uppercase"
+                className="px-5 py-2.5 bg-slate-50 text-slate-500 font-black text-[11px] rounded-xl hover:bg-slate-100 transition-all uppercase font-sans"
             >
                 Map View
             </button>
