@@ -755,6 +755,80 @@ function EditorContent() {
             />
         </div>
       </div>
+      
+      {/* Image Modal UI */}
+      {selectedImage && (
+        <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-10 animate-in fade-in duration-300"
+            onClick={() => setSelectedImage(null)}
+        >
+            <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-md"></div>
+            
+            <div 
+                className="relative z-[110] bg-white rounded-[3rem] shadow-2xl overflow-hidden max-w-5xl w-full max-h-full flex flex-col animate-in zoom-in slide-in-from-bottom-10 duration-500"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white/50 backdrop-blur-sm sticky top-0 z-10">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-lg">🖼️</div>
+                        <div>
+                            <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">
+                                {selectedImage === 'GALLERY' ? `${selectedRoute} 노선 갤러리` : '정류장 상세 사진'}
+                            </h3>
+                            <p className="text-slate-400 text-xs font-bold font-sans uppercase tracking-tighter">Official Shuttle Stop Information</p>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={() => setSelectedImage(null)}
+                        className="w-10 h-10 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-6 bg-slate-50 custom-scrollbar">
+                    {selectedImage === 'GALLERY' ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-10">
+                            {currentStops.filter(s => s['Image URL']).map((s, i) => (
+                                <div key={i} className="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm space-y-4 group">
+                                    <div className="relative aspect-video rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+                                        <img 
+                                            src={s['Image URL']} 
+                                            alt={s.Name} 
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                            loading="lazy"
+                                        />
+                                        <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-md text-white text-[10px] font-black rounded-lg">
+                                            #{s.Order}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-black text-slate-900 text-sm uppercase truncate">{s.Name}</h4>
+                                        <p className="text-[10px] font-bold text-slate-400 mt-1 flex items-center gap-1">
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                            {s.Address}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center min-h-[400px]">
+                            <img 
+                                src={selectedImage} 
+                                alt="Stop Detail" 
+                                className="max-w-full h-auto rounded-[2rem] shadow-2xl border-4 border-white"
+                            />
+                        </div>
+                    )}
+                </div>
+                
+                <div className="p-4 bg-white border-t border-slate-100 text-center">
+                    <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Coupang Logistics Service • Smart Editor System</p>
+                </div>
+            </div>
+        </div>
+      )}
 
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
