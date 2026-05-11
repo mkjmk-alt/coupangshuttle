@@ -210,15 +210,16 @@ function EditorContent() {
     setSaving(true);
     setMessage(null);
     try {
-      const body = JSON.stringify(data, null, 2);
-      
       const res = await fetch('/api/save-data/', {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
             'x-editor-key': 'mkjmkcpstadmin'
         },
-        body: body,
+        body: JSON.stringify({
+            data: data,
+            type: 'manual'
+        }),
       });
 
       const result = await res.json();
@@ -231,6 +232,34 @@ function EditorContent() {
     } catch (err) {
       console.error('Save failed:', err);
       setMessage({ type: 'error', text: `네트워크 오류가 발생했습니다.` });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleManualMerge = async () => {
+    setSaving(true);
+    setMessage(null);
+    try {
+      const res = await fetch('/api/save-data/', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'x-editor-key': 'mkjmkcpstadmin'
+        },
+        body: JSON.stringify({
+            type: 'merge'
+        }),
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        setMessage({ type: 'success', text: '수동 머지가 완료되었습니다! 지도가 곧 업데이트됩니다.' });
+      } else {
+        setMessage({ type: 'error', text: '머지 실패: ' + result.message });
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: '서버 연결 오류가 발생했습니다.' });
     } finally {
       setSaving(false);
     }
@@ -361,6 +390,13 @@ function EditorContent() {
                 className="px-5 py-2.5 bg-slate-50 text-slate-500 font-black text-[11px] rounded-xl hover:bg-slate-100 transition-all uppercase font-sans"
             >
                 Map View
+            </button>
+            <button 
+                onClick={handleManualMerge}
+                disabled={saving}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-black transition-all uppercase tracking-widest border ${saving ? 'bg-slate-50 text-slate-300 border-slate-100' : 'bg-white text-indigo-600 border-indigo-100 hover:bg-indigo-50 hover:border-indigo-200'}`}
+            >
+                {saving ? 'Processing...' : 'Run Manual Merge'}
             </button>
             <button 
                 onClick={handleSave}

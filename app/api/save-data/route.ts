@@ -8,13 +8,15 @@ export const dynamic = 'force-dynamic';
 const OWNER = 'mkjmk-alt';
 const REPO = 'coupangshuttle';
 const DATA_PATH = 'public/data/shuttle_data.json';
+const BASE_PATH = 'public/data/shuttle_base.json';
+const UPDATE_FILE = 'public/data/shuttle_update.json';
 const MANUAL_PATH = 'public/data/shuttle_manual.json';
 const BRANCH = 'main';
 
 export async function GET() {
   return NextResponse.json({ 
-    status: 'API is alive', 
-    mode: process.env.GITHUB_TOKEN ? 'GitHub Mode' : 'Local Mode' 
+    status: 'Sync Logic Active', 
+    engine: 'Python-Parity Merger v1.0'
   });
 }
 
@@ -22,80 +24,118 @@ export async function POST(request: Request) {
   try {
     const key = request.headers.get('x-editor-key');
     if (key !== 'mkjmkcpstadmin') {
-      return NextResponse.json({ success: false, message: 'Unauthorized: 비밀 키가 올바르지 않습니다.' }, { status: 401 });
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    // Performance: Read raw text to handle large files efficiently
-    const bodyText = await request.text();
+    const { data, type } = await request.json(); // type: 'manual' | 'extracted' | 'merge'
     const token = process.env.GITHUB_TOKEN;
 
-    // --- 1. GITHUB API MODE (Used in Production/Web) ---
-    // If GITHUB_TOKEN is present, we push the change directly to git repo
-    if (token) {
-      console.log('[SaveAPI] GitHub Integration Mode active.');
-      
-      const pushToFile = async (path: string, content: string) => {
-        // Step A: Get the latest file SHA from GitHub (Required for Update)
-        console.log(`[SaveAPI] Fetching SHA for ${path}...`);
-        const getFileRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`, {
-          headers: {
-            'Authorization': `Bearer ${token.trim()}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'User-Agent': 'NextJS-DataEditor'
-          }
+    if (!token) return NextResponse.json({ success: false, message: 'No GitHub Token' }, { status: 501 });
+
+    const fetchFile = async (path: string) => {
+        const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`, {
+            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' }
         });
-        
+        if (!res.ok) return {};
+        const json = await res.json();
+        return JSON.parse(Buffer.from(json.content, 'base64').toString('utf8'));
+    };
+
+    const pushFile = async (path: string, content: string, message: string) => {
+        const getRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`, {
+            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
         let sha = '';
-        if (getFileRes.ok) {
-          const fileInfo = await getFileRes.json();
-          sha = fileInfo.sha;
-          console.log(`[SaveAPI] Found SHA for ${path}: ${sha}`);
-        } else if (getFileRes.status !== 404) {
-          const errStatus = getFileRes.status;
-          const errData = await getFileRes.json();
-          console.error(`[SaveAPI] GET Error (${path}):`, errData);
-          throw new Error(`GitHub GET Error (${path}) [HTTP ${errStatus}]: ${errData.message}`);
+        if (getRes.ok) sha = (await getRes.json()).sha;
+
+        await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message,
+                content: Buffer.from(content).toString('base64'),
+                sha,
+                branch: BRANCH
+            })
+        });
+    };
+
+    // 1. 저장 요청 처리 (type이 'merge'가 아닐 때만 실행)
+    if (type !== 'merge' && data) {
+        const targetPath = type === 'extracted' ? UPDATE_FILE : MANUAL_PATH;
+        await pushFile(targetPath, JSON.stringify(data, null, 2), `Update ${type} data via API`);
+    }
+
+    // 2. 모든 데이터 로드 (Parity with Python script)
+    const [base, update, manual] = await Promise.all([
+        fetchFile(BASE_PATH),
+        fetchFile(UPDATE_FILE),
+        fetchFile(MANUAL_PATH)
+    ]);
+
+    // 3. 머지 엔진 (shuttle_merger.py 논리 복제)
+    const getStopKey = (s: any) => `${s.Order}_${s.Name}`;
+    const mergedData: any = {};
+    const allFCs = new Set([...Object.keys(base), ...Object.keys(update)]);
+
+    for (const fc of allFCs) {
+        const uFC = update[fc] || {};
+        const bFC = base[fc] || {};
+        const mFC = manual[fc] || {};
+
+        if (!uFC.shifts && !bFC.shifts) continue;
+
+        // Center info merge
+        const finalCenter = JSON.stringify(uFC.center) !== JSON.stringify(bFC.center) ? uFC.center : (mFC.center || uFC.center);
+
+        const finalShifts: any = {};
+        const uShifts = uFC.shifts || {};
+        const bShifts = bFC.shifts || {};
+        const mShifts = mFC.shifts || {};
+
+        for (const shift of Object.keys(uShifts)) {
+            const finalRoutes: any = {};
+            const uRoutes = uShifts[shift] || {};
+            const bRoutes = bShifts[shift] || {};
+            const mRoutes = mShifts[shift] || {};
+
+            for (const route of Object.keys(uRoutes)) {
+                const uStops = uRoutes[route] || [];
+                const bStops = bRoutes[route] || [];
+                const mStops = mRoutes[route] || [];
+
+                // Stop level merge logic
+                const bDict = Object.fromEntries(bStops.map((s: any) => [getStopKey(s), s]));
+                const mDict = Object.fromEntries(mStops.map((s: any) => [getStopKey(s), s]));
+
+                finalRoutes[route] = uStops.map((s: any) => {
+                    const key = getStopKey(s);
+                    const bMatch = bDict[key];
+                    const mMatch = mDict[key];
+
+                    if (JSON.stringify(bMatch) !== JSON.stringify(s)) return s; // [1순위] 공식 업데이트
+                    if (mMatch) return mMatch; // [2순위] 수동 수정
+                    return s; // [3순위] 유지
+                });
+            }
+            finalShifts[shift] = finalRoutes;
         }
 
-        // Step B: Encode to Base64 (GitHub requirement)
-        const contentBase64 = Buffer.from(content).toString('base64');
-        
-        // Step C: Create/Update file on GitHub
-        console.log(`[SaveAPI] Committing changes to ${path}...`);
-        const commitRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token.trim()}`,
-            'Content-Type': 'application/json',
-            'User-Agent': 'NextJS-DataEditor'
-          },
-          body: JSON.stringify({
-            message: `📝 Update ${path.split('/').pop()} via Web Editor`,
-            content: contentBase64,
-            sha: sha,
-            branch: BRANCH,
-          })
-        });
+        mergedData[fc] = {
+            code: fc,
+            center: finalCenter,
+            shifts: finalShifts
+        };
+    }
 
-        if (!commitRes.ok) {
-          const commitData = await commitRes.json();
-          throw new Error(`GitHub Commit Error (${path}): ${commitData.message}`);
-        }
-        
-        return await commitRes.json();
-      };
+    // 4. 최종 파일 업데이트
+    await pushFile(DATA_PATH, JSON.stringify(mergedData, null, 2), "🚀 Auto-merged final data (Python-parity)");
+    
+    if (type === 'extracted') {
+        await pushFile(BASE_PATH, JSON.stringify(update, null, 2), "🔄 Updated backup base");
+    }
 
-      try {
-        // We push to both the main data and the manual override file
-        console.log('[SaveAPI] Pushing to shuttle_data.json and shuttle_manual.json...');
-        await pushToFile(DATA_PATH, bodyText);
-        await pushToFile(MANUAL_PATH, bodyText);
-        
-        console.log('[SaveAPI] Dual GitHub Commit Success!');
-        return NextResponse.json({ 
-          success: true, 
-          message: '🎉 깃허브 저장소에 직접 저장되었습니다. (Source: Data & Manual)' 
-        });
+    return NextResponse.json({ success: true, message: 'Merge complete!' });
 
       } catch (ghError: any) {
         console.error('[SaveAPI] GitHub Error:', ghError);
