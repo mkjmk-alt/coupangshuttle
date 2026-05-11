@@ -210,6 +210,19 @@ function EditorContent() {
     setSaving(true);
     setMessage(null);
     try {
+      // 브라우저에서 base64 인코딩 (Edge 함수 부담 제거)
+      const jsonStr = JSON.stringify(data, null, 2);
+      const bytes = new TextEncoder().encode(jsonStr);
+      const chunkSize = 32768;
+      const parts: string[] = [];
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        const slice = bytes.subarray(i, i + chunkSize);
+        let binary = '';
+        for (let j = 0; j < slice.length; j++) binary += String.fromCharCode(slice[j]);
+        parts.push(binary);
+      }
+      const base64Content = btoa(parts.join(''));
+
       const res = await fetch('/api/save-data/', {
         method: 'POST',
         headers: { 
@@ -217,7 +230,7 @@ function EditorContent() {
             'x-editor-key': 'mkjmkcpstadmin'
         },
         body: JSON.stringify({
-            data: data,
+            base64Content,
             type: 'manual'
         }),
       });
@@ -225,13 +238,13 @@ function EditorContent() {
       const result = await res.json();
 
       if (res.ok && result?.success) {
-        setMessage({ type: 'success', text: '저장 및 머지가 완료되었습니다!' });
+        setMessage({ type: 'success', text: '저장 완료! 지도에 곧 반영됩니다.' });
       } else {
         setMessage({ type: 'error', text: result?.message || `저장 실패 (HTTP ${res.status})` });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save failed:', err);
-      setMessage({ type: 'error', text: `네트워크 오류가 발생했습니다.` });
+      setMessage({ type: 'error', text: `오류: ${err?.message || '네트워크 오류'}` });
     } finally {
       setSaving(false);
     }
