@@ -137,23 +137,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, message: 'Merge complete!' });
 
-      } catch (ghError: any) {
-        console.error('[SaveAPI] GitHub Error:', ghError);
-        return NextResponse.json({ success: false, message: `깃허브 연동 실패: ${ghError.message}` }, { status: 502 });
-      }
-    }
-
-    // --- 2. LOCAL FILE SYSTEM MODE (Disabled on Edge) ---
-    console.warn('[SaveAPI] Local FS Mode is disabled in this environment.');
-    return NextResponse.json({ 
-        success: false, 
-        message: '저장 실패: 클라우드 환경에서는 깃허브 토큰이 활성화되어야 합니다.'
-    }, { status: 501 });
-
   } catch (error: any) {
     console.error('[SaveAPI] Fatal Error:', error);
     return NextResponse.json(
-      { success: false, message: `Critical Runtime Error: ${error.message}` },
+      { success: false, message: `서버 오류: ${error.message}` },
       { status: 500 }
     );
   }
