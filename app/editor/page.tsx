@@ -225,7 +225,7 @@ function EditorContent() {
       const result = await res.json();
 
       if (res.ok && result?.success) {
-        setMessage({ type: 'success', text: `배포 완료! ${Math.round(body.length / 1024 / 1024 * 10) / 10}MB` });
+        setMessage({ type: 'success', text: '저장 및 머지가 완료되었습니다!' });
       } else {
         setMessage({ type: 'error', text: result?.message || `저장 실패 (HTTP ${res.status})` });
       }
