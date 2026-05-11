@@ -112,7 +112,7 @@ function EditorContent() {
       const el = document.getElementById('terminal-end');
       if (el) el.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [logs, showTerminal]);
+  }, [extractLogs, showTerminal]);
 
   const fcList = useMemo(() => {
     if (!data) return [];
@@ -257,15 +257,16 @@ function EditorContent() {
     if (!confirm('전체 셔틀 데이터를 새로 추출하고 깃허브에 배포하시겠습니까?\n이 작업은 약 2~5분 정도 소요됩니다.')) return;
 
     setExtracting(true);
-    setLogs([]);
+    setExtractLogs([]);
     setShowTerminal(true);
 
-    const eventSource = new EventSource('/api/extract');
+    const eventSource = new EventSource(`/api/extract?key=mkjmkcpstadmin`);
 
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.log) {
-        setLogs((prev) => [...prev, data.log]);
+        const type: 'info' | 'error' | 'success' = data.log.startsWith('❌') ? 'error' : data.log.startsWith('✅') ? 'success' : 'info';
+        setExtractLogs((prev: {message: string, type: string}[]) => [...prev, { message: data.log, type }]);
       }
       if (data.done) {
         setExtracting(false);
@@ -279,7 +280,7 @@ function EditorContent() {
 
     eventSource.onerror = (err) => {
       console.error('SSE Error:', err);
-      setLogs((prev) => [...prev, '❌ 서버 연결 오류가 발생했습니다.']);
+      setExtractLogs((prev: {message: string, type: string}[]) => [...prev, { message: '❌ 서버 연결 오류가 발생했습니다.', type: 'error' }]);
       setExtracting(false);
       eventSource.close();
     };
@@ -892,15 +893,15 @@ function EditorContent() {
                 </div>
                 
                 <div className="flex-1 overflow-y-auto p-6 font-mono text-[11px] space-y-1 custom-scrollbar scroll-smooth">
-                    {logs.length === 0 ? (
+                    {extractLogs.length === 0 ? (
                         <div className="h-full flex items-center justify-center">
                             <p className="text-slate-600 animate-pulse">Initializing secure connection to extraction server...</p>
                         </div>
                     ) : (
-                        logs.map((log, i) => (
-                            <div key={i} className={`flex gap-3 ${log.startsWith('❌') ? 'text-rose-400' : log.startsWith('✅') ? 'text-emerald-400' : 'text-slate-300'}`}>
+                        extractLogs.map((log: {message: string, type: string}, i: number) => (
+                            <div key={i} className={`flex gap-3 ${log.type === 'error' ? 'text-rose-400' : log.type === 'success' ? 'text-emerald-400' : 'text-slate-300'}`}>
                                 <span className="text-slate-600 shrink-0">[{new Date().toLocaleTimeString([], { hour12: false })}]</span>
-                                <span className="whitespace-pre-wrap">{log}</span>
+                                <span className="whitespace-pre-wrap">{log.message}</span>
                             </div>
                         ))
                     )}
