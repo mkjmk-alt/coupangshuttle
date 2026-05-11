@@ -372,15 +372,6 @@ function EditorContent() {
         </div>
       </header>
 
-      {!isLocal && (
-          <div className="bg-amber-50 border border-amber-100 p-4 rounded-2xl flex items-center gap-3">
-              <span className="text-xl">⚠️</span>
-              <p className="text-amber-800 text-xs font-bold leading-relaxed">
-                  현재 <strong>웹 미리보기 환경</strong>입니다. 데이터 추출 및 직접 저장은 사용자님의 PC(Local) 환경에서만 가능합니다.<br/>
-                  수정 작업을 하시려면 내 컴퓨터에서 <code className="bg-amber-200 px-1 rounded">npm run dev</code>를 실행한 후 접속해주세요.
-              </p>
-          </div>
-      )}
 
       {message && (
           <div className={`p-4 rounded-2xl border ${message.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-red-50 border-red-100 text-red-800'} animate-in fade-in slide-in-from-top duration-500`}>
