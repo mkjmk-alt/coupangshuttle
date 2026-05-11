@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
 
-// Edge Runtime is required for Cloudflare Pages with API
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
-// GitHub Settings
 const OWNER = 'mkjmk-alt';
 const REPO = 'coupangshuttle';
 const DATA_PATH = 'public/data/shuttle_data.json';
@@ -13,11 +11,29 @@ const UPDATE_FILE = 'public/data/shuttle_update.json';
 const MANUAL_PATH = 'public/data/shuttle_manual.json';
 const BRANCH = 'main';
 
+// Edge-safe base64 encode (UTF-8)
+function toBase64(str: string): string {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary);
+}
+
+// Edge-safe base64 decode
+function fromBase64(b64: string): string {
+  try {
+    const clean = b64.replace(/[\n\r]/g, '');
+    const binary = atob(clean);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  } catch {
+    return '';
+  }
+}
+
 export async function GET() {
-  return NextResponse.json({ 
-    status: 'Sync Logic Active', 
-    engine: 'Python-Parity Merger v1.0'
-  });
+  return NextResponse.json({ status: 'ok', engine: 'v2.0' });
 }
 
 export async function POST(request: Request) {
@@ -27,134 +43,133 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data, type } = await request.json(); // type: 'manual' | 'extracted' | 'merge'
+    const { data, type } = await request.json();
     const token = process.env.GITHUB_TOKEN;
+    if (!token) return NextResponse.json({ success: false, message: 'GITHUB_TOKEN 미설정' }, { status: 501 });
 
-    if (!token) return NextResponse.json({ success: false, message: 'No GitHub Token' }, { status: 501 });
-
-    const fetchFile = async (path: string) => {
-        try {
-            const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`, {
-                headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' }
-            });
-            if (!res.ok) return {};
-            const json = await res.json();
-            if (!json.content) return {};
-            const decoded = atob(json.content.replace(/\n/g, ''));
-            if (!decoded || decoded.trim().length === 0) return {};
-            return JSON.parse(decoded);
-        } catch {
-            return {};
-        }
+    // --- Helper: GitHub에서 파일 읽기 ---
+    const fetchFile = async (path: string): Promise<any> => {
+      try {
+        const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`, {
+          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (!res.ok) return {};
+        const json = await res.json();
+        if (!json.content) return {};
+        const text = fromBase64(json.content);
+        if (!text.trim()) return {};
+        return JSON.parse(text);
+      } catch { return {}; }
     };
 
+    // --- Helper: GitHub에 파일 쓰기 ---
     const pushFile = async (path: string, content: string, message: string) => {
-        const getRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`, {
-            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' }
-        });
-        let sha = '';
-        if (getRes.ok) sha = (await getRes.json()).sha;
+      const getRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      let sha = '';
+      if (getRes.ok) sha = (await getRes.json()).sha;
 
-        // Edge-safe base64 encoding (handles UTF-8)
-        const bytes = new TextEncoder().encode(content);
-        let binary = '';
-        for (const b of bytes) binary += String.fromCharCode(b);
-        const base64Content = btoa(binary);
-
-        await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                message,
-                content: base64Content,
-                sha,
-                branch: BRANCH
-            })
-        });
+      const putRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, content: toBase64(content), sha, branch: BRANCH })
+      });
+      if (!putRes.ok) {
+        const err = await putRes.text();
+        throw new Error(`GitHub push failed for ${path}: ${putRes.status} ${err.substring(0, 200)}`);
+      }
     };
 
-    // 1. 저장 요청 처리 (type이 'merge'가 아닐 때만 실행)
-    if (type !== 'merge' && data) {
-        const targetPath = type === 'extracted' ? UPDATE_FILE : MANUAL_PATH;
-        await pushFile(targetPath, JSON.stringify(data, null, 2), `Update ${type} data via API`);
+    // ============================================
+    // TYPE: manual — 웹 에디터에서 수정 후 저장
+    // 빠르게 shuttle_data.json에 직접 저장 + manual 백업
+    // ============================================
+    if (type === 'manual') {
+      if (!data) return NextResponse.json({ success: false, message: '데이터가 없습니다' }, { status: 400 });
+      const jsonStr = JSON.stringify(data, null, 2);
+      // shuttle_data.json에 직접 저장 (지도에 바로 반영)
+      await pushFile(DATA_PATH, jsonStr, '📝 Manual edit via Admin Editor');
+      // manual 백업도 저장 (나중에 머지할 때 참조용)
+      await pushFile(MANUAL_PATH, jsonStr, '💾 Backup manual edit');
+      return NextResponse.json({ success: true, message: '저장 완료! 지도에 곧 반영됩니다.' });
     }
 
-    // 2. 모든 데이터 로드 (Parity with Python script)
+    // ============================================
+    // TYPE: extracted — 파이썬 추출 도구에서 새 데이터 전송
+    // update 파일 저장 후 머지 실행
+    // ============================================
+    if (type === 'extracted') {
+      if (!data) return NextResponse.json({ success: false, message: '추출 데이터가 없습니다' }, { status: 400 });
+      await pushFile(UPDATE_FILE, JSON.stringify(data, null, 2), '🔄 New extraction data');
+    }
+
+    // ============================================
+    // TYPE: merge 또는 extracted 이후 — 머지 엔진 실행
+    // ============================================
     const [base, update, manual] = await Promise.all([
-        fetchFile(BASE_PATH),
-        fetchFile(UPDATE_FILE),
-        fetchFile(MANUAL_PATH)
+      fetchFile(BASE_PATH),
+      fetchFile(UPDATE_FILE),
+      fetchFile(MANUAL_PATH)
     ]);
 
-    // 3. 머지 엔진 (shuttle_merger.py 논리 복제)
+    // 머지할 데이터가 없으면 스킵
+    if (Object.keys(update).length === 0 && Object.keys(base).length === 0) {
+      return NextResponse.json({ success: true, message: '머지할 데이터가 없습니다. 먼저 데이터를 추출해주세요.' });
+    }
+
+    // 3-layer 머지 엔진
     const getStopKey = (s: any) => `${s.Order}_${s.Name}`;
     const mergedData: any = {};
     const allFCs = new Set([...Object.keys(base), ...Object.keys(update)]);
 
     for (const fc of allFCs) {
-        const uFC = update[fc] || {};
-        const bFC = base[fc] || {};
-        const mFC = manual[fc] || {};
+      const uFC = update[fc] || {};
+      const bFC = base[fc] || {};
+      const mFC = manual[fc] || {};
+      if (!uFC.shifts && !bFC.shifts) continue;
 
-        if (!uFC.shifts && !bFC.shifts) continue;
+      const finalCenter = JSON.stringify(uFC.center) !== JSON.stringify(bFC.center)
+        ? uFC.center : (mFC.center || uFC.center);
 
-        // Center info merge
-        const finalCenter = JSON.stringify(uFC.center) !== JSON.stringify(bFC.center) ? uFC.center : (mFC.center || uFC.center);
+      const finalShifts: any = {};
+      const uShifts = uFC.shifts || {};
+      const bShifts = bFC.shifts || {};
+      const mShifts = mFC.shifts || {};
 
-        const finalShifts: any = {};
-        const uShifts = uFC.shifts || {};
-        const bShifts = bFC.shifts || {};
-        const mShifts = mFC.shifts || {};
+      for (const shift of Object.keys(uShifts)) {
+        const finalRoutes: any = {};
+        for (const route of Object.keys(uShifts[shift] || {})) {
+          const uStops = uShifts[shift][route] || [];
+          const bStops = (bShifts[shift] || {})[route] || [];
+          const mStops = (mShifts[shift] || {})[route] || [];
 
-        for (const shift of Object.keys(uShifts)) {
-            const finalRoutes: any = {};
-            const uRoutes = uShifts[shift] || {};
-            const bRoutes = bShifts[shift] || {};
-            const mRoutes = mShifts[shift] || {};
+          const bDict = Object.fromEntries(bStops.map((s: any) => [getStopKey(s), s]));
+          const mDict = Object.fromEntries(mStops.map((s: any) => [getStopKey(s), s]));
 
-            for (const route of Object.keys(uRoutes)) {
-                const uStops = uRoutes[route] || [];
-                const bStops = bRoutes[route] || [];
-                const mStops = mRoutes[route] || [];
-
-                // Stop level merge logic
-                const bDict = Object.fromEntries(bStops.map((s: any) => [getStopKey(s), s]));
-                const mDict = Object.fromEntries(mStops.map((s: any) => [getStopKey(s), s]));
-
-                finalRoutes[route] = uStops.map((s: any) => {
-                    const key = getStopKey(s);
-                    const bMatch = bDict[key];
-                    const mMatch = mDict[key];
-
-                    if (JSON.stringify(bMatch) !== JSON.stringify(s)) return s; // [1순위] 공식 업데이트
-                    if (mMatch) return mMatch; // [2순위] 수동 수정
-                    return s; // [3순위] 유지
-                });
-            }
-            finalShifts[shift] = finalRoutes;
+          finalRoutes[route] = uStops.map((s: any) => {
+            const key = getStopKey(s);
+            if (JSON.stringify(bDict[key]) !== JSON.stringify(s)) return s;
+            if (mDict[key]) return mDict[key];
+            return s;
+          });
         }
+        finalShifts[shift] = finalRoutes;
+      }
 
-        mergedData[fc] = {
-            code: fc,
-            center: finalCenter,
-            shifts: finalShifts
-        };
+      mergedData[fc] = { code: fc, center: finalCenter, shifts: finalShifts };
     }
 
-    // 4. 최종 파일 업데이트
-    await pushFile(DATA_PATH, JSON.stringify(mergedData, null, 2), "🚀 Auto-merged final data (Python-parity)");
-    
+    await pushFile(DATA_PATH, JSON.stringify(mergedData, null, 2), '🚀 Auto-merged data');
+
     if (type === 'extracted') {
-        await pushFile(BASE_PATH, JSON.stringify(update, null, 2), "🔄 Updated backup base");
+      await pushFile(BASE_PATH, JSON.stringify(update, null, 2), '🔄 Updated base backup');
     }
 
-    return NextResponse.json({ success: true, message: 'Merge complete!' });
+    return NextResponse.json({ success: true, message: '머지 완료!' });
 
   } catch (error: any) {
-    console.error('[SaveAPI] Fatal Error:', error);
-    return NextResponse.json(
-      { success: false, message: `서버 오류: ${error.message}` },
-      { status: 500 }
-    );
+    console.error('[SaveAPI] Error:', error);
+    return NextResponse.json({ success: false, message: `오류: ${error.message}` }, { status: 500 });
   }
 }
