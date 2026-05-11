@@ -33,12 +33,19 @@ export async function POST(request: Request) {
     if (!token) return NextResponse.json({ success: false, message: 'No GitHub Token' }, { status: 501 });
 
     const fetchFile = async (path: string) => {
-        const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`, {
-            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' }
-        });
-        if (!res.ok) return {};
-        const json = await res.json();
-        return JSON.parse(Buffer.from(json.content, 'base64').toString('utf8'));
+        try {
+            const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`, {
+                headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+            });
+            if (!res.ok) return {};
+            const json = await res.json();
+            if (!json.content) return {};
+            const decoded = atob(json.content.replace(/\n/g, ''));
+            if (!decoded || decoded.trim().length === 0) return {};
+            return JSON.parse(decoded);
+        } catch {
+            return {};
+        }
     };
 
     const pushFile = async (path: string, content: string, message: string) => {
@@ -48,12 +55,18 @@ export async function POST(request: Request) {
         let sha = '';
         if (getRes.ok) sha = (await getRes.json()).sha;
 
+        // Edge-safe base64 encoding (handles UTF-8)
+        const bytes = new TextEncoder().encode(content);
+        let binary = '';
+        for (const b of bytes) binary += String.fromCharCode(b);
+        const base64Content = btoa(binary);
+
         await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`, {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 message,
-                content: Buffer.from(content).toString('base64'),
+                content: base64Content,
                 sha,
                 branch: BRANCH
             })
