@@ -72,12 +72,6 @@ function EditorContent() {
   const [selectedRoute, setSelectedRoute] = useState<string>('');
   const [highlightedStopIndex, setHighlightedStopIndex] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
-  const [isLocal, setIsLocal] = useState(false);
-
-  useEffect(() => {
-    // Check if we are running on localhost
-    setIsLocal(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-  }, []);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const router = useRouter();
 
@@ -348,11 +342,7 @@ function EditorContent() {
             <h1 className="text-xl font-black text-slate-900 tracking-tight">Shuttle Data Master</h1>
             <div className="flex items-center gap-2 mt-0.5">
                 <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Route Integrity & Optimization</p>
-                {isLocal ? (
-                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-600 text-[9px] font-black rounded-full uppercase tracking-tighter">Local Admin Mode</span>
-                ) : (
-                    <span className="px-2 py-0.5 bg-slate-100 text-slate-400 text-[9px] font-black rounded-full uppercase tracking-tighter">Read-Only Preview</span>
-                )}
+                <span className="px-2 py-0.5 bg-indigo-50 text-indigo-500 text-[9px] font-black rounded-full uppercase tracking-tighter">Editor Active</span>
             </div>
           </div>
         </div>
