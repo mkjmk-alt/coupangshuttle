@@ -364,8 +364,8 @@ function EditorContent() {
             </button>
             <button 
                 onClick={handleSave}
-                disabled={saving || !isLocal}
-                className={`flex items-center gap-2 px-6 py-2.5 text-white rounded-xl text-[11px] font-black transition-all shadow-lg uppercase tracking-widest ${(!isLocal || saving) ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-slate-900 shadow-indigo-100'}`}
+                disabled={saving}
+                className={`flex items-center gap-2 px-6 py-2.5 text-white rounded-xl text-[11px] font-black transition-all shadow-lg uppercase tracking-widest ${saving ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-slate-900 shadow-indigo-100'}`}
             >
                 {saving ? 'Syncing...' : 'Deploy Changes'}
             </button>
