@@ -72,7 +72,6 @@ function EditorContent() {
   const [selectedRoute, setSelectedRoute] = useState<string>('');
   const [highlightedStopIndex, setHighlightedStopIndex] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [isLocal, setIsLocal] = useState(false);
 
   useEffect(() => {
