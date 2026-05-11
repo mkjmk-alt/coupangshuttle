@@ -72,6 +72,9 @@ function EditorContent() {
   const [selectedRoute, setSelectedRoute] = useState<string>('');
   const [highlightedStopIndex, setHighlightedStopIndex] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [logs, setLogs] = useState<string[]>([]);
+  const [showTerminal, setShowTerminal] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const router = useRouter();
 
@@ -97,6 +100,13 @@ function EditorContent() {
 
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (showTerminal) {
+      const el = document.getElementById('terminal-end');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [logs, showTerminal]);
 
   const fcList = useMemo(() => {
     if (!data) return [];
@@ -235,6 +245,40 @@ function EditorContent() {
     }
   };
 
+  const handleStartExtraction = () => {
+    if (extracting) return;
+    
+    if (!confirm('전체 셔틀 데이터를 새로 추출하고 깃허브에 배포하시겠습니까?\n이 작업은 약 2~5분 정도 소요됩니다.')) return;
+
+    setExtracting(true);
+    setLogs([]);
+    setShowTerminal(true);
+
+    const eventSource = new EventSource('/api/extract');
+
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.log) {
+        setLogs((prev) => [...prev, data.log]);
+      }
+      if (data.done) {
+        setExtracting(false);
+        eventSource.close();
+        // Reload page or data after extraction
+        setTimeout(() => {
+            window.location.reload();
+        }, 3000);
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      console.error('SSE Error:', err);
+      setLogs((prev) => [...prev, '❌ 서버 연결 오류가 발생했습니다.']);
+      setExtracting(false);
+      eventSource.close();
+    };
+  };
+
   // Helper: Calculate distance between two coordinates (km)
   const calculateDistance = (lat1: string, lon1: string, lat2: string, lon2: string) => {
     const R = 6371; // Earth's radius in km
@@ -342,6 +386,14 @@ function EditorContent() {
           </div>
         </div>
         <div className="flex gap-3">
+            <button 
+                onClick={handleStartExtraction}
+                disabled={extracting}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-[11px] transition-all uppercase tracking-wider shadow-lg ${extracting ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-rose-500 text-white hover:bg-rose-600 shadow-rose-100'}`}
+            >
+                <span className={extracting ? 'animate-spin' : ''}>⚙️</span>
+                {extracting ? 'Extracting...' : 'Full Update & Deploy'}
+            </button>
             <button 
                 onClick={handleExportExcel}
                 disabled={!selectedRoute}
@@ -788,6 +840,61 @@ function EditorContent() {
             />
         </div>
       </div>
+      
+      {/* Extraction Terminal UI */}
+      {showTerminal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-20">
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => !extracting && setShowTerminal(false)}></div>
+            <div className="bg-slate-900 w-full max-w-4xl h-[600px] rounded-[2rem] border border-white/10 shadow-2xl flex flex-col overflow-hidden relative animate-in zoom-in duration-300">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/5">
+                    <div className="flex items-center gap-3">
+                        <div className="flex gap-1.5">
+                            <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                            <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                        </div>
+                        <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-2">System Deployment Console</h3>
+                    </div>
+                    {!extracting && (
+                        <button 
+                            onClick={() => setShowTerminal(false)}
+                            className="text-slate-500 hover:text-white transition-colors"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    )}
+                </div>
+                
+                <div className="flex-1 overflow-y-auto p-6 font-mono text-[11px] space-y-1 custom-scrollbar scroll-smooth">
+                    {logs.length === 0 ? (
+                        <div className="h-full flex items-center justify-center">
+                            <p className="text-slate-600 animate-pulse">Initializing secure connection to extraction server...</p>
+                        </div>
+                    ) : (
+                        logs.map((log, i) => (
+                            <div key={i} className={`flex gap-3 ${log.startsWith('❌') ? 'text-rose-400' : log.startsWith('✅') ? 'text-emerald-400' : 'text-slate-300'}`}>
+                                <span className="text-slate-600 shrink-0">[{new Date().toLocaleTimeString([], { hour12: false })}]</span>
+                                <span className="whitespace-pre-wrap">{log}</span>
+                            </div>
+                        ))
+                    )}
+                    <div id="terminal-end"></div>
+                </div>
+
+                {extracting && (
+                    <div className="p-6 bg-white/5 border-t border-white/5 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pipeline executing... Please do not close this window.</p>
+                        </div>
+                        <div className="text-indigo-400 font-mono text-[10px] animate-pulse">
+                            STATUS: ACTIVE_FLOW
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+      )}
       
       {/* Image Modal UI */}
       {selectedImage && (
