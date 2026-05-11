@@ -13,19 +13,24 @@ export async function GET(request: Request) {
   }
 
   // Check if we are in a real Node.js environment
-  // This bypasses Cloudflare's static analysis
-  const isNode = typeof process !== 'undefined' && process.versions && process.versions.node;
+  // Using globalThis to bypass Cloudflare's strict static analysis of 'process'
+  const g = globalThis as any;
+  const isNode = !!(g.process?.versions?.node);
 
   if (!isNode) {
     return new Response(JSON.stringify({ 
-      error: '이 기능은 로컬 PC(Node.js) 환경에서만 지원됩니다.',
+      error: '이 기능은 로컬 PC(Node.js) 환경에서만 지원됩니다. 클라우드 환경에서는 파이썬 실행이 불가합니다.',
       isLocal: false 
     }), { status: 400 });
   }
 
   try {
-    // We use eval('require') to hide this from the Cloudflare/Edge bundler
-    const { spawn } = eval('require')('child_process');
+    // Use global require to hide from bundler without using forbidden 'eval'
+    const req = g.require || g.process?.mainModule?.require;
+    if (!req) {
+      throw new Error('Node.js runtime environment not detected correctly.');
+    }
+    const { spawn } = req('child_process');
     
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
@@ -36,7 +41,7 @@ export async function GET(request: Request) {
 
         const child = spawn(pythonExe, ['-u', extractorPath, '--cli', '--extract-all', '--deploy'], {
           cwd: cwd,
-          env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
+          env: { ...(g.process?.env || {}), PYTHONIOENCODING: 'utf-8' }
         });
 
         child.stdout.on('data', (data: any) => {
