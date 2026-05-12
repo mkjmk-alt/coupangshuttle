@@ -74,6 +74,8 @@ function EditorContent() {
   const [highlightedStopIndex, setHighlightedStopIndex] = useState<number | null>(null);
   const [routeSearch, setRouteSearch] = useState('');
   const [saving, setSaving] = useState(false);
+  const [speedThreshold, setSpeedThreshold] = useState(100);
+  const [distThreshold, setDistThreshold] = useState(500);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const router = useRouter();
 
@@ -471,9 +473,9 @@ function EditorContent() {
                                       stops.forEach((stop, i) => {
                                           if (i === 0) return;
                                           const info = getSpeedInfo(stops[i-1], stop);
-                                          const isSpeed = info.speed > 100 && info.speed <= 900;
+                                          const isSpeed = info.speed > speedThreshold && info.speed <= 900;
                                           const isTime = info.speed > 900;
-                                          const isShortDist = info.dist > 0 && info.dist <= 0.5;
+                                          const isShortDist = info.dist > 0 && info.dist <= (distThreshold / 1000);
                                           if (isSpeed || isTime || isShortDist) {
                                               const errType = isTime ? 'TIME' : isShortDist ? 'DISTANCE' : 'SPEED';
                                               allErrors.push({ fc: fcCode, fcName: fcCard.center?.name, shift: shiftName, route: routeName, idx: i, type: errType, ...info });
@@ -508,6 +510,18 @@ function EditorContent() {
                                           className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${errorFilter === 'DISTANCE' ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
                                       >DIST ({allErrors.filter(e => e.type === 'DISTANCE').length})</button>
                                   </div>
+                                  <div className="flex items-center gap-3">
+                                      <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
+                                          <span className="text-[9px] font-black text-red-400 uppercase">⚡</span>
+                                          <input type="number" value={speedThreshold} onChange={(e) => setSpeedThreshold(Number(e.target.value))} className="w-14 bg-transparent text-white text-[11px] font-black text-center border-none focus:ring-0 focus:outline-none" />
+                                          <span className="text-[9px] text-slate-500 font-bold">km/h</span>
+                                      </div>
+                                      <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
+                                          <span className="text-[9px] font-black text-purple-400 uppercase">📏</span>
+                                          <input type="number" value={distThreshold} onChange={(e) => setDistThreshold(Number(e.target.value))} className="w-14 bg-transparent text-white text-[11px] font-black text-center border-none focus:ring-0 focus:outline-none" />
+                                          <span className="text-[9px] text-slate-500 font-bold">m</span>
+                                      </div>
+                                  </div>
                                   <div className={`px-5 py-2 rounded-2xl border flex items-center gap-3 ${filtered.length > 0 ? 'bg-red-500/10 border-red-500/30' : 'bg-emerald-500/10 border-emerald-500/20'}`}>
                                       <span className="text-lg">{filtered.length > 0 ? '🚨' : '✨'}</span>
                                       <span className={`text-xs font-black uppercase tracking-widest ${filtered.length > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
@@ -529,9 +543,9 @@ function EditorContent() {
                                       stops.forEach((stop, i) => {
                                           if (i === 0) return;
                                           const info = getSpeedInfo(stops[i-1], stop);
-                                          const isSpeed = info.speed > 100 && info.speed <= 900;
+                                          const isSpeed = info.speed > speedThreshold && info.speed <= 900;
                                           const isTime = info.speed > 900;
-                                          const isShortDist = info.dist > 0 && info.dist <= 0.5;
+                                          const isShortDist = info.dist > 0 && info.dist <= (distThreshold / 1000);
                                           if (isSpeed || isTime || isShortDist) {
                                               const errType = isTime ? 'TIME' : isShortDist ? 'DISTANCE' : 'SPEED';
                                               allErrors.push({ fc: fcCode, fcName: fcCard.center?.name || fcCode, shift: shiftName, route: routeName, idx: i, stopName: stop.Name, type: errType, ...info });
@@ -763,16 +777,16 @@ function EditorContent() {
                                 {speedStatus && (
                                     <div className="flex items-center justify-center gap-6 py-2 px-10">
                                         <div className="flex-1 h-px bg-slate-100"></div>
-                                        <div className={`flex items-center gap-4 text-[10px] font-black uppercase tracking-widest ${speedStatus.speed > 100 ? 'text-red-500 animate-pulse' : speedStatus.dist > 0 && speedStatus.dist <= 0.5 ? 'text-purple-500' : 'text-slate-300'}`}>
-                                            <div className={`flex items-center gap-1.5 ${speedStatus.dist > 0 && speedStatus.dist <= 0.5 ? 'px-2 py-0.5 bg-purple-50 border border-purple-200 rounded-full' : ''}`}>
+                                        <div className={`flex items-center gap-4 text-[10px] font-black uppercase tracking-widest ${speedStatus.speed > speedThreshold ? 'text-red-500 animate-pulse' : speedStatus.dist > 0 && speedStatus.dist <= (distThreshold / 1000) ? 'text-purple-500' : 'text-slate-300'}`}>
+                                            <div className={`flex items-center gap-1.5 ${speedStatus.dist > 0 && speedStatus.dist <= (distThreshold / 1000) ? 'px-2 py-0.5 bg-purple-50 border border-purple-200 rounded-full' : ''}`}>
                                                 <span>📏</span>
-                                                <span>{(speedStatus.dist * 1000).toFixed(0)}m{speedStatus.dist > 0 && speedStatus.dist <= 0.5 ? ' ⚠️ 근접' : ` (${speedStatus.dist.toFixed(2)}km)`}</span>
+                                                <span>{(speedStatus.dist * 1000).toFixed(0)}m{speedStatus.dist > 0 && speedStatus.dist <= (distThreshold / 1000) ? ' ⚠️ 근접' : ` (${speedStatus.dist.toFixed(2)}km)`}</span>
                                             </div>
                                             <div className="flex items-center gap-1.5">
                                                 <span>⏱️</span>
                                                 <span>{speedStatus.timeDiff} min</span>
                                             </div>
-                                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${speedStatus.speed > 100 ? 'bg-red-50 border-red-100' : 'bg-slate-50 border-slate-100'}`}>
+                                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${speedStatus.speed > speedThreshold ? 'bg-red-50 border-red-100' : 'bg-slate-50 border-slate-100'}`}>
                                                 <span>⚡</span>
                                                 <span>{speedStatus.speed > 900 ? 'TIME ERROR' : `${speedStatus.speed.toFixed(1)} km/h`}</span>
                                             </div>
