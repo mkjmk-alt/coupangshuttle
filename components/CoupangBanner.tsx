@@ -35,7 +35,7 @@ export default function CoupangBanner() {
               COMMUTER ESSENTIALS / 출근길 꿀팁
             </h4>
             <p className="text-slate-800 text-sm font-bold leading-snug break-keep">
-              출퇴근 셔틀버스와 근무지에서 먹을 <span className="bg-amber-100/80 text-amber-950 px-1.5 py-0.5 rounded font-black">맛있는 간식/음료</span>를 챙기셨나요? 지금 로켓배송으로 준비해 보세요.
+              근무지에서 먹을 <span className="bg-amber-100/80 text-amber-950 px-1.5 py-0.5 rounded font-black">맛있는 간식/음료</span>를 챙기셨나요? 지금 로켓배송으로 준비해 보세요.
             </p>
             <p className="text-[10px] text-slate-400 font-bold mt-1">
               * 이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
