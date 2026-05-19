@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { ShuttleStop } from '../types/shuttle';
 import { getRouteColor } from '../utils/color';
+import CoupangBanner from './CoupangBanner';
 
 // Dynamically import the map to ensure it stays client-side
 const KakaoMapWrapper = dynamic(() => import('./KakaoMapWrapper'), {
@@ -310,6 +311,9 @@ export default function ShuttleExplorer() {
             )}
           </div>
       </section>
+
+      {/* Premium Coupang Partners Banner (Directly below the map) */}
+      <CoupangBanner />
 
       {/* Results Section */}
       <section className="premium-card overflow-hidden">

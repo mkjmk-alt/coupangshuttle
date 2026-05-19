@@ -1,5 +1,4 @@
 import ShuttleExplorer from '@/components/ShuttleExplorer';
-import CoupangBanner from '@/components/CoupangBanner';
 import fs from 'fs';
 import path from 'path';
 
@@ -65,9 +64,6 @@ export default function Home() {
 
       {/* Main Interactive System */}
       <ShuttleExplorer />
-
-      {/* Premium Coupang Partners Banner */}
-      <CoupangBanner />
 
       {/* Premium Content Sections */}
       <div className="mt-12 space-y-32">
