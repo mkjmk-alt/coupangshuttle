@@ -1,5 +1,7 @@
 import ShuttleExplorer from '@/components/ShuttleExplorer';
 import CoupangBanner from '@/components/CoupangBanner';
+import fs from 'fs';
+import path from 'path';
 
 export const metadata = {
   title: '쿠팡 셔틀버스 지도 앱 - 스마트 정류장 조회 시스템',
@@ -7,6 +9,21 @@ export const metadata = {
 }
 
 export default function Home() {
+  let lastUpdated = '2026-05-13 23:08';
+  try {
+    const metaPath = path.join(process.cwd(), 'public', 'data', 'shuttle_meta.json');
+    if (fs.existsSync(metaPath)) {
+      const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+      if (meta.lastUpdated) {
+        lastUpdated = meta.lastUpdated;
+      }
+    }
+  } catch (err) {
+    console.error('Error reading shuttle metadata:', err);
+  }
+
+  const formattedDate = lastUpdated.replace(/-/g, '.');
+
   return (
     <main className="max-w-7xl mx-auto px-4 md:px-6 lg:px-12 font-sans overflow-x-hidden">
       {/* Premium Hero Header */}
@@ -17,7 +34,7 @@ export default function Home() {
         
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-full border border-indigo-100 mb-8 animate-in slide-in-from-top duration-700">
             <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em]">Latest Update: Mar 2026</span>
+            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em]">Latest Update: {formattedDate}</span>
         </div>
         
         <h1 className="text-4xl sm:text-5xl md:text-7xl font-[900] text-slate-900 mb-8 tracking-tighter leading-[1.1] md:leading-[1.05] animate-in slide-in-from-bottom duration-700 delay-100">

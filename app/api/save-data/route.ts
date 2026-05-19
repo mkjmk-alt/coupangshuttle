@@ -74,6 +74,25 @@ export async function POST(request: Request) {
       } catch { return {}; }
     };
 
+    // --- Helper: 메타데이터 업데이트 ---
+    const pushMetadata = async () => {
+      try {
+        const dateObj = new Date();
+        const kstTime = new Date(dateObj.getTime() + (9 * 60 * 60 * 1000));
+        const kstStr = kstTime.toISOString().replace('T', ' ').substring(0, 16);
+        const metaJson = JSON.stringify({ lastUpdated: kstStr }, null, 2);
+        const metaBytes = new TextEncoder().encode(metaJson);
+        const parts: string[] = [];
+        for (let i = 0; i < metaBytes.length; i += 32768) {
+          parts.push(String.fromCharCode(...metaBytes.subarray(i, i + 32768)));
+        }
+        const metaB64 = btoa(parts.join(''));
+        await pushBase64('public/data/shuttle_meta.json', metaB64, '🚀 Update route update timestamp');
+      } catch (err) {
+        console.error('Failed to push metadata:', err);
+      }
+    };
+
     // ============================================
     // TYPE: manual — 클라이언트에서 base64 인코딩 완료된 데이터 수신
     // ============================================
@@ -81,6 +100,7 @@ export async function POST(request: Request) {
       const b64 = body.base64Content;
       if (!b64) return NextResponse.json({ success: false, message: '데이터가 없습니다' }, { status: 400 });
       await pushBase64(DATA_PATH, b64, '📝 Manual edit via Admin Editor');
+      await pushMetadata();
       return NextResponse.json({ success: true, message: '저장 완료!' });
     }
 
@@ -157,6 +177,8 @@ export async function POST(request: Request) {
         const updateB64 = body.base64Content;
         await pushBase64(BASE_PATH, updateB64, '🔄 Updated base backup');
       }
+
+      await pushMetadata();
 
       return NextResponse.json({ success: true, message: '머지 완료!' });
     }

@@ -87,6 +87,17 @@ def merge_data():
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(final_data, f, ensure_ascii=False, indent=2)
     
+    # Update shuttle_meta.json with current merge timestamp
+    import datetime
+    meta_path = 'public/data/shuttle_meta.json'
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    try:
+        with open(meta_path, 'w', encoding='utf-8') as f:
+            json.dump({"lastUpdated": timestamp}, f, ensure_ascii=False, indent=2)
+        print(f"Metadata timestamp updated to: {timestamp}")
+    except Exception as e:
+        print(f"Failed to update metadata timestamp: {e}")
+        
     print(f"Merge successful! Saved to {OUTPUT_FILE}")
 
 if __name__ == "__main__":
