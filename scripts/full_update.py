@@ -7,7 +7,7 @@ from datetime import datetime
 
 # 설정 (경로 수정)
 SOURCE_BASE_DIR = r"c:\Users\JEONG\.gemini\antigravity\scratch\CoupangShuttleTool"
-TARGET_DIR = r"c:\Users\JEONG\.gemini\antigravity\scratch\coupang-shuttle-map-migration-test"
+TARGET_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PUBLIC_DATA_DIR = os.path.join(TARGET_DIR, "public", "data")
 
 def get_latest_shuttle_json():

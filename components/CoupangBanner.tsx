@@ -4,14 +4,12 @@ import { useState, useEffect } from 'react';
 
 // 쿠팡 파트너스 링크 목록 (여기에 링크를 자유롭게 추가하시면 랜덤으로 롤링됩니다!)
 const COUPANG_LINKS = [
+  'https://link.coupang.com/a/emtytil65c', // 간식 링크
   'https://link.coupang.com/a/dSL5YVNH64',
-  // 예시: 추가로 등록하고 싶은 링크가 있다면 아래와 같이 등록하세요.
-  // 'https://link.coupang.com/a/dSL5YVNH65',
-  // 'https://link.coupang.com/a/dSL5YVNH66',
 ];
 
 export default function CoupangBanner() {
-  const [activeLink, setActiveLink] = useState('https://link.coupang.com/a/dSL5YVNH64');
+  const [activeLink, setActiveLink] = useState('https://link.coupang.com/a/emtytil65c');
 
   useEffect(() => {
     if (COUPANG_LINKS.length > 0) {
