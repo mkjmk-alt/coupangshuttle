@@ -107,7 +107,11 @@ export default function ShuttleExplorer() {
           // 남은 시간 포맷팅 (시간:분)
           const hours = Math.floor(timeDiff / (1000 * 60 * 60));
           const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-          setUnlockedTimeLeft(`${hours}시간 ${minutes}분 남음`);
+          if (hours > 0) {
+            setUnlockedTimeLeft(`${hours}시간 ${minutes}분 남음`);
+          } else {
+            setUnlockedTimeLeft(`${minutes}분 남음`);
+          }
         } else {
           setUnlocked(false);
           setCompareMode(false);
@@ -156,17 +160,17 @@ export default function ShuttleExplorer() {
     };
   }, []);
 
-  // 기능 잠금 해제 실행 (24시간 부여)
+  // 기능 잠금 해제 실행 (1시간 부여)
   const unlockFeature = () => {
-    const expireTime = Date.now() + 24 * 60 * 60 * 1000;
+    const expireTime = Date.now() + 1 * 60 * 60 * 1000;
     localStorage.setItem('compare_unlocked_until', String(expireTime));
     setUnlocked(true);
     setShowAdModal(false);
     
     // 즉시 남은 시간 업데이트
-    setUnlockedTimeLeft('24시간 남음');
+    setUnlockedTimeLeft('60분 남음');
     
-    alert('🎉 다중 노선 비교 기능이 24시간 동안 잠금 해제되었습니다!');
+    alert('🎉 다중 노선 비교 기능이 1시간 동안 잠금 해제되었습니다!');
   };
 
   // 1단계 미션: 쿠팡 간식 쇼핑 클릭 미션 완료 처리
@@ -803,7 +807,7 @@ export default function ShuttleExplorer() {
               </h3>
               
               <p className="text-slate-500 text-sm font-medium leading-relaxed break-keep mb-8">
-                동시에 여러 노선을 지도에서 비교하는 기능은 <strong>프리미엄 혜택</strong>입니다. 광고를 시청하거나 미션을 완료하시면 <strong>24시간 동안 무제한</strong>으로 활성화됩니다!
+                동시에 여러 노선을 지도에서 비교하는 기능은 <strong>프리미엄 혜택</strong>입니다. 광고를 시청하거나 미션을 완료하시면 <strong>1시간 동안 무제한</strong>으로 활성화됩니다!
               </p>
 
               <div className="space-y-3">
@@ -813,7 +817,7 @@ export default function ShuttleExplorer() {
                     onClick={handleAppAdRequest}
                     className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-95 text-white text-sm font-black rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    📺 동영상 광고 보고 24시간 활성화
+                    📺 동영상 광고 보고 1시간 활성화
                   </button>
                 ) : (
                   /* 2. 일반 웹 브라우저 접속 시 쿠팡 미션 버튼 */
@@ -821,7 +825,7 @@ export default function ShuttleExplorer() {
                     onClick={handleCoupangMissionClick}
                     className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-black rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    🍿 쿠팡에서 간식 구경하고 24시간 활성화
+                    🍿 쿠팡에서 간식 구경하고 1시간 활성화
                   </button>
                 )}
 
