@@ -1,135 +1,222 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: '서비스 이용약관 | Coupang Shuttle Map',
-  description: 'Coupang Shuttle Map 서비스의 법적 고지 및 이용 규정입니다.',
+  description: 'Coupang Shuttle Map의 이용 조건, 비공식성 고지 및 책임 범위를 안내합니다.',
 };
 
 export default function TermsOfService() {
   return (
-    <main className="max-w-4xl mx-auto px-6 py-12 md:py-20 text-slate-800 bg-white">
-      {/* Formal Header */}
-      <div className="border-b-2 border-slate-900 pb-8 mb-12">
-        <h1 className="text-3xl font-bold mb-4">서비스 이용약관</h1>
-        <p className="text-sm text-slate-600">Coupang Shuttle Map (이하 '서비스')</p>
+    <main className="mx-auto max-w-4xl bg-white px-6 py-12 text-slate-800 md:py-20">
+      <div className="mb-12 border-b-2 border-slate-900 pb-8">
+        <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-indigo-600">
+          Terms of Service
+        </p>
+        <h1 className="mb-4 text-3xl font-bold">서비스 이용약관</h1>
+        <p className="text-sm text-slate-600">Coupang Shuttle Map · 시행일 2026년 7월 19일</p>
       </div>
 
-      <div className="space-y-10 text-sm md:text-base leading-relaxed break-keep">
-        <p>
-          Coupang Shuttle Map(이하 '서비스')에 오신 것을 환영합니다.
-          본 약관은 제공자와 이용자 간의 서비스 이용에 관한 권리, 의무, 책임 및 기타 필요한 사항을 규정하며, 서비스에 접속하여 이용하는 것은 본 약관의 모든 내용에 동의함을 의미합니다.
-        </p>
-
-        {/* 제1조 */}
-        <section>
-          <h2 className="text-xl font-bold mb-4 pb-1 border-b border-slate-200">제 1 조 (목적)</h2>
-          <p>본 약관은 서비스 제공자가 운영하는 셔틀버스 지도 정보 안내 서비스의 원활한 이용 환경을 조성하고, 제공자와 이용자 간의 권리 및 법적 책임의 한계를 명확히 하는 것을 목적으로 합니다.</p>
-        </section>
-
-        {/* 제2조 */}
-        <section>
-          <h2 className="text-xl font-bold mb-4 pb-1 border-b border-slate-200">제 2 조 (용어의 정의)</h2>
-          <ol className="list-decimal pl-5 space-y-2">
-            <li><b>이용자:</b> 본 서비스에 접속하여 정보를 열람하거나 이용하는 모든 방문객을 말합니다.</li>
-            <li><b>셔틀 정보:</b> 각 지역 센터에서 공식적 또는 비공식적으로 확인된 노선, 정류장 좌표, 운행 시간 등을 수집 및 가공한 데이터를 말합니다.</li>
-            <li><b>제공자:</b> 본 서비스를 개발, 운영, 관리하는 주체를 말합니다.</li>
-          </ol>
-        </section>
-
-        {/* 제3조 */}
-        <section>
-          <h2 className="text-xl font-bold mb-4 pb-1 border-b border-slate-200">제 3 조 (비공식성 고지)</h2>
-          <ol className="list-decimal pl-5 space-y-2">
-            <li>본 서비스는 개인 개발자가 운영하는 비공식 프로젝트입니다.</li>
-            <li>본 서비스는 '쿠팡(Coupang)' 본사 또는 그 계열사와 어떠한 공식적인 파트너십, 제휴, 위탁 운영 관계도 맺고 있지 않으며, 해당 기업이 승인하거나 보증하는 공식 서비스가 아닙니다.</li>
-          </ol>
-        </section>
-
-        {/* 제4조 */}
-        <section>
-          <h2 className="text-xl font-bold mb-4 pb-1 border-b border-slate-200">제 4 조 (정보 제공의 한계 및 책임의 면제)</h2>
-          <ol className="list-decimal pl-5 space-y-4">
-            <li>
-                <b>정확성 결여:</b> 서비스에서 제공되는 노선, 정류장, 시간표 등의 정보는 데이터 입력 시점의 자료를 바탕으로 작성되어 실제 운행 상황과 다를 수 있습니다. 돌발적인 노선 폐지, 배차 조절, 기상 악화로 인한 지연 등에 대하여, 제공자의 고의 또는 중대한 과실이 없는 한 제공자는 책임을 지지 않습니다.
-            </li>
-            <li>
-                <b>탑승 실패 및 파생적 손해:</b> 이용자가 본 서비스의 정보를 참고하여 대기하였으나 버스가 오지 않거나 만차로 인해 탑승하지 못한 경우 등, 이로 인해 발생하는 신체적·경제적 손해(지각, 결근, 패널티 등)에 대하여 제공자의 고의 또는 중대한 과실이 없는 한 제공자는 책임을 지지 않습니다.
-            </li>
-            <li>
-                <b>제3자 서비스 연동 오류:</b> 카카오맵 등 제3자 Open API 연동 과정에서 발생하는 위치 오류, 네트워크 통신 장애, 정류장 핀의 불일치 등 외부 제공 데이터 및 시스템의 하자에 대해서는 제공자의 고의 또는 중대한 과실이 없는 한 제공자는 책임을 지지 않습니다.
-            </li>
-          </ol>
-        </section>
-
-        {/* 제5조 */}
-        <section>
-          <h2 className="text-xl font-bold mb-4 pb-1 border-b border-slate-200">제 5 조 (서비스의 변경 및 중단)</h2>
-          <ol className="list-decimal pl-5 space-y-2">
-            <li>제공자는 시스템 유지보수, 서버 증설 및 교체, 외부 API 제공 업체의 정책 변경, 기타 운영상·기술상의 상당한 이유가 있는 경우 서비스의 전부 또는 일부를 변경하거나 일시적으로 중단할 수 있습니다.</li>
-            <li>무료로 제공되는 본 서비스의 특성상, 제공자는 사전 공지 후 서비스 운영을 영구적으로 종료할 수 있으며, 이로 인해 발생하는 문제에 대해 제공자의 고의 또는 중대한 과실이 없는 한 별도의 보상을 제공하지 않습니다.</li>
-          </ol>
-        </section>
-
-        {/* 제6조 */}
-        <section>
-          <h2 className="text-xl font-bold mb-4 pb-1 border-b border-slate-200">제 6 조 (이용자의 의무 및 이용 제한)</h2>
-          <ol className="list-decimal pl-5 space-y-4">
-            <li>
-                이용자는 서비스를 이용함에 있어 다음의 행위를하여서는 안 됩니다.
-                <ul className="list-disc pl-5 mt-2 space-y-1 text-slate-600">
-                    <li>자동화 스크립트(Bot, Crawler 등)를 이용한 데이터 무단 대량 수집 및 복제</li>
-                    <li>서비스의 보안을 우회하거나 시스템의 코드, 데이터베이스를 역설계(Reverse Engineering)하는 행위</li>
-                    <li>제공된 정보를 가공하여 상업적인 목적으로 재판매하거나 타 플랫폼에 무단 게시하는 행위</li>
-                    <li>기타 서비스의 정상적인 운영을 고의로 방해하는 행위</li>
-                </ul>
-            </li>
-            <li>제공자는 이용자가 본 조항을 위반한 경우, 사전 통보 없이 해당 이용자의 서비스 접근을 차단하거나 IP 접속을 제한할 수 있습니다.</li>
-          </ol>
-        </section>
-
-        {/* 제7조 */}
-        <section>
-          <h2 className="text-xl font-bold mb-4 pb-1 border-b border-slate-200">제 7 조 (저작권 및 상표권)</h2>
-          <ol className="list-decimal pl-5 space-y-2">
-            <li>본 서비스 내에 포함된 디자인 테마, UI/UX 요소, 소스코드 및 편집된 데이터베이스에 대한 저작권과 지적재산권은 제공자에게 귀속됩니다.</li>
-            <li>서비스 내에서 언급되거나 사용된 브랜드 명칭, 로고 등 특정 상표에 대한 권리는 원래의 권리자(쿠팡 등)에게 귀속됩니다.</li>
-          </ol>
-        </section>
-
-        {/* 제8조 */}
-        <section>
-          <h2 className="text-xl font-bold mb-4 pb-1 border-b border-slate-200">제 8 조 (광고 및 제3자 링크)</h2>
-          <ol className="list-decimal pl-5 space-y-2">
-            <li>제공자는 서비스의 유지 및 운영을 위해 Google AdSense 등의 광고를 서비스 화면에 게재할 수 있습니다.</li>
-            <li>서비스 내에 포함된 제3자의 웹사이트 링크나 배너 광고를 통해 외부 사이트로 이동할 경우, 해당 사이트의 콘텐츠나 개인정보처리방침에 대해서는 제공자가 통제권이 없으므로 일체의 책임을 지지 않습니다.</li>
-          </ol>
-        </section>
-
-        {/* 제9조 */}
-        <section>
-          <h2 className="text-xl font-bold mb-4 pb-1 border-b border-slate-200">제 9 조 (약관의 개정)</h2>
-          <ol className="list-decimal pl-5 space-y-2">
-            <li>제공자는 관련 법령을 위배하지 않는 범위 내에서 본 약관을 개정할 수 있습니다.</li>
-            <li>약관이 개정될 경우, 제공자는 적용 일자 및 개정 사유를 명시하여 적용일 최소 7일 전부터 서비스 내 공지사항 또는 초기 화면을 통해 안내합니다.</li>
-            <li>이용자가 개정된 약관의 적용 일자 이후에도 서비스를 계속 이용하는 경우, 개정된 약관에 동의한 것으로 간주합니다.</li>
-          </ol>
-        </section>
-
-        {/* 제10조 */}
-        <section>
-          <h2 className="text-xl font-bold mb-4 pb-1 border-b border-slate-200">제 10 조 (관할 및 준거법)</h2>
-          <p>본 서비스 이용과 관련하여 발생한 분쟁에 대해서는 대한민국 법령을 준거법으로 하며, 제공자와 이용자 간의 소송이 발생할 경우 제공자의 주소지를 관할하는 법원을 전속 관할 법원으로 하여 해결합니다.</p>
-        </section>
-
-        <div className="pt-12 mt-12 border-t border-slate-200">
-            <p className="font-bold text-slate-900">부칙</p>
-            <p className="text-sm text-slate-500 mt-2">본 약관은 2026년 3월 17부터 시행됩니다.</p>
+      <div className="space-y-10 break-keep text-sm leading-relaxed md:text-base">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
+          <p className="font-bold">공식 운행 공지를 반드시 우선 확인하세요.</p>
+          <p className="mt-2">
+            본 서비스는 쿠팡 및 관계사가 운영·승인한 공식 서비스가 아닌 참고용 비공식 안내
+            서비스입니다. 노선, 탑승 장소와 시간은 소속 물류센터의 최신 공식 공지가 우선합니다.
+          </p>
         </div>
 
-        <div className="flex gap-6 pt-10 border-t border-slate-100 font-sans">
-          <Link href="/" className="text-sm font-bold text-slate-400 hover:text-slate-900 transition-colors">홈페이지 메인</Link>
-          <Link href="/privacy" className="text-sm font-bold text-slate-400 hover:text-slate-900 transition-colors">개인정보처리방침</Link>
+        <section>
+          <h2 className="mb-4 border-b border-slate-200 pb-2 text-xl font-bold">제1조 (목적)</h2>
+          <p>
+            본 약관은 운영자가 제공하는 셔틀 노선·정류장·시간 정보의 이용 조건, 운영 원칙 및
+            운영자와 이용자의 권리·책임 범위를 정하는 것을 목적으로 합니다.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-4 border-b border-slate-200 pb-2 text-xl font-bold">
+            제2조 (서비스 성격과 계정)
+          </h2>
+          <ol className="list-decimal space-y-3 pl-5">
+            <li>서비스는 누구나 열람할 수 있는 무료 공개 웹사이트입니다.</li>
+            <li>
+              일반 이용자용 회원가입, 로그인, 프로필, 비밀번호 및 유료 결제 기능을 제공하지
+              않습니다.
+            </li>
+            <li>
+              관리자용 편집 페이지와 편집 키는 운영 데이터 관리 수단이며 일반 이용자 계정이나
+              회원 서비스가 아닙니다.
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h2 className="mb-4 border-b border-slate-200 pb-2 text-xl font-bold">
+            제3조 (비공식성 및 상표 고지)
+          </h2>
+          <ol className="list-decimal space-y-3 pl-5">
+            <li>
+              서비스는 개인 운영자가 관리하는 비공식 프로젝트이며, 쿠팡(Coupang) 본사·계열사 또는
+              각 물류센터와 공식 제휴·위탁·보증 관계에 있지 않습니다.
+            </li>
+            <li>
+              회사명과 관련 표시는 정보 식별을 위한 것이며, 각 상표와 명칭의 권리는 해당 권리자에게
+              있습니다.
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h2 className="mb-4 border-b border-slate-200 pb-2 text-xl font-bold">
+            제4조 (셔틀 정보와 업데이트)
+          </h2>
+          <ol className="list-decimal space-y-3 pl-5">
+            <li>
+              셔틀 정보는 운영자가 확보한 자료와 제보를 정리한 것으로, 실제 운행 변경 시점과 사이트
+              반영 시점이 다를 수 있습니다.
+            </li>
+            <li>
+              화면의 업데이트 일시는 데이터가 사이트에 반영된 시각이며, 해당 노선의 공식 시행일이나
+              정확성을 보증하는 표시는 아닙니다.
+            </li>
+            <li>
+              전체 자동 배포는 작업 단위 요약 로그 1건을, 수동 변경은 정류장별 변경 전·후 값을
+              기록합니다. 최신 100개 작업 로그를 유지하며 한 번의 수동 저장에는 최대 500개 정류장
+              변경을 기록할 수 있습니다.
+            </li>
+            <li>
+              데이터 운영 기준과 로그 범위는{' '}
+              <Link className="font-bold text-indigo-600 underline" href="/operations">
+                운영 및 데이터 정책
+              </Link>
+              에서 확인할 수 있습니다.
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h2 className="mb-4 border-b border-slate-200 pb-2 text-xl font-bold">
+            제5조 (이용자의 확인 의무)
+          </h2>
+          <ol className="list-decimal space-y-3 pl-5">
+            <li>
+              이용자는 탑승 전에 소속 센터의 공식 공지, 현장 안내와 담당자 안내를 최종 확인해야
+              합니다.
+            </li>
+            <li>
+              주소, 정류장 명칭, 지도 핀 또는 시간이 다르면 이용을 중단하고 공식 정보로 확인한 뒤
+              운영자에게 오류를 제보할 수 있습니다.
+            </li>
+            <li>안전, 근태 또는 비용에 영향을 주는 판단을 이 서비스 정보에만 의존해서는 안 됩니다.</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2 className="mb-4 border-b border-slate-200 pb-2 text-xl font-bold">
+            제6조 (서비스 변경과 중단)
+          </h2>
+          <p>
+            시스템 유지보수, 데이터 점검, 외부 API·호스팅 정책 변경, 보안 사고 또는 기타 운영상
+            필요한 경우 서비스의 전부 또는 일부를 변경하거나 일시 중단할 수 있습니다. 예측 가능한
+            중요한 변경은 가능한 범위에서 사이트를 통해 미리 안내합니다.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-4 border-b border-slate-200 pb-2 text-xl font-bold">
+            제7조 (금지행위)
+          </h2>
+          <p className="mb-3">이용자는 다음 행위를 해서는 안 됩니다.</p>
+          <ul className="list-disc space-y-2 pl-5">
+            <li>서비스, 서버 또는 데이터 변경 API에 대한 무단 접근·침해·과부하 유발</li>
+            <li>편집 키의 탈취, 공유, 추측 시도 또는 관리자 사칭</li>
+            <li>악성코드 전송, 자동화된 대량 요청, 서비스 운영 방해</li>
+            <li>허위 제보, 타인의 개인정보·민감정보 무단 전송 또는 권리 침해</li>
+            <li>법령 또는 공공질서에 위반되는 방식의 이용</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="mb-4 border-b border-slate-200 pb-2 text-xl font-bold">
+            제8조 (광고와 외부 서비스)
+          </h2>
+          <ol className="list-decimal space-y-3 pl-5">
+            <li>
+              서비스 운영을 위해 광고 또는 제휴 링크가 표시될 수 있습니다. 광고 쿠키는 이용자가
+              동의한 뒤에만 로드됩니다.
+            </li>
+            <li>
+              카카오 지도, 카카오톡 채널, Google 광고, 외부 쇼핑 링크 등 제3자 서비스에는 각
+              제공자의 약관과 개인정보처리방침이 적용됩니다.
+            </li>
+            <li>
+              외부 사이트의 상품, 콘텐츠, 결제 또는 개인정보 처리에 대해서는 해당 제공자가
+              책임집니다.
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h2 className="mb-4 border-b border-slate-200 pb-2 text-xl font-bold">
+            제9조 (책임의 범위)
+          </h2>
+          <ol className="list-decimal space-y-3 pl-5">
+            <li>
+              운영자는 정보의 정확성과 최신성을 높이기 위해 합리적으로 노력하지만, 실시간 운행
+              변경·현장 사정·제보 오류 또는 외부 서비스 장애까지 완전하게 보증하지 않습니다.
+            </li>
+            <li>
+              관련 법령이 허용하는 범위에서, 운영자의 고의 또는 중대한 과실 없이 발생한 운행 지연,
+              탑승 실패, 근태·비용 손해 또는 외부 서비스 장애에 대해서는 책임을 부담하지 않습니다.
+            </li>
+            <li>법령상 제한하거나 배제할 수 없는 소비자 또는 이용자의 권리는 본 조보다 우선합니다.</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2 className="mb-4 border-b border-slate-200 pb-2 text-xl font-bold">
+            제10조 (개인정보)
+          </h2>
+          <p>
+            서비스 이용 과정의 정보 처리는{' '}
+            <Link className="font-bold text-indigo-600 underline" href="/privacy">
+              개인정보처리방침
+            </Link>
+            에 따릅니다. 서비스는 일반 이용자 로그인을 제공하지 않으며, 문의 시에는 답변에 필요한
+            최소한의 정보만 보내야 합니다.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-4 border-b border-slate-200 pb-2 text-xl font-bold">
+            제11조 (약관 변경과 문의)
+          </h2>
+          <p>
+            운영 내용 또는 관련 법령이 변경되면 약관을 개정할 수 있으며, 중요한 변경은 시행 전에
+            서비스 화면에서 안내합니다. 약관 또는 운영에 관한 문의는{' '}
+            <Link className="font-bold text-indigo-600 underline" href="/contact">
+              문의 및 데이터 제보 페이지
+            </Link>
+            를 이용해 주세요.
+          </p>
+        </section>
+
+        <div className="border-t border-slate-200 pt-8">
+          <p className="font-bold text-slate-900">부칙</p>
+          <p className="mt-2 text-sm text-slate-500">공고일 및 시행일: 2026년 7월 19일</p>
+        </div>
+
+        <div className="flex flex-wrap gap-6 border-t border-slate-100 pt-8">
+          <Link href="/" className="text-sm font-bold text-slate-400 hover:text-slate-900">
+            홈페이지 메인
+          </Link>
+          <Link href="/privacy" className="text-sm font-bold text-slate-400 hover:text-slate-900">
+            개인정보처리방침
+          </Link>
+          <Link href="/operations" className="text-sm font-bold text-slate-400 hover:text-slate-900">
+            운영 및 데이터 정책
+          </Link>
         </div>
       </div>
     </main>
