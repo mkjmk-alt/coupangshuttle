@@ -93,6 +93,16 @@ interface AffectedRoute {
   change: 'added' | 'removed' | 'changed';
 }
 
+interface StopChange {
+  fc: string;
+  shift: string;
+  route: string;
+  change: 'added' | 'removed' | 'changed';
+  changedFields: string[];
+  before: Stop | null;
+  after: Stop | null;
+}
+
 interface ChangeLogEntry {
   id: string;
   timestamp: string;
@@ -102,6 +112,7 @@ interface ChangeLogEntry {
   stats: ChangeStats;
   affectedCenters: string[];
   affectedRoutes: AffectedRoute[];
+  stopChanges?: StopChange[];
 }
 
 interface ApiResponse {
@@ -194,7 +205,87 @@ function UpdateStatusCards({ metadata }: { metadata: ShuttleMetadata }) {
   );
 }
 
+const STOP_FIELD_LABELS: Record<string, string> = {
+  'Center (EN)': '센터 코드',
+  Shift: '근무조',
+  'Route Name': '노선명',
+  Order: '순번',
+  Type: '구분',
+  Time: '시간',
+  Name: '정류장명',
+  Address: '주소',
+  Latitude: '위도',
+  Longitude: '경도',
+  'Image URL': '이미지 URL',
+  Remarks: '비고',
+  'Naver Map': '네이버 지도',
+  'Kakao Map': '카카오 지도',
+  'Kakao Place ID': '카카오 장소 ID',
+  'Distance (km)': '거리(km)',
+};
+
+function formatStopValue(value: unknown): string {
+  if (value === null || value === undefined || value === '') return '—';
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
+function StopSnapshot({
+  title,
+  stop,
+  changedFields,
+  tone,
+}: {
+  title: string;
+  stop: Stop | null;
+  changedFields: string[];
+  tone: 'before' | 'after';
+}) {
+  const toneClasses = tone === 'before'
+    ? 'border-rose-100 bg-rose-50/50 text-rose-700'
+    : 'border-emerald-100 bg-emerald-50/50 text-emerald-700';
+
+  return (
+    <section className={`rounded-2xl border p-3 ${toneClasses}`}>
+      <h4 className="text-xs font-black">{title}</h4>
+      {!stop ? (
+        <p className="mt-3 rounded-xl border border-dashed border-current/20 bg-white/50 px-3 py-5 text-center text-xs font-bold opacity-70">
+          데이터 없음
+        </p>
+      ) : (
+        <dl className="mt-3 space-y-1.5">
+          {Object.entries(stop).map(([field, value]) => {
+            const isChanged = changedFields.includes(field);
+            return (
+              <div
+                key={field}
+                className={`grid grid-cols-[6.5rem_minmax(0,1fr)] gap-2 rounded-lg px-2.5 py-2 text-[11px] ${
+                  isChanged ? 'bg-white shadow-sm' : 'bg-white/45'
+                }`}
+              >
+                <dt className="font-black text-slate-500">
+                  {STOP_FIELD_LABELS[field] ?? field}
+                </dt>
+                <dd className={`min-w-0 break-all font-semibold ${
+                  isChanged ? 'text-slate-900' : 'text-slate-500'
+                }`}>
+                  {formatStopValue(value)}
+                </dd>
+              </div>
+            );
+          })}
+        </dl>
+      )}
+    </section>
+  );
+}
+
 function ChangeLogPanel({ entries }: { entries: ChangeLogEntry[] }) {
+  const stopChangeLabels: Record<StopChange['change'], string> = {
+    added: '추가',
+    removed: '삭제',
+    changed: '변경',
+  };
   const actionLabels: Record<ChangeLogEntry['action'], string> = {
     auto_deploy: '자동배포',
     manual_save: '수동 저장',
@@ -233,6 +324,7 @@ function ChangeLogPanel({ entries }: { entries: ChangeLogEntry[] }) {
         <div className="mt-5 space-y-3">
           {entries.slice(0, 20).map((entry) => {
             const isAutomatic = entry.source === 'automatic';
+            const stopChanges = entry.stopChanges ?? [];
             const routeCount =
               entry.stats.routesAdded + entry.stats.routesRemoved + entry.stats.routesChanged;
             const stopCount =
@@ -274,7 +366,9 @@ function ChangeLogPanel({ entries }: { entries: ChangeLogEntry[] }) {
                   </div>
                 </div>
 
-                {(entry.affectedCenters.length > 0 || entry.affectedRoutes.length > 0) && (
+                {(entry.affectedCenters.length > 0 ||
+                  entry.affectedRoutes.length > 0 ||
+                  stopChanges.length > 0) && (
                   <details className="mt-3 group">
                     <summary className="cursor-pointer list-none text-xs font-black text-indigo-600">
                       상세 변경 보기
@@ -301,6 +395,61 @@ function ChangeLogPanel({ entries }: { entries: ChangeLogEntry[] }) {
                               </span>
                             </div>
                           ))}
+                        </div>
+                      )}
+                      {stopChanges.length > 0 && (
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-xs font-black text-slate-700">
+                              정류장별 변경 전·후 데이터
+                            </p>
+                            <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-black text-amber-700">
+                              {stopChanges.length}건
+                            </span>
+                          </div>
+                          {stopChanges.map((change, index) => {
+                            const beforeOrder = change.before?.Order;
+                            const afterOrder = change.after?.Order;
+                            const stopOrder = afterOrder ?? beforeOrder;
+                            const stopName = change.after?.Name ?? change.before?.Name ?? '이름 없음';
+
+                            return (
+                              <details
+                                key={`${entry.id}-stop-${change.fc}-${change.shift}-${change.route}-${index}`}
+                                className="rounded-xl border border-amber-100 bg-amber-50/40"
+                              >
+                                <summary className="cursor-pointer list-none px-3 py-3">
+                                  <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="min-w-0">
+                                      <p className="truncate text-[11px] font-black text-slate-700">
+                                        {change.fc} · {change.shift} · {change.route}
+                                      </p>
+                                      <p className="mt-1 truncate text-xs font-semibold text-slate-500">
+                                        {stopOrder ? `#${stopOrder} ` : ''}{stopName}
+                                      </p>
+                                    </div>
+                                    <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-amber-700 shadow-sm">
+                                      {stopChangeLabels[change.change]}
+                                    </span>
+                                  </div>
+                                </summary>
+                                <div className="grid grid-cols-1 gap-3 border-t border-amber-100 p-3 xl:grid-cols-2">
+                                  <StopSnapshot
+                                    title="변경 전"
+                                    stop={change.before}
+                                    changedFields={change.changedFields}
+                                    tone="before"
+                                  />
+                                  <StopSnapshot
+                                    title="변경 후"
+                                    stop={change.after}
+                                    changedFields={change.changedFields}
+                                    tone="after"
+                                  />
+                                </div>
+                              </details>
+                            );
+                          })}
                         </div>
                       )}
                     </div>

@@ -15,6 +15,7 @@ const BRANCH = 'main';
 const MAX_PATCHES = 100;
 const MAX_STOPS_PER_ROUTE = 1_000;
 const MAX_CHANGE_LOG_ENTRIES = 100;
+const MAX_MANUAL_STOP_CHANGES = 500;
 
 type JsonObject = Record<string, unknown>;
 type Stop = JsonObject & {
@@ -62,6 +63,16 @@ interface AffectedRoute extends JsonObject {
   change: 'added' | 'removed' | 'changed';
 }
 
+interface StopChange extends JsonObject {
+  fc: string;
+  shift: string;
+  route: string;
+  change: 'added' | 'removed' | 'changed';
+  changedFields: string[];
+  before: Stop | null;
+  after: Stop | null;
+}
+
 interface ChangeLogEntry extends JsonObject {
   id: string;
   timestamp: string;
@@ -71,6 +82,7 @@ interface ChangeLogEntry extends JsonObject {
   stats: ChangeStats;
   affectedCenters: string[];
   affectedRoutes: AffectedRoute[];
+  stopChanges?: StopChange[];
 }
 
 interface ChangeLogFile extends JsonObject {
@@ -287,6 +299,197 @@ function countStopChanges(beforeStops: Stop[], afterStops: Stop[], stats: Change
   }
 }
 
+type StopMatchKey = (stop: Stop) => string | null;
+
+function stopString(stop: Stop, field: string): string {
+  const value = stop[field];
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function stopMatchKey(...parts: string[]): string | null {
+  return parts.every(Boolean) ? parts.join('\u0000') : null;
+}
+
+function stopWithoutOrderKey(stop: Stop): string {
+  const snapshot: JsonObject = { ...stop };
+  delete snapshot.Order;
+  return JSON.stringify(snapshot);
+}
+
+function matchStopsByUniqueKey(
+  beforeStops: Stop[],
+  afterStops: Stop[],
+  unmatchedBefore: Set<number>,
+  unmatchedAfter: Set<number>,
+  pairs: Array<[number, number]>,
+  getKey: StopMatchKey,
+) {
+  const beforeByKey = new Map<string, number[]>();
+  const afterByKey = new Map<string, number[]>();
+
+  for (const index of unmatchedBefore) {
+    const key = getKey(beforeStops[index]);
+    if (!key) continue;
+    const matches = beforeByKey.get(key) ?? [];
+    matches.push(index);
+    beforeByKey.set(key, matches);
+  }
+  for (const index of unmatchedAfter) {
+    const key = getKey(afterStops[index]);
+    if (!key) continue;
+    const matches = afterByKey.get(key) ?? [];
+    matches.push(index);
+    afterByKey.set(key, matches);
+  }
+
+  for (const [key, beforeMatches] of beforeByKey) {
+    const afterMatches = afterByKey.get(key);
+    if (beforeMatches.length !== 1 || afterMatches?.length !== 1) continue;
+
+    const beforeIndex = beforeMatches[0];
+    const afterIndex = afterMatches[0];
+    unmatchedBefore.delete(beforeIndex);
+    unmatchedAfter.delete(afterIndex);
+    pairs.push([beforeIndex, afterIndex]);
+  }
+}
+
+function changedStopFields(before: Stop | null, after: Stop | null): string[] {
+  const fields = new Set([
+    ...Object.keys(before ?? {}),
+    ...Object.keys(after ?? {}),
+  ]);
+  return [...fields].filter((field) => !jsonEquals(before?.[field], after?.[field]));
+}
+
+function compareRouteStops(
+  fc: string,
+  shift: string,
+  route: string,
+  beforeStops: Stop[],
+  afterStops: Stop[],
+): StopChange[] {
+  const unmatchedBefore = new Set(beforeStops.map((_, index) => index));
+  const unmatchedAfter = new Set(afterStops.map((_, index) => index));
+  const pairs: Array<[number, number]> = [];
+  const matchers: StopMatchKey[] = [
+    (stop) => stopMatchKey(stopString(stop, 'Kakao Place ID')),
+    (stop) => stopMatchKey(stopString(stop, 'Kakao Map')),
+    (stop) => stopMatchKey(stopString(stop, 'Naver Map')),
+    (stop) => stopWithoutOrderKey(stop),
+    (stop) => stopMatchKey(
+      stopString(stop, 'Name'),
+      stopString(stop, 'Latitude'),
+      stopString(stop, 'Longitude'),
+    ),
+    (stop) => stopMatchKey(stopString(stop, 'Name'), stopString(stop, 'Address')),
+    (stop) => stopMatchKey(stopString(stop, 'Latitude'), stopString(stop, 'Longitude')),
+    (stop) => stopMatchKey(stopString(stop, 'Name')),
+    (stop) => Number.isInteger(Number(stop.Order)) ? String(stop.Order) : null,
+  ];
+
+  for (const matcher of matchers) {
+    matchStopsByUniqueKey(
+      beforeStops,
+      afterStops,
+      unmatchedBefore,
+      unmatchedAfter,
+      pairs,
+      matcher,
+    );
+  }
+
+  const changes: StopChange[] = [];
+  for (const [beforeIndex, afterIndex] of pairs) {
+    const before = beforeStops[beforeIndex];
+    const after = afterStops[afterIndex];
+    if (jsonEquals(before, after)) continue;
+    changes.push({
+      fc,
+      shift,
+      route,
+      change: 'changed',
+      changedFields: changedStopFields(before, after),
+      before: structuredClone(before),
+      after: structuredClone(after),
+    });
+  }
+
+  for (const beforeIndex of unmatchedBefore) {
+    const before = beforeStops[beforeIndex];
+    changes.push({
+      fc,
+      shift,
+      route,
+      change: 'removed',
+      changedFields: changedStopFields(before, null),
+      before: structuredClone(before),
+      after: null,
+    });
+  }
+
+  for (const afterIndex of unmatchedAfter) {
+    const after = afterStops[afterIndex];
+    changes.push({
+      fc,
+      shift,
+      route,
+      change: 'added',
+      changedFields: changedStopFields(null, after),
+      before: null,
+      after: structuredClone(after),
+    });
+  }
+
+  return changes.sort((left, right) => {
+    const leftOrder = Number(left.after?.Order ?? left.before?.Order ?? Number.MAX_SAFE_INTEGER);
+    const rightOrder = Number(right.after?.Order ?? right.before?.Order ?? Number.MAX_SAFE_INTEGER);
+    return leftOrder - rightOrder;
+  });
+}
+
+function collectManualStopChanges(
+  before: ShuttleData,
+  after: ShuttleData,
+  patches: RoutePatch[],
+): StopChange[] {
+  const seenRoutes = new Set<string>();
+  const changes: StopChange[] = [];
+
+  for (const patch of patches) {
+    const routeKey = `${patch.fc}\u0000${patch.shift}\u0000${patch.route}`;
+    if (seenRoutes.has(routeKey)) continue;
+    seenRoutes.add(routeKey);
+
+    const beforeStops = before[patch.fc]?.shifts?.[patch.shift]?.[patch.route] ?? [];
+    const afterStops = after[patch.fc]?.shifts?.[patch.shift]?.[patch.route] ?? [];
+    changes.push(
+      ...compareRouteStops(
+        patch.fc,
+        patch.shift,
+        patch.route,
+        beforeStops,
+        afterStops,
+      ),
+    );
+  }
+
+  return changes;
+}
+
+function summarizeChangeStats(stats: ChangeStats): string {
+  const centerCount = stats.centersAdded + stats.centersRemoved + stats.centersChanged;
+  const routeCount = stats.routesAdded + stats.routesRemoved + stats.routesChanged;
+  const stopCount = stats.stopsAdded + stats.stopsRemoved + stats.stopsChanged;
+  const summaryParts: string[] = [];
+  if (centerCount > 0) summaryParts.push(`센터 ${centerCount}개`);
+  if (routeCount > 0) summaryParts.push(`노선 ${routeCount}개`);
+  if (stopCount > 0) summaryParts.push(`정류장 ${stopCount}개`);
+  return summaryParts.length > 0
+    ? `${summaryParts.join(' · ')} 변경`
+    : '데이터 변경 없음';
+}
+
 function summarizeDataChanges(before: ShuttleData, after: ShuttleData) {
   const stats = emptyChangeStats();
   const affectedCenters = new Set<string>();
@@ -343,21 +546,11 @@ function summarizeDataChanges(before: ShuttleData, after: ShuttleData) {
     }
   }
 
-  const centerCount = stats.centersAdded + stats.centersRemoved + stats.centersChanged;
-  const routeCount = stats.routesAdded + stats.routesRemoved + stats.routesChanged;
-  const stopCount = stats.stopsAdded + stats.stopsRemoved + stats.stopsChanged;
-  const summaryParts: string[] = [];
-  if (centerCount > 0) summaryParts.push(`센터 ${centerCount}개`);
-  if (routeCount > 0) summaryParts.push(`노선 ${routeCount}개`);
-  if (stopCount > 0) summaryParts.push(`정류장 ${stopCount}개`);
-
   return {
     stats,
     affectedCenters: [...affectedCenters].sort(),
     affectedRoutes,
-    summary: summaryParts.length > 0
-      ? `${summaryParts.join(' · ')} 변경`
-      : '데이터 변경 없음',
+    summary: summarizeChangeStats(stats),
   };
 }
 
@@ -367,9 +560,16 @@ function buildChangeLogEntry(
   timestamp: string,
   before: ShuttleData,
   after: ShuttleData,
+  stopChanges: StopChange[] = [],
 ): ChangeLogEntry {
   const changes = summarizeDataChanges(before, after);
-  return {
+  if (stopChanges.length > 0) {
+    changes.stats.stopsAdded = stopChanges.filter(({ change }) => change === 'added').length;
+    changes.stats.stopsRemoved = stopChanges.filter(({ change }) => change === 'removed').length;
+    changes.stats.stopsChanged = stopChanges.filter(({ change }) => change === 'changed').length;
+    changes.summary = summarizeChangeStats(changes.stats);
+  }
+  const entry: ChangeLogEntry = {
     id: crypto.randomUUID(),
     timestamp,
     source,
@@ -379,6 +579,10 @@ function buildChangeLogEntry(
     affectedCenters: changes.affectedCenters,
     affectedRoutes: changes.affectedRoutes,
   };
+  if (stopChanges.length > 0) {
+    entry.stopChanges = stopChanges;
+  }
+  return entry;
 }
 
 function kstTimestamp(): string {
@@ -601,12 +805,23 @@ export async function POST(request: Request) {
       applyRoutePatches(current, current, patches);
       applyRoutePatches(manual, current, patches);
       const timestamp = kstTimestamp();
+      const stopChanges = collectManualStopChanges(before, current, patches);
+      if (stopChanges.length > MAX_MANUAL_STOP_CHANGES) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `한 번에 기록할 수 있는 정류장 변경은 ${MAX_MANUAL_STOP_CHANGES}건입니다. 변경 사항을 나누어 저장해주세요.`,
+          },
+          { status: 400 },
+        );
+      }
       const changeLogEntry = buildChangeLogEntry(
         'manual',
         'manual_save',
         timestamp,
         before,
         current,
+        stopChanges,
       );
 
       // 수동 보정본을 먼저 저장해 다음 자동 병합에서도 수정값이 유지되게 한다.
