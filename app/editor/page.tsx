@@ -74,10 +74,41 @@ interface ShuttleMetadata {
   lastManualChange?: string | null;
 }
 
+interface ChangeStats {
+  centersAdded: number;
+  centersRemoved: number;
+  centersChanged: number;
+  routesAdded: number;
+  routesRemoved: number;
+  routesChanged: number;
+  stopsAdded: number;
+  stopsRemoved: number;
+  stopsChanged: number;
+}
+
+interface AffectedRoute {
+  fc: string;
+  shift: string;
+  route: string;
+  change: 'added' | 'removed' | 'changed';
+}
+
+interface ChangeLogEntry {
+  id: string;
+  timestamp: string;
+  source: 'automatic' | 'manual';
+  action: 'auto_deploy' | 'manual_save' | 'manual_merge';
+  summary: string;
+  stats: ChangeStats;
+  affectedCenters: string[];
+  affectedRoutes: AffectedRoute[];
+}
+
 interface ApiResponse {
   success?: boolean;
   message?: string;
   metadata?: ShuttleMetadata;
+  changeLogEntry?: ChangeLogEntry;
 }
 
 interface RouteError {
@@ -163,6 +194,127 @@ function UpdateStatusCards({ metadata }: { metadata: ShuttleMetadata }) {
   );
 }
 
+function ChangeLogPanel({ entries }: { entries: ChangeLogEntry[] }) {
+  const actionLabels: Record<ChangeLogEntry['action'], string> = {
+    auto_deploy: '자동배포',
+    manual_save: '수동 저장',
+    manual_merge: '수동 머지',
+  };
+  const routeChangeLabels: Record<AffectedRoute['change'], string> = {
+    added: '추가',
+    removed: '삭제',
+    changed: '변경',
+  };
+
+  return (
+    <section className="rounded-[2rem] border border-slate-100 bg-white p-5 md:p-6 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+            Data Change Log
+          </p>
+          <h2 className="mt-1 text-lg font-black tracking-tight text-slate-900">
+            데이터 변경 기록
+          </h2>
+        </div>
+        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-black text-slate-500">
+          최근 {Math.min(entries.length, 20)}건
+        </span>
+      </div>
+
+      {entries.length === 0 ? (
+        <div className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center">
+          <p className="text-sm font-bold text-slate-500">아직 저장된 변경 기록이 없습니다.</p>
+          <p className="mt-1 text-xs font-medium text-slate-400">
+            다음 자동배포 또는 수동 변경부터 기록됩니다.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-5 space-y-3">
+          {entries.slice(0, 20).map((entry) => {
+            const isAutomatic = entry.source === 'automatic';
+            const routeCount =
+              entry.stats.routesAdded + entry.stats.routesRemoved + entry.stats.routesChanged;
+            const stopCount =
+              entry.stats.stopsAdded + entry.stats.stopsRemoved + entry.stats.stopsChanged;
+
+            return (
+              <article
+                key={entry.id}
+                className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-[10px] font-black ${
+                          isAutomatic
+                            ? 'bg-indigo-100 text-indigo-700'
+                            : 'bg-amber-100 text-amber-700'
+                        }`}
+                      >
+                        {actionLabels[entry.action]}
+                      </span>
+                      <time className="text-xs font-black text-slate-500">
+                        {entry.timestamp.replace(/-/g, '.')}
+                      </time>
+                    </div>
+                    <p className="mt-2 text-sm font-black text-slate-800">{entry.summary}</p>
+                  </div>
+                  <div className="flex gap-2 text-[10px] font-black text-slate-500">
+                    <span className="rounded-lg bg-white px-2.5 py-1.5 border border-slate-100">
+                      센터 {entry.affectedCenters.length}
+                    </span>
+                    <span className="rounded-lg bg-white px-2.5 py-1.5 border border-slate-100">
+                      노선 {routeCount}
+                    </span>
+                    <span className="rounded-lg bg-white px-2.5 py-1.5 border border-slate-100">
+                      정류장 {stopCount}
+                    </span>
+                  </div>
+                </div>
+
+                {(entry.affectedCenters.length > 0 || entry.affectedRoutes.length > 0) && (
+                  <details className="mt-3 group">
+                    <summary className="cursor-pointer list-none text-xs font-black text-indigo-600">
+                      상세 변경 보기
+                      <span className="ml-1 inline-block transition-transform group-open:rotate-180">⌄</span>
+                    </summary>
+                    <div className="mt-3 space-y-3 border-t border-slate-200 pt-3">
+                      {entry.affectedCenters.length > 0 && (
+                        <p className="text-xs font-semibold text-slate-500">
+                          센터: {entry.affectedCenters.join(', ')}
+                        </p>
+                      )}
+                      {entry.affectedRoutes.length > 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {entry.affectedRoutes.map((route, index) => (
+                            <div
+                              key={`${entry.id}-${route.fc}-${route.shift}-${route.route}-${index}`}
+                              className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 text-xs border border-slate-100"
+                            >
+                              <span className="min-w-0 truncate font-bold text-slate-600">
+                                {route.fc} · {route.shift} · {route.route}
+                              </span>
+                              <span className="shrink-0 font-black text-slate-400">
+                                {routeChangeLabels[route.change]}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </details>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function EditorContent() {
   const [data, setData] = useState<ShuttleData | null>(null);
   const [persistedData, setPersistedData] = useState<ShuttleData | null>(null);
@@ -184,20 +336,29 @@ function EditorContent() {
   const [keyInput, setKeyInput] = useState('');
   const [authError, setAuthError] = useState('');
   const [metadata, setMetadata] = useState<ShuttleMetadata>({});
+  const [changeLogEntries, setChangeLogEntries] = useState<ChangeLogEntry[]>([]);
   const router = useRouter();
 
   useEffect(() => {
-    const loadMetadata = async () => {
+    const loadPublicStatus = async () => {
       try {
-        const response = await fetch('/data/shuttle_meta.json', { cache: 'no-store' });
-        if (!response.ok) return;
-        setMetadata(normalizeMetadata(await response.json() as ShuttleMetadata));
+        const [metadataResponse, changeLogResponse] = await Promise.all([
+          fetch('/data/shuttle_meta.json', { cache: 'no-store' }),
+          fetch('/data/shuttle_changelog.json', { cache: 'no-store' }),
+        ]);
+        if (metadataResponse.ok) {
+          setMetadata(normalizeMetadata(await metadataResponse.json() as ShuttleMetadata));
+        }
+        if (changeLogResponse.ok) {
+          const changeLog = await changeLogResponse.json() as { entries?: ChangeLogEntry[] };
+          setChangeLogEntries(Array.isArray(changeLog.entries) ? changeLog.entries : []);
+        }
       } catch (error) {
-        console.error('Error loading shuttle metadata:', error);
+        console.error('Error loading shuttle status:', error);
       }
     };
 
-    void loadMetadata();
+    void loadPublicStatus();
   }, []);
 
   useEffect(() => {
@@ -474,13 +635,22 @@ function EditorContent() {
 
       const batches = splitPatchBatches(patches);
       let latestMetadata: ShuttleMetadata | undefined;
+      const newChangeLogEntries: ChangeLogEntry[] = [];
       for (const changes of batches) {
         const result = await postEditorRequest({ type: 'manual', changes });
         latestMetadata = result.metadata ?? latestMetadata;
+        if (result.changeLogEntry) {
+          newChangeLogEntries.unshift(result.changeLogEntry);
+        }
       }
 
       setPersistedData(structuredClone(data));
-      if (latestMetadata) setMetadata(latestMetadata);
+      if (latestMetadata) setMetadata(normalizeMetadata(latestMetadata));
+      if (newChangeLogEntries.length > 0) {
+        setChangeLogEntries((current) =>
+          [...newChangeLogEntries, ...current].slice(0, 100),
+        );
+      }
       setMessage({
         type: 'success',
         text: `${patches.length}개 노선 저장 완료! 지도에 곧 반영됩니다.`,
@@ -499,7 +669,12 @@ function EditorContent() {
     setMessage(null);
     try {
       const result = await postEditorRequest({ type: 'merge' });
-      if (result.metadata) setMetadata(result.metadata);
+      if (result.metadata) setMetadata(normalizeMetadata(result.metadata));
+      if (result.changeLogEntry) {
+        setChangeLogEntries((current) =>
+          [result.changeLogEntry as ChangeLogEntry, ...current].slice(0, 100),
+        );
+      }
       setMessage({ type: 'success', text: '수동 머지가 완료되었습니다! 지도가 곧 업데이트됩니다.' });
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : '서버 연결 오류';
@@ -637,6 +812,7 @@ function EditorContent() {
             </button>
           </form>
         </div>
+        <ChangeLogPanel entries={changeLogEntries} />
       </div>
     );
   }
@@ -710,6 +886,7 @@ function EditorContent() {
       </header>
 
       <UpdateStatusCards metadata={metadata} />
+      <ChangeLogPanel entries={changeLogEntries} />
 
 
       {message && (

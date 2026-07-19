@@ -18,6 +18,7 @@ SOURCE_BASE_DIR = os.environ.get(
 PUBLIC_DATA_DIR = os.path.join(TARGET_DIR, "public", "data")
 DEPLOY_FILES = [
     "public/data/shuttle_base.json",
+    "public/data/shuttle_changelog.json",
     "public/data/shuttle_data.json",
     "public/data/shuttle_meta.json",
     "public/data/shuttle_update.json",
