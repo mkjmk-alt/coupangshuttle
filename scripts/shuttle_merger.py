@@ -1,10 +1,12 @@
 import json
 import os
+import shutil
 
 BASE_FILE = 'public/data/shuttle_base.json'
 UPDATE_FILE = 'public/data/shuttle_update.json'
 MANUAL_FILE = 'public/data/shuttle_manual.json'
 OUTPUT_FILE = 'public/data/shuttle_data.json'
+META_FILE = 'public/data/shuttle_meta.json'
 
 def load_json(path):
     if not os.path.exists(path):
@@ -86,19 +88,31 @@ def merge_data():
         
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(final_data, f, ensure_ascii=False, indent=2)
+
+    # 다음 업데이트에서 "공식 변경"과 "수동 보정"을 정확히 구분할 수 있도록
+    # 이번 공식 추출본을 새로운 비교 기준으로 보관한다.
+    shutil.copy2(UPDATE_FILE, BASE_FILE)
     
-    # Update shuttle_meta.json with current merge timestamp
+    # Update shuttle_meta.json with the current automatic-deployment timestamp.
+    # Preserve the latest manual-change timestamp so the two histories remain separate.
     import datetime
-    meta_path = 'public/data/shuttle_meta.json'
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    kst = datetime.timezone(datetime.timedelta(hours=9))
+    timestamp = datetime.datetime.now(kst).strftime("%Y-%m-%d %H:%M")
     try:
-        with open(meta_path, 'w', encoding='utf-8') as f:
-            json.dump({"lastUpdated": timestamp}, f, ensure_ascii=False, indent=2)
+        metadata = load_json(META_FILE)
+        if not isinstance(metadata, dict):
+            metadata = {}
+        metadata["lastUpdated"] = timestamp
+        metadata["lastAutoDeploy"] = timestamp
+        metadata.setdefault("lastManualChange", None)
+        with open(META_FILE, 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=2)
         print(f"Metadata timestamp updated to: {timestamp}")
     except Exception as e:
         print(f"Failed to update metadata timestamp: {e}")
         
     print(f"Merge successful! Saved to {OUTPUT_FILE}")
+    print(f"Official baseline updated: {BASE_FILE}")
 
 if __name__ == "__main__":
     merge_data()

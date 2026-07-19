@@ -1,84 +1,155 @@
+import glob
+import json
 import os
 import shutil
-import glob
 import subprocess
-import time
+import sys
 from datetime import datetime
 
-# 설정 (경로 수정)
-SOURCE_BASE_DIR = r"c:\Users\JEONG\.gemini\antigravity\scratch\CoupangShuttleTool"
+
 TARGET_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_SOURCE_DIR = os.path.abspath(
+    os.path.join(TARGET_DIR, "..", "CoupangShuttleTool")
+)
+SOURCE_BASE_DIR = os.environ.get(
+    "COUPANG_SHUTTLE_SOURCE_DIR",
+    DEFAULT_SOURCE_DIR,
+)
 PUBLIC_DATA_DIR = os.path.join(TARGET_DIR, "public", "data")
+DEPLOY_FILES = [
+    "public/data/shuttle_base.json",
+    "public/data/shuttle_data.json",
+    "public/data/shuttle_meta.json",
+    "public/data/shuttle_update.json",
+]
+
+
+class UpdateError(RuntimeError):
+    pass
+
 
 def get_latest_shuttle_json():
-    """CoupangShuttleTool 내의 날짜 폴더 중 가장 최신 shuttle_data.json을 찾음"""
-    # 날짜 형식의 폴더들 찾기 (예: 20260420_2030)
+    """Find the newest extracted map JSON in CoupangShuttleTool."""
     folders = glob.glob(os.path.join(SOURCE_BASE_DIR, "20*_*"))
     if not folders:
         return None
-    
-    latest_folder = max(folders, key=os.path.getmtime)
-    
-    # shuttle_data_*.json 패턴으로 파일 찾기
-    json_files = glob.glob(os.path.join(latest_folder, "shuttle_data_*.json"))
-    
-    if json_files:
-        # 그 중 가장 최근 파일을 반환
-        return max(json_files, key=os.path.getmtime)
-    return None
 
-def run_command(cmd, cwd=None):
-    print(f"Executing: {cmd}")
-    result = subprocess.run(cmd, shell=True, cwd=cwd, capture_output=True, text=True, encoding='utf-8')
-    if result.returncode != 0:
-        print(f"Error: {result.stderr}")
-        return False
-    print(result.stdout)
-    return True
+    candidates = []
+    for folder in folders:
+        candidates.extend(
+            glob.glob(os.path.join(folder, "shuttle_data_*.json"))
+        )
+    if not candidates:
+        return None
+    return max(candidates, key=os.path.getmtime)
+
+
+def run_command(args, cwd=TARGET_DIR, check=True):
+    print(f"Executing: {subprocess.list2cmdline(args)}", flush=True)
+    result = subprocess.run(
+        args,
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    if result.stdout.strip():
+        print(result.stdout.strip(), flush=True)
+    if result.stderr.strip():
+        print(result.stderr.strip(), flush=True)
+    if check and result.returncode != 0:
+        raise UpdateError(
+            f"명령이 실패했습니다({result.returncode}): "
+            f"{subprocess.list2cmdline(args)}"
+        )
+    return result
+
+
+def validate_metadata():
+    meta_path = os.path.join(PUBLIC_DATA_DIR, "shuttle_meta.json")
+    try:
+        with open(meta_path, "r", encoding="utf-8") as meta_file:
+            last_updated = json.load(meta_file).get("lastUpdated")
+    except (OSError, ValueError) as exc:
+        raise UpdateError(f"메타데이터를 읽을 수 없습니다: {exc}") from exc
+
+    if not last_updated:
+        raise UpdateError("shuttle_meta.json에 lastUpdated가 없습니다.")
+    return last_updated
+
 
 def main():
-    print(f"--- Shuttle Data Auto Update Started ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')}) ---")
-    
-    # 1. 최신 원본 찾기
-    source_json = get_latest_shuttle_json()
-    if not source_json:
-        print("❌ CoupangShuttleTool에서 최신 shuttle_data.json을 찾을 수 없습니다.")
-        return
+    started_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"--- Shuttle Data Auto Update Started ({started_at}) ---", flush=True)
 
-    print(f"📂 최신 원본 발견: {source_json}")
-    
-    # 2. shuttle_update.json으로 복사
-    update_path = os.path.join(PUBLIC_DATA_DIR, "shuttle_update.json")
-    shutil.copy2(source_json, update_path)
-    print(f"✅ {update_path} 복사 완료")
-    
-    # 3. 데이터 병합 (merger 실행)
-    print("🔄 데이터 병합 중...")
-    if not run_command("python scripts/shuttle_merger.py", cwd=TARGET_DIR):
-        print("❌ 병합 실패")
-        return
-    
-    # 4. Git Push
-    print("🚀 GitHub 업로드 중...")
-    
-    # 변경 사항이 있는지 먼저 확인
-    status = subprocess.run("git status --porcelain public/data/", shell=True, cwd=TARGET_DIR, capture_output=True, text=True)
-    if not status.stdout.strip():
-        print("ℹ️ 변경된 데이터가 없습니다. 업로드를 건너뜁니다.")
-    else:
+    try:
+        source_json = get_latest_shuttle_json()
+        if not source_json:
+            raise UpdateError(
+                "CoupangShuttleTool에서 최신 shuttle_data_*.json을 "
+                "찾을 수 없습니다."
+            )
+        print(f"Latest source: {source_json}", flush=True)
+
+        update_path = os.path.join(PUBLIC_DATA_DIR, "shuttle_update.json")
+        shutil.copy2(source_json, update_path)
+        print(f"Copied update data: {update_path}", flush=True)
+
+        merger_path = os.path.join(TARGET_DIR, "scripts", "shuttle_merger.py")
+        run_command([sys.executable, merger_path])
+        last_updated = validate_metadata()
+        print(f"Metadata timestamp: {last_updated}", flush=True)
+
+        status = run_command(
+            ["git", "status", "--porcelain", "--", *DEPLOY_FILES],
+        )
+        if not status.stdout.strip():
+            commit_sha = run_command(
+                ["git", "rev-parse", "HEAD"],
+            ).stdout.strip()
+            print("No deployable data changes were found.", flush=True)
+            print(f"DEPLOY_COMMIT_SHA={commit_sha}", flush=True)
+            return 0
+
+        run_command(["git", "add", "--", *DEPLOY_FILES])
+        staged = run_command(
+            ["git", "diff", "--cached", "--quiet", "--", *DEPLOY_FILES],
+            check=False,
+        )
+        if staged.returncode not in (0, 1):
+            raise UpdateError("스테이징된 변경 사항을 확인할 수 없습니다.")
+        if staged.returncode == 0:
+            raise UpdateError("커밋할 데이터 변경 사항이 없습니다.")
+
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
-        commands = [
-            "git add public/data/*.json",
-            f'git commit -m "📝 Auto-update shuttle data: {timestamp}"',
-            "git push origin main"
-        ]
-        
-        for cmd in commands:
-            if not run_command(cmd, cwd=TARGET_DIR):
-                # 'nothing to commit' 메시지인 경우 에러가 아님
-                break
-    
-    print("✨ 모든 작업이 완료되었습니다! 잠시 후 사이트에서 확인하세요.")
+        run_command(
+            [
+                "git",
+                "commit",
+                "--only",
+                "-m",
+                f"Auto-update shuttle data: {timestamp}",
+                "--",
+                *DEPLOY_FILES,
+            ],
+        )
+        commit_sha = run_command(
+            ["git", "rev-parse", "HEAD"],
+        ).stdout.strip()
+        run_command(["git", "push", "origin", "main"])
+
+        print(f"DEPLOY_COMMIT_SHA={commit_sha}", flush=True)
+        print(
+            "GitHub push completed. Waiting for the caller to verify "
+            "Cloudflare Pages.",
+            flush=True,
+        )
+        return 0
+    except (OSError, shutil.Error, UpdateError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr, flush=True)
+        return 1
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

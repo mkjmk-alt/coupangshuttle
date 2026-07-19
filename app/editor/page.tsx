@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { FormEvent, useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
 // Dynamically import Map component to avoid SSR issues
@@ -61,11 +61,111 @@ interface ShuttleData {
   [fcCode: string]: FCCard;
 }
 
-function EditorContent() {
-  const searchParams = useSearchParams();
-  const key = searchParams.get('key');
+interface RoutePatch {
+  fc: string;
+  shift: string;
+  route: string;
+  stops: Stop[];
+}
 
+interface ShuttleMetadata {
+  lastUpdated?: string | null;
+  lastAutoDeploy?: string | null;
+  lastManualChange?: string | null;
+}
+
+interface ApiResponse {
+  success?: boolean;
+  message?: string;
+  metadata?: ShuttleMetadata;
+}
+
+interface RouteError {
+  fc: string;
+  fcName: string;
+  shift: string;
+  route: string;
+  idx: number;
+  stopName?: string;
+  type: 'SPEED' | 'TIME' | 'DISTANCE';
+  dist: number;
+  speed: number;
+  timeDiff: number;
+}
+
+type AuthStatus = 'checking' | 'locked' | 'authenticated';
+
+async function verifyEditorKey(editorKey: string): Promise<boolean> {
+  try {
+    const response = await fetch('/api/save-data/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-editor-key': editorKey,
+      },
+      body: JSON.stringify({ type: 'verify' }),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+function normalizeMetadata(metadata: ShuttleMetadata): ShuttleMetadata {
+  return {
+    ...metadata,
+    lastAutoDeploy: metadata.lastAutoDeploy ?? metadata.lastUpdated ?? null,
+    lastManualChange: metadata.lastManualChange ?? null,
+  };
+}
+
+function UpdateStatusCards({ metadata }: { metadata: ShuttleMetadata }) {
+  return (
+    <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="rounded-[1.5rem] border border-indigo-100 bg-gradient-to-br from-indigo-50 to-white p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-indigo-500">
+              Latest Automatic Deploy
+            </p>
+            <p className="mt-2 text-xl font-black tracking-tight text-slate-900">
+              {(metadata.lastAutoDeploy ?? metadata.lastUpdated)?.replace(/-/g, '.') ?? '기록 없음'}
+            </p>
+          </div>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-xl text-white shadow-lg shadow-indigo-100">
+            🚀
+          </div>
+        </div>
+        <p className="mt-3 text-xs font-semibold text-slate-400">
+          원클릭 자동배포로 공식 셔틀 데이터가 마지막 반영된 시각
+        </p>
+      </div>
+
+      <div className="rounded-[1.5rem] border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-600">
+              Latest Manual Change
+            </p>
+            <p className="mt-2 text-xl font-black tracking-tight text-slate-900">
+              {metadata.lastManualChange?.replace(/-/g, '.') ?? '기록 없음'}
+            </p>
+          </div>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-xl text-white shadow-lg shadow-amber-100">
+            ✍️
+          </div>
+        </div>
+        <p className="mt-3 text-xs font-semibold text-slate-400">
+          관리자 저장 또는 수동 머지로 마지막 변경된 시각
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function EditorContent() {
   const [data, setData] = useState<ShuttleData | null>(null);
+  const [persistedData, setPersistedData] = useState<ShuttleData | null>(null);
   const [baseData, setBaseData] = useState<ShuttleData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedFC, setSelectedFC] = useState<string>('');
@@ -77,20 +177,65 @@ function EditorContent() {
   const [speedThreshold, setSpeedThreshold] = useState(100);
   const [distThreshold, setDistThreshold] = useState(500);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState(false);
+  const [authStatus, setAuthStatus] = useState<AuthStatus>('checking');
+  const [editorKey, setEditorKey] = useState('');
+  const [keyInput, setKeyInput] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [metadata, setMetadata] = useState<ShuttleMetadata>({});
   const router = useRouter();
 
   useEffect(() => {
+    const loadMetadata = async () => {
+      try {
+        const response = await fetch('/data/shuttle_meta.json', { cache: 'no-store' });
+        if (!response.ok) return;
+        setMetadata(normalizeMetadata(await response.json() as ShuttleMetadata));
+      } catch (error) {
+        console.error('Error loading shuttle metadata:', error);
+      }
+    };
+
+    void loadMetadata();
+  }, []);
+
+  useEffect(() => {
+    const restoreSession = async () => {
+      const storedKey = sessionStorage.getItem('shuttle_editor_key') ?? '';
+      if (!storedKey) {
+        setAuthStatus('locked');
+        return;
+      }
+
+      if (await verifyEditorKey(storedKey)) {
+        setEditorKey(storedKey);
+        setAuthStatus('authenticated');
+      } else {
+        sessionStorage.removeItem('shuttle_editor_key');
+        setAuthStatus('locked');
+      }
+    };
+
+    void restoreSession();
+  }, []);
+
+  useEffect(() => {
+    if (authStatus !== 'authenticated') return;
+
     const loadData = async () => {
+      setLoading(true);
       try {
         const [resCurrent, resBase] = await Promise.all([
           fetch('/data/shuttle_data.json'),
-          fetch('/data/shuttle_base.json')
+          fetch('/data/shuttle_base.json'),
         ]);
 
         const jsonCurrent = await resCurrent.json();
         const jsonBase = await resBase.json();
 
         setData(jsonCurrent);
+        setPersistedData(structuredClone(jsonCurrent));
         setBaseData(jsonBase);
       } catch (err) {
         console.error('Error loading shuttle data:', err);
@@ -99,8 +244,8 @@ function EditorContent() {
       }
     };
 
-    loadData();
-  }, []);
+    void loadData();
+  }, [authStatus]);
 
 
   const fcList = useMemo(() => {
@@ -226,45 +371,124 @@ function EditorContent() {
     setHighlightedStopIndex(null);
   };
 
+  const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const candidate = keyInput.trim();
+    if (!candidate) {
+      setAuthError('관리자 키를 입력해주세요.');
+      return;
+    }
+
+    setAuthStatus('checking');
+    setAuthError('');
+    if (await verifyEditorKey(candidate)) {
+      sessionStorage.setItem('shuttle_editor_key', candidate);
+      setEditorKey(candidate);
+      setKeyInput('');
+      setAuthStatus('authenticated');
+      return;
+    }
+
+    setAuthError('관리자 키가 올바르지 않거나 서버 설정을 확인할 수 없습니다.');
+    setAuthStatus('locked');
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('shuttle_editor_key');
+    setEditorKey('');
+    setData(null);
+    setPersistedData(null);
+    setBaseData(null);
+    setAuthStatus('locked');
+  };
+
+  const collectRoutePatches = (): RoutePatch[] => {
+    if (!data || !persistedData) return [];
+
+    const patches: RoutePatch[] = [];
+    for (const [fc, fcData] of Object.entries(data)) {
+      for (const [shift, routes] of Object.entries(fcData.shifts ?? {})) {
+        for (const [route, stops] of Object.entries(routes)) {
+          const persistedStops = persistedData[fc]?.shifts?.[shift]?.[route];
+          if (JSON.stringify(stops) !== JSON.stringify(persistedStops)) {
+            patches.push({ fc, shift, route, stops });
+          }
+        }
+      }
+    }
+    return patches;
+  };
+
+  const splitPatchBatches = (patches: RoutePatch[]): RoutePatch[][] => {
+    const maxBatchBytes = 3 * 1024 * 1024;
+    const batches: RoutePatch[][] = [];
+    let batch: RoutePatch[] = [];
+
+    for (const patch of patches) {
+      const candidate = [...batch, patch];
+      if (new TextEncoder().encode(JSON.stringify({ type: 'manual', changes: candidate })).length > maxBatchBytes) {
+        if (batch.length === 0) {
+          throw new Error(`'${patch.route}' 노선 변경분이 너무 큽니다.`);
+        }
+        batches.push(batch);
+        batch = [patch];
+      } else {
+        batch = candidate;
+      }
+    }
+
+    if (batch.length > 0) batches.push(batch);
+    return batches;
+  };
+
+  const postEditorRequest = async (body: Record<string, unknown>) => {
+    const response = await fetch('/api/save-data/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-editor-key': editorKey,
+      },
+      body: JSON.stringify(body),
+    });
+    const result = await response.json() as ApiResponse;
+
+    if (response.status === 401) {
+      handleLogout();
+      throw new Error('인증이 만료되었습니다. 관리자 키를 다시 입력해주세요.');
+    }
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || `요청 실패 (HTTP ${response.status})`);
+    }
+    return result;
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setMessage(null);
     try {
-      // 브라우저에서 base64 인코딩 (Edge 함수 부담 제거)
-      const jsonStr = JSON.stringify(data, null, 2);
-      const bytes = new TextEncoder().encode(jsonStr);
-      const chunkSize = 32768;
-      const parts: string[] = [];
-      for (let i = 0; i < bytes.length; i += chunkSize) {
-        const slice = bytes.subarray(i, i + chunkSize);
-        let binary = '';
-        for (let j = 0; j < slice.length; j++) binary += String.fromCharCode(slice[j]);
-        parts.push(binary);
+      const patches = collectRoutePatches();
+      if (patches.length === 0) {
+        setMessage({ type: 'success', text: '저장할 변경 사항이 없습니다.' });
+        return;
       }
-      const base64Content = btoa(parts.join(''));
 
-      const res = await fetch('/api/save-data/', {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'x-editor-key': 'mkjmkcpstadmin'
-        },
-        body: JSON.stringify({
-            base64Content,
-            type: 'manual'
-        }),
+      const batches = splitPatchBatches(patches);
+      let latestMetadata: ShuttleMetadata | undefined;
+      for (const changes of batches) {
+        const result = await postEditorRequest({ type: 'manual', changes });
+        latestMetadata = result.metadata ?? latestMetadata;
+      }
+
+      setPersistedData(structuredClone(data));
+      if (latestMetadata) setMetadata(latestMetadata);
+      setMessage({
+        type: 'success',
+        text: `${patches.length}개 노선 저장 완료! 지도에 곧 반영됩니다.`,
       });
-
-      const result = await res.json();
-
-      if (res.ok && result?.success) {
-        setMessage({ type: 'success', text: '저장 완료! 지도에 곧 반영됩니다.' });
-      } else {
-        setMessage({ type: 'error', text: result?.message || `저장 실패 (HTTP ${res.status})` });
-      }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Save failed:', err);
-      setMessage({ type: 'error', text: `오류: ${err?.message || '네트워크 오류'}` });
+      const errorMessage = err instanceof Error ? err.message : '네트워크 오류';
+      setMessage({ type: 'error', text: `오류: ${errorMessage}` });
     } finally {
       setSaving(false);
     }
@@ -274,25 +498,12 @@ function EditorContent() {
     setSaving(true);
     setMessage(null);
     try {
-      const res = await fetch('/api/save-data/', {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'x-editor-key': 'mkjmkcpstadmin'
-        },
-        body: JSON.stringify({
-            type: 'merge'
-        }),
-      });
-
-      const result = await res.json();
-      if (result.success) {
-        setMessage({ type: 'success', text: '수동 머지가 완료되었습니다! 지도가 곧 업데이트됩니다.' });
-      } else {
-        setMessage({ type: 'error', text: '머지 실패: ' + result.message });
-      }
-    } catch (err) {
-      setMessage({ type: 'error', text: '서버 연결 오류가 발생했습니다.' });
+      const result = await postEditorRequest({ type: 'merge' });
+      if (result.metadata) setMetadata(result.metadata);
+      setMessage({ type: 'success', text: '수동 머지가 완료되었습니다! 지도가 곧 업데이트됩니다.' });
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : '서버 연결 오류';
+      setMessage({ type: 'error', text: `머지 실패: ${errorMessage}` });
     } finally {
       setSaving(false);
     }
@@ -322,7 +533,7 @@ function EditorContent() {
     
     if (t1.length !== 2 || t2.length !== 2) return { dist, speed: 0, timeDiff: 0 };
     
-    let m1 = t1[0] * 60 + t1[1];
+    const m1 = t1[0] * 60 + t1[1];
     let m2 = t2[0] * 60 + t2[1];
     
     // Handle midnight wrap if needed (e.g. 23:50 -> 00:10)
@@ -375,14 +586,59 @@ function EditorContent() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [errorFilter, setErrorFilter] = useState<'ALL' | 'SPEED' | 'TIME' | 'DISTANCE'>('ALL');
 
-  if (key !== 'mkjmkcpstadmin') {
-      return (
-          <div className="flex flex-col items-center justify-center min-h-[80vh] gap-6 text-center">
-              <div className="text-8xl opacity-30">🔒</div>
+  if (authStatus === 'checking') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[80vh] gap-4">
+        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-slate-500 font-bold tracking-tight">관리자 인증 확인 중...</p>
+      </div>
+    );
+  }
+
+  if (authStatus === 'locked') {
+    return (
+      <div className="max-w-5xl mx-auto min-h-[80vh] px-4 py-8 space-y-6">
+        <UpdateStatusCards metadata={metadata} />
+        <div className="flex justify-center">
+          <form
+            onSubmit={handleLogin}
+            className="w-full max-w-md bg-white border border-slate-100 rounded-[2rem] p-8 shadow-xl shadow-slate-100 space-y-6"
+          >
+            <div className="text-center space-y-3">
+              <div className="text-6xl opacity-40">🔒</div>
               <h1 className="text-2xl font-black text-slate-900 uppercase">Restricted Access</h1>
-              <p className="text-slate-500 font-medium tracking-tight">관리자 전용 링크가 아닙니다.</p>
-          </div>
-      );
+              <p className="text-slate-500 text-sm font-medium tracking-tight">
+                서버에 설정된 관리자 키를 입력해주세요.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="editor-key" className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">
+                Editor Key
+              </label>
+              <input
+                id="editor-key"
+                type="password"
+                autoComplete="current-password"
+                value={keyInput}
+                onChange={(event) => setKeyInput(event.target.value)}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            {authError && (
+              <p className="text-sm font-semibold text-red-600 bg-red-50 border border-red-100 rounded-xl p-3">
+                {authError}
+              </p>
+            )}
+            <button
+              type="submit"
+              className="w-full px-5 py-3 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-slate-900 transition-colors"
+            >
+              관리자 로그인
+            </button>
+          </form>
+        </div>
+      </div>
+    );
   }
 
   if (loading) {
@@ -408,8 +664,13 @@ function EditorContent() {
             </div>
           </div>
         </div>
-        <div className="flex gap-3">
-            
+        <div className="flex flex-wrap gap-3">
+            <button
+                onClick={() => setIsGuideOpen(true)}
+                className="px-5 py-2.5 bg-indigo-50 text-indigo-600 font-black text-[11px] rounded-xl hover:bg-indigo-100 transition-all uppercase font-sans flex items-center gap-1.5"
+            >
+                ❓ 작업 가이드
+            </button>
             <button 
                 onClick={handleExportExcel}
                 disabled={!selectedRoute}
@@ -438,8 +699,17 @@ function EditorContent() {
             >
                 {saving ? 'Syncing...' : 'Deploy Changes'}
             </button>
+            <button
+                onClick={handleLogout}
+                disabled={saving}
+                className="px-4 py-2.5 bg-red-50 text-red-500 font-black text-[11px] rounded-xl hover:bg-red-100 transition-all uppercase disabled:opacity-30"
+            >
+                Logout
+            </button>
         </div>
       </header>
+
+      <UpdateStatusCards metadata={metadata} />
 
 
       {message && (
@@ -466,7 +736,7 @@ function EditorContent() {
                       </div>
 
                       {(() => {
-                          const allErrors: any[] = [];
+                          const allErrors: RouteError[] = [];
                           Object.entries(data).forEach(([fcCode, fcCard]) => {
                               Object.entries(fcCard.shifts || {}).forEach(([shiftName, routes]) => {
                                   Object.entries(routes).forEach(([routeName, stops]) => {
@@ -478,7 +748,7 @@ function EditorContent() {
                                           const isShortDist = info.dist > 0 && info.dist <= (distThreshold / 1000);
                                           if (isSpeed || isTime || isShortDist) {
                                               const errType = isTime ? 'TIME' : isShortDist ? 'DISTANCE' : 'SPEED';
-                                              allErrors.push({ fc: fcCode, fcName: fcCard.center?.name, shift: shiftName, route: routeName, idx: i, type: errType, ...info });
+                                              allErrors.push({ fc: fcCode, fcName: fcCard.center?.name || fcCode, shift: shiftName, route: routeName, idx: i, type: errType, ...info });
                                           }
                                       });
                                   });
@@ -536,7 +806,7 @@ function EditorContent() {
                   {/* Global Error List Horizontal Scroll */}
                   <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
                       {(() => {
-                          const allErrors: any[] = [];
+                          const allErrors: RouteError[] = [];
                           Object.entries(data).forEach(([fcCode, fcCard]) => {
                               Object.entries(fcCard.shifts || {}).forEach(([shiftName, routes]) => {
                                   Object.entries(routes).forEach(([routeName, stops]) => {
@@ -929,7 +1199,7 @@ function EditorContent() {
       
       {/* Image Modal UI */}
       {selectedImage && (
-        <div 
+        <div
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-10 animate-in fade-in duration-300"
             onClick={() => setSelectedImage(null)}
         >
@@ -1001,6 +1271,110 @@ function EditorContent() {
         </div>
       )}
 
+      {/* Guide Drawer UI */}
+      {isGuideOpen && (
+        <div
+          className="fixed inset-0 z-[120] flex justify-end animate-in fade-in duration-300"
+          onClick={() => setIsGuideOpen(false)}
+        >
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+
+          <div
+            className="relative z-[130] bg-white w-full max-w-lg h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-500"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-lg">🚌</div>
+                <div>
+                  <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">셔틀 데이터 작업 가이드</h3>
+                  <p className="text-slate-400 text-xs font-bold uppercase tracking-tighter">Data Update & Deploy Guide</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsGuideOpen(false)}
+                className="w-10 h-10 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            {/* Content (Stepper Style) */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-slate-50">
+              <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 flex gap-3">
+                <span className="text-xl">💡</span>
+                <p className="text-xs font-semibold text-indigo-900 leading-relaxed">
+                  에디터에서 정류장 정보를 수정하고 계실 때는 브라우저가 새로고침되거나 꺼지면 작업한 내용이 모두 날아갑니다! 수정을 마친 후에는 반드시 아래 4단계의 배포 과정을 완료해주세요.
+                </p>
+              </div>
+
+              <div className="space-y-6 relative pl-4 border-l-2 border-slate-200">
+                {/* Step 1 */}
+                <div className="relative space-y-2">
+                  <div className="absolute -left-[25px] top-1 w-5 h-5 rounded-full bg-indigo-600 border-4 border-white shadow-sm flex items-center justify-center text-white text-[9px] font-black">1</div>
+                  <h4 className="font-black text-slate-800 text-sm font-sans">1단계. 최신 셔틀 데이터 추출</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed pl-1 font-sans">
+                    PC에서 <code className="bg-slate-200/60 px-1 py-0.5 rounded text-indigo-600 font-mono text-[11px]">CoupangShuttleTool</code> 프로그램을 실행하여 최신 셔틀 데이터를 다운로드 받습니다.
+                  </p>
+                </div>
+
+                {/* Step 2 */}
+                <div className="relative space-y-2">
+                  <div className="absolute -left-[25px] top-1 w-5 h-5 rounded-full bg-indigo-600 border-4 border-white shadow-sm flex items-center justify-center text-white text-[9px] font-black">2</div>
+                  <h4 className="font-black text-slate-800 text-sm font-sans">2단계. 프로젝트 내에 데이터 병합</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed pl-1 font-sans">
+                    터미널로 <code className="bg-slate-200/60 px-1 py-0.5 rounded text-indigo-600 font-mono text-[11px]">coupang-shuttle-map</code> 폴더로 이동한 뒤 아래 명령어를 실행합니다:
+                  </p>
+                  <div className="bg-slate-900 text-slate-100 rounded-xl p-3 flex justify-between items-center font-mono text-xs shadow-inner">
+                    <span>npm run full-update</span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText('npm run full-update');
+                        setCopyFeedback(true);
+                        setTimeout(() => setCopyFeedback(false), 2000);
+                      }}
+                      className="px-2 py-1 bg-white/10 hover:bg-white/20 text-white rounded text-[10px] font-bold transition-all"
+                    >
+                      {copyFeedback ? '복사됨! ✅' : '복사'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Step 3 */}
+                <div className="relative space-y-2">
+                  <div className="absolute -left-[25px] top-1 w-5 h-5 rounded-full bg-indigo-600 border-4 border-white shadow-sm flex items-center justify-center text-white text-[9px] font-black">3</div>
+                  <h4 className="font-black text-slate-800 text-sm font-sans">3단계. 에디터에서 위경도/시간 수정</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed pl-1 font-sans">
+                    에디터 상단의 <span className="font-bold text-slate-700">Health Monitor</span>를 통해 <span className="text-red-500 font-bold">SPEED</span> 또는 <span className="text-amber-500 font-bold">TIME</span> 오류를 체크한 뒤 해당 정류장 값을 수정합니다.
+                  </p>
+                </div>
+
+                {/* Step 4 */}
+                <div className="relative space-y-2">
+                  <div className="absolute -left-[25px] top-1 w-5 h-5 rounded-full bg-indigo-600 border-4 border-white shadow-sm flex items-center justify-center text-white text-[9px] font-black">4</div>
+                  <h4 className="font-black text-slate-800 text-sm font-sans">4단계. 최종 배포 (Deploy)</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed pl-1 font-sans">
+                    모든 수정이 완료되면 상단 헤더 우측의 <span className="px-2.5 py-1 bg-indigo-600 text-white rounded text-[10px] font-black">Deploy Changes</span> 버튼을 눌러 GitHub에 최종 배포를 완료합니다.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-white border-t border-slate-100 text-center flex justify-between items-center px-6">
+              <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest font-sans">Coupang Logistics Service • Smart Editor System</p>
+              <button
+                onClick={() => setIsGuideOpen(false)}
+                className="px-4 py-2 bg-slate-900 text-white font-black text-[11px] rounded-xl hover:bg-slate-800 transition-all uppercase font-sans"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -1012,13 +1386,5 @@ function EditorContent() {
 }
 
 export default function DataEditor() {
-  return (
-    <Suspense fallback={
-        <div className="flex items-center justify-center min-h-screen">
-            <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-    }>
-      <EditorContent />
-    </Suspense>
-  );
+  return <EditorContent />;
 }
