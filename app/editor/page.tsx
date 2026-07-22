@@ -137,6 +137,89 @@ interface RouteError {
 
 type AuthStatus = 'checking' | 'locked' | 'authenticated';
 
+const SKIPPED_ERRORS_STORAGE_KEY = 'shuttle_editor_skipped_errors_v1';
+
+function calculateDistance(lat1: string, lon1: string, lat2: string, lon2: string): number {
+  const earthRadiusKm = 6371;
+  const dLat = (parseFloat(lat2) - parseFloat(lat1)) * Math.PI / 180;
+  const dLon = (parseFloat(lon2) - parseFloat(lon1)) * Math.PI / 180;
+  const value =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(parseFloat(lat1) * Math.PI / 180) * Math.cos(parseFloat(lat2) * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const angle = 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
+  return earthRadiusKm * angle;
+}
+
+function getSpeedInfo(stop1: Stop, stop2: Stop) {
+  const dist = calculateDistance(stop1.Latitude, stop1.Longitude, stop2.Latitude, stop2.Longitude);
+  const firstTime = stop1.Time.split(':').map(Number);
+  const secondTime = stop2.Time.split(':').map(Number);
+
+  if (firstTime.length !== 2 || secondTime.length !== 2) {
+    return { dist, speed: 0, timeDiff: 0 };
+  }
+
+  const firstMinutes = firstTime[0] * 60 + firstTime[1];
+  let secondMinutes = secondTime[0] * 60 + secondTime[1];
+  if (secondMinutes < firstMinutes) secondMinutes += 1440;
+
+  const timeDiff = secondMinutes - firstMinutes;
+  if (timeDiff <= 0) return { dist, speed: 999, timeDiff };
+
+  return { dist, speed: (dist / timeDiff) * 60, timeDiff };
+}
+
+function routeErrorKey(error: RouteError): string {
+  return [
+    error.fc,
+    error.shift,
+    error.route,
+    error.idx,
+    error.type,
+    error.timeDiff,
+    error.dist.toFixed(4),
+  ].join('|');
+}
+
+function collectRouteErrors(
+  data: ShuttleData,
+  speedThreshold: number,
+  distThreshold: number,
+): RouteError[] {
+  const errors: RouteError[] = [];
+
+  Object.entries(data).forEach(([fcCode, fcCard]) => {
+    Object.entries(fcCard.shifts || {}).forEach(([shiftName, routes]) => {
+      Object.entries(routes).forEach(([routeName, stops]) => {
+        stops.forEach((stop, index) => {
+          if (index === 0) return;
+
+          const info = getSpeedInfo(stops[index - 1], stop);
+          const isSpeed = info.speed > speedThreshold && info.speed <= 900;
+          const isTime = info.speed > 900;
+          const isShortDistance = info.dist > 0 && info.dist <= (distThreshold / 1000);
+
+          if (!isSpeed && !isTime && !isShortDistance) return;
+
+          errors.push({
+            fc: fcCode,
+            fcName: fcCard.center?.name || fcCode,
+            shift: shiftName,
+            route: routeName,
+            idx: index,
+            stopName: stop.Name,
+            type: isTime ? 'TIME' : isShortDistance ? 'DISTANCE' : 'SPEED',
+            ...info,
+          });
+        });
+      });
+    });
+  });
+
+  return errors;
+}
+
 async function verifyEditorKey(editorKey: string): Promise<boolean> {
   try {
     const response = await fetch('/api/save-data/', {
@@ -486,6 +569,9 @@ function EditorContent() {
   const [authError, setAuthError] = useState('');
   const [metadata, setMetadata] = useState<ShuttleMetadata>({});
   const [changeLogEntries, setChangeLogEntries] = useState<ChangeLogEntry[]>([]);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [errorFilter, setErrorFilter] = useState<'ALL' | 'SPEED' | 'TIME' | 'DISTANCE'>('ALL');
+  const [skippedErrorKeys, setSkippedErrorKeys] = useState<Set<string>>(new Set());
   const router = useRouter();
 
   useEffect(() => {
@@ -508,6 +594,18 @@ function EditorContent() {
     };
 
     void loadPublicStatus();
+  }, []);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(SKIPPED_ERRORS_STORAGE_KEY);
+      const parsed: unknown = stored ? JSON.parse(stored) : [];
+      if (Array.isArray(parsed)) {
+        setSkippedErrorKeys(new Set(parsed.filter((key): key is string => typeof key === 'string')));
+      }
+    } catch (error) {
+      console.error('Error restoring skipped review items:', error);
+    }
   }, []);
 
   useEffect(() => {
@@ -593,6 +691,23 @@ function EditorContent() {
     return data[selectedFC].shifts[selectedShift][selectedRoute] || [];
   }, [data, selectedFC, selectedShift, selectedRoute]);
 
+  const allRouteErrors = useMemo(
+    () => data ? collectRouteErrors(data, speedThreshold, distThreshold) : [],
+    [data, speedThreshold, distThreshold],
+  );
+
+  const activeRouteErrors = useMemo(
+    () => allRouteErrors.filter(error => !skippedErrorKeys.has(routeErrorKey(error))),
+    [allRouteErrors, skippedErrorKeys],
+  );
+
+  const visibleRouteErrors = useMemo(
+    () => activeRouteErrors.filter(error => errorFilter === 'ALL' || error.type === errorFilter),
+    [activeRouteErrors, errorFilter],
+  );
+
+  const currentSkippedErrorCount = allRouteErrors.length - activeRouteErrors.length;
+
   const searchResults = useMemo(() => {
     if (!data || routeSearch.length < 1) return [];
     const query = routeSearch.toLowerCase();
@@ -621,6 +736,74 @@ function EditorContent() {
     };
 
     setData(newData);
+  };
+
+  const saveSkippedErrorKeys = (keys: Set<string>) => {
+    try {
+      localStorage.setItem(SKIPPED_ERRORS_STORAGE_KEY, JSON.stringify([...keys].slice(-2000)));
+    } catch (error) {
+      console.error('Error saving skipped review items:', error);
+    }
+  };
+
+  const jumpToRouteError = (error: RouteError) => {
+    setSelectedFC(error.fc);
+    setSelectedShift(error.shift);
+    setTimeout(() => {
+      setSelectedRoute(error.route);
+      setHighlightedStopIndex(error.idx);
+      setTimeout(() => {
+        document.getElementById(`stop-row-${error.idx}`)?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }, 300);
+    }, 100);
+  };
+
+  const handleSkipRouteError = (error: RouteError, jumpToNext = false) => {
+    const currentKey = routeErrorKey(error);
+    const remainingErrors = activeRouteErrors.filter(item => routeErrorKey(item) !== currentKey);
+    const currentIndex = activeRouteErrors.findIndex(item => routeErrorKey(item) === currentKey);
+    const nextError = remainingErrors.length > 0
+      ? remainingErrors[Math.min(Math.max(currentIndex, 0), remainingErrors.length - 1)]
+      : null;
+
+    setSkippedErrorKeys(current => {
+      const next = new Set(current);
+      next.add(currentKey);
+      saveSkippedErrorKeys(next);
+      return next;
+    });
+    setMessage({
+      type: 'success',
+      text: `'${error.stopName ?? `#${error.idx + 1}`}' 정류장을 정상으로 판단해 이 기기에서 스킵했습니다. 데이터와 변경 로그는 수정되지 않습니다.`,
+    });
+
+    if (jumpToNext && nextError) {
+      setTimeout(() => jumpToRouteError(nextError), 100);
+    }
+  };
+
+  const handleUnskipRouteError = (error: RouteError) => {
+    const currentKey = routeErrorKey(error);
+    setSkippedErrorKeys(current => {
+      const next = new Set(current);
+      next.delete(currentKey);
+      saveSkippedErrorKeys(next);
+      return next;
+    });
+    setMessage({ type: 'success', text: `'${error.stopName ?? `#${error.idx + 1}`}' 정류장을 검토 목록에 다시 표시합니다.` });
+  };
+
+  const handleRestoreSkippedErrors = () => {
+    setSkippedErrorKeys(new Set());
+    try {
+      localStorage.removeItem(SKIPPED_ERRORS_STORAGE_KEY);
+    } catch (error) {
+      console.error('Error clearing skipped review items:', error);
+    }
+    setMessage({ type: 'success', text: '스킵했던 정류장을 모두 검토 목록에 복원했습니다.' });
   };
 
   const handleRollback = () => {
@@ -832,44 +1015,6 @@ function EditorContent() {
       setSaving(false);
     }
   };
-
-
-  // Helper: Calculate distance between two coordinates (km)
-  const calculateDistance = (lat1: string, lon1: string, lat2: string, lon2: string) => {
-    const R = 6371; // Earth's radius in km
-    const dLat = (parseFloat(lat2) - parseFloat(lat1)) * Math.PI / 180;
-    const dLon = (parseFloat(lon2) - parseFloat(lon1)) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(parseFloat(lat1) * Math.PI / 180) * Math.cos(parseFloat(lat2) * Math.PI / 180) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
-
-  // Helper: Get speed between two stops (km/h)
-  const getSpeedInfo = (stop1: Stop, stop2: Stop) => {
-    const dist = calculateDistance(stop1.Latitude, stop1.Longitude, stop2.Latitude, stop2.Longitude);
-    
-    // Parse times (HH:mm)
-    const t1 = stop1.Time.split(':').map(Number);
-    const t2 = stop2.Time.split(':').map(Number);
-    
-    if (t1.length !== 2 || t2.length !== 2) return { dist, speed: 0, timeDiff: 0 };
-    
-    const m1 = t1[0] * 60 + t1[1];
-    let m2 = t2[0] * 60 + t2[1];
-    
-    // Handle midnight wrap if needed (e.g. 23:50 -> 00:10)
-    if (m2 < m1) m2 += 1440; 
-    
-    const timeDiff = m2 - m1;
-    if (timeDiff <= 0) return { dist, speed: 999, timeDiff }; // Stop logic error
-    
-    const speed = (dist / timeDiff) * 60;
-    return { dist, speed, timeDiff };
-  };
-
   const handleExportExcel = () => {
     if (!currentStops || currentStops.length === 0) {
       alert('추출할 데이터가 없습니다.');
@@ -906,9 +1051,6 @@ function EditorContent() {
     link.click();
     document.body.removeChild(link);
   };
-
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [errorFilter, setErrorFilter] = useState<'ALL' | 'SPEED' | 'TIME' | 'DISTANCE'>('ALL');
 
   if (authStatus === 'checking') {
     return (
@@ -1061,145 +1203,91 @@ function EditorContent() {
                           <p className="text-slate-400 text-[11px] font-bold font-sans uppercase tracking-tight">전국 물류센터 노선 데이터의 무결성을 실시간으로 감시 중입니다.</p>
                       </div>
 
-                      {(() => {
-                          const allErrors: RouteError[] = [];
-                          Object.entries(data).forEach(([fcCode, fcCard]) => {
-                              Object.entries(fcCard.shifts || {}).forEach(([shiftName, routes]) => {
-                                  Object.entries(routes).forEach(([routeName, stops]) => {
-                                      stops.forEach((stop, i) => {
-                                          if (i === 0) return;
-                                          const info = getSpeedInfo(stops[i-1], stop);
-                                          const isSpeed = info.speed > speedThreshold && info.speed <= 900;
-                                          const isTime = info.speed > 900;
-                                          const isShortDist = info.dist > 0 && info.dist <= (distThreshold / 1000);
-                                          if (isSpeed || isTime || isShortDist) {
-                                              const errType = isTime ? 'TIME' : isShortDist ? 'DISTANCE' : 'SPEED';
-                                              allErrors.push({ fc: fcCode, fcName: fcCard.center?.name || fcCode, shift: shiftName, route: routeName, idx: i, type: errType, ...info });
-                                          }
-                                      });
-                                  });
-                              });
-                          });
-
-                          const filtered = allErrors.filter(e => {
-                              if (errorFilter === 'ALL') return true;
-                              return e.type === errorFilter;
-                          });
-
-                          return (
-                              <div className="flex flex-wrap items-center gap-4">
-                                  <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10">
-                                      <button 
-                                          onClick={() => setErrorFilter('ALL')}
-                                          className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${errorFilter === 'ALL' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                                      >ALL ({allErrors.length})</button>
-                                      <button 
-                                          onClick={() => setErrorFilter('SPEED')}
-                                          className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${errorFilter === 'SPEED' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                                      >SPEED ({allErrors.filter(e => e.type === 'SPEED').length})</button>
-                                      <button 
-                                          onClick={() => setErrorFilter('TIME')}
-                                          className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${errorFilter === 'TIME' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                                      >TIME ({allErrors.filter(e => e.type === 'TIME').length})</button>
-                                      <button 
-                                          onClick={() => setErrorFilter('DISTANCE')}
-                                          className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${errorFilter === 'DISTANCE' ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                                      >DIST ({allErrors.filter(e => e.type === 'DISTANCE').length})</button>
-                                  </div>
-                                  <div className="flex items-center gap-3">
-                                      <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
-                                          <span className="text-[9px] font-black text-red-400 uppercase">⚡</span>
-                                          <input type="number" value={speedThreshold} onChange={(e) => setSpeedThreshold(Number(e.target.value))} className="w-14 bg-transparent text-white text-[11px] font-black text-center border-none focus:ring-0 focus:outline-none" />
-                                          <span className="text-[9px] text-slate-500 font-bold">km/h</span>
-                                      </div>
-                                      <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
-                                          <span className="text-[9px] font-black text-purple-400 uppercase">📏</span>
-                                          <input type="number" value={distThreshold} onChange={(e) => setDistThreshold(Number(e.target.value))} className="w-14 bg-transparent text-white text-[11px] font-black text-center border-none focus:ring-0 focus:outline-none" />
-                                          <span className="text-[9px] text-slate-500 font-bold">m</span>
-                                      </div>
-                                  </div>
-                                  <div className={`px-5 py-2 rounded-2xl border flex items-center gap-3 ${filtered.length > 0 ? 'bg-red-500/10 border-red-500/30' : 'bg-emerald-500/10 border-emerald-500/20'}`}>
-                                      <span className="text-lg">{filtered.length > 0 ? '🚨' : '✨'}</span>
-                                      <span className={`text-xs font-black uppercase tracking-widest ${filtered.length > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
-                                          {filtered.length} {errorFilter} Found
-                                      </span>
-                                  </div>
+                      <div className="flex flex-wrap items-center gap-4">
+                          <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10">
+                              <button
+                                  onClick={() => setErrorFilter('ALL')}
+                                  className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${errorFilter === 'ALL' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                              >ALL ({activeRouteErrors.length})</button>
+                              <button
+                                  onClick={() => setErrorFilter('SPEED')}
+                                  className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${errorFilter === 'SPEED' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                              >SPEED ({activeRouteErrors.filter(e => e.type === 'SPEED').length})</button>
+                              <button
+                                  onClick={() => setErrorFilter('TIME')}
+                                  className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${errorFilter === 'TIME' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                              >TIME ({activeRouteErrors.filter(e => e.type === 'TIME').length})</button>
+                              <button
+                                  onClick={() => setErrorFilter('DISTANCE')}
+                                  className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${errorFilter === 'DISTANCE' ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                              >DIST ({activeRouteErrors.filter(e => e.type === 'DISTANCE').length})</button>
+                          </div>
+                          <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
+                                  <span className="text-[9px] font-black text-red-400 uppercase">⚡</span>
+                                  <input type="number" value={speedThreshold} onChange={(e) => setSpeedThreshold(Number(e.target.value))} className="w-14 bg-transparent text-white text-[11px] font-black text-center border-none focus:ring-0 focus:outline-none" />
+                                  <span className="text-[9px] text-slate-500 font-bold">km/h</span>
                               </div>
-                          );
-                      })()}
+                              <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
+                                  <span className="text-[9px] font-black text-purple-400 uppercase">📏</span>
+                                  <input type="number" value={distThreshold} onChange={(e) => setDistThreshold(Number(e.target.value))} className="w-14 bg-transparent text-white text-[11px] font-black text-center border-none focus:ring-0 focus:outline-none" />
+                                  <span className="text-[9px] text-slate-500 font-bold">m</span>
+                              </div>
+                          </div>
+                          <div className={`px-5 py-2 rounded-2xl border flex items-center gap-3 ${visibleRouteErrors.length > 0 ? 'bg-red-500/10 border-red-500/30' : 'bg-emerald-500/10 border-emerald-500/20'}`}>
+                              <span className="text-lg">{visibleRouteErrors.length > 0 ? '🚨' : '✨'}</span>
+                              <span className={`text-xs font-black uppercase tracking-widest ${visibleRouteErrors.length > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                                  {visibleRouteErrors.length} {errorFilter} Found
+                              </span>
+                          </div>
+                          {currentSkippedErrorCount > 0 && (
+                              <button
+                                  onClick={handleRestoreSkippedErrors}
+                                  className="px-4 py-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-[10px] font-black text-emerald-300 hover:bg-emerald-500/20 transition-all"
+                              >
+                                  스킵 {currentSkippedErrorCount}개 · 모두 복원
+                              </button>
+                          )}
+                      </div>
                   </div>
                   
                   {/* Global Error List Horizontal Scroll */}
                   <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
-                      {(() => {
-                          const allErrors: RouteError[] = [];
-                          Object.entries(data).forEach(([fcCode, fcCard]) => {
-                              Object.entries(fcCard.shifts || {}).forEach(([shiftName, routes]) => {
-                                  Object.entries(routes).forEach(([routeName, stops]) => {
-                                      stops.forEach((stop, i) => {
-                                          if (i === 0) return;
-                                          const info = getSpeedInfo(stops[i-1], stop);
-                                          const isSpeed = info.speed > speedThreshold && info.speed <= 900;
-                                          const isTime = info.speed > 900;
-                                          const isShortDist = info.dist > 0 && info.dist <= (distThreshold / 1000);
-                                          if (isSpeed || isTime || isShortDist) {
-                                              const errType = isTime ? 'TIME' : isShortDist ? 'DISTANCE' : 'SPEED';
-                                              allErrors.push({ fc: fcCode, fcName: fcCard.center?.name || fcCode, shift: shiftName, route: routeName, idx: i, stopName: stop.Name, type: errType, ...info });
-                                          }
-                                      });
-                                  });
-                              });
-                          });
-
-                          const filtered = allErrors.filter(e => {
-                              if (errorFilter === 'ALL') return true;
-                              return e.type === errorFilter;
-                          });
-
-                          if (filtered.length === 0) {
-                              return (
-                                  <div className="flex-1 py-10 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/10">
-                                      <p className="text-slate-500 font-black text-[11px] uppercase tracking-widest">No errors in this category</p>
-                                  </div>
-                              );
-                          }
-
-                          return filtered.map((err, i) => (
-                              <button 
-                                  key={i}
-                                  onClick={() => {
-                                      // Multi-step jump logic
-                                      setSelectedFC(err.fc);
-                                      setSelectedShift(err.shift);
-                                      setTimeout(() => {
-                                          setSelectedRoute(err.route);
-                                          setHighlightedStopIndex(err.idx);
-                                          setTimeout(() => {
-                                              const el = document.getElementById(`stop-row-${err.idx}`);
-                                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                          }, 300);
-                                      }, 100);
-                                  }}
-                                  className={`flex-shrink-0 group w-[280px] border p-5 rounded-3xl transition-all text-left space-y-3 relative overflow-hidden ${err.type === 'TIME' ? 'bg-amber-500/5 border-amber-500/10 hover:border-amber-500/50' : 'bg-red-500/5 border-red-500/10 hover:border-red-500/50'}`}
+                      {visibleRouteErrors.length === 0 ? (
+                          <div className="flex-1 py-10 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/10">
+                              <p className="text-slate-500 font-black text-[11px] uppercase tracking-widest">No errors in this category</p>
+                              {currentSkippedErrorCount > 0 && (
+                                  <p className="mt-2 text-emerald-400/70 text-[10px] font-bold">정상으로 스킵한 항목 {currentSkippedErrorCount}개</p>
+                              )}
+                          </div>
+                      ) : visibleRouteErrors.map(err => (
+                          <article
+                              key={routeErrorKey(err)}
+                              className={`flex-shrink-0 group w-[280px] border rounded-3xl transition-all text-left relative overflow-hidden ${err.type === 'TIME' ? 'bg-amber-500/5 border-amber-500/10 hover:border-amber-500/50' : err.type === 'DISTANCE' ? 'bg-purple-500/5 border-purple-500/10 hover:border-purple-500/50' : 'bg-red-500/5 border-red-500/10 hover:border-red-500/50'}`}
+                          >
+                              <button
+                                  type="button"
+                                  onClick={() => jumpToRouteError(err)}
+                                  className="w-full p-5 pb-4 text-left space-y-3"
                               >
-                                  <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-100 transition-opacity">
-                                      <span className="text-xl">{err.type === 'TIME' ? '⏰' : '⚡'}</span>
+                                  <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                      <span className="text-xl">{err.type === 'TIME' ? '⏰' : err.type === 'DISTANCE' ? '📏' : '⚡'}</span>
                                   </div>
                                   <div className="space-y-1">
                                       <div className="flex items-center gap-2">
-                                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter ${err.type === 'TIME' ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}`}>
+                                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter ${err.type === 'TIME' ? 'bg-amber-500/20 text-amber-400' : err.type === 'DISTANCE' ? 'bg-purple-500/20 text-purple-300' : 'bg-red-500/20 text-red-400'}`}>
                                               {err.fcName}
                                           </span>
                                           <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">{err.shift}</span>
                                       </div>
                                       <h4 className="text-[12px] font-bold text-white truncate group-hover:text-indigo-300 transition-colors">{err.route}</h4>
                                   </div>
-                                  
+
                                   <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                                      <div className="flex flex-col">
-                                          <span className={`text-[9px] font-black uppercase tracking-widest ${err.type === 'TIME' ? 'text-amber-400' : 'text-red-400'}`}>#{err.idx+1} {err.stopName}</span>
+                                      <div className="flex flex-col min-w-0">
+                                          <span className={`text-[9px] font-black uppercase tracking-widest truncate ${err.type === 'TIME' ? 'text-amber-400' : err.type === 'DISTANCE' ? 'text-purple-300' : 'text-red-400'}`}>#{err.idx+1} {err.stopName}</span>
                                           <span className="text-[11px] font-black text-white">
-                                              {err.type === 'TIME' ? 'Logic/Time Error' : `${err.speed.toFixed(1)}km/h`}
+                                              {err.type === 'TIME' ? 'Logic/Time Error' : err.type === 'DISTANCE' ? `${(err.dist * 1000).toFixed(0)}m` : `${err.speed.toFixed(1)}km/h`}
                                           </span>
                                       </div>
                                       <div className="p-2 bg-white/5 rounded-xl text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-all">
@@ -1207,8 +1295,15 @@ function EditorContent() {
                                       </div>
                                   </div>
                               </button>
-                          ));
-                      })()}
+                              <button
+                                  type="button"
+                                  onClick={() => handleSkipRouteError(err)}
+                                  className="w-full border-t border-white/10 px-4 py-2.5 text-[10px] font-black text-emerald-300 hover:bg-emerald-500/10 hover:text-emerald-200 transition-all"
+                              >
+                                  ✓ 정상으로 판단 · 스킵
+                              </button>
+                          </article>
+                      ))}
                   </div>
               </div>
           </section>
@@ -1367,6 +1462,24 @@ function EditorContent() {
                       {currentStops.map((stop, idx) => {
                           const prevStop = idx > 0 ? currentStops[idx - 1] : null;
                           const speedStatus = prevStop ? getSpeedInfo(prevStop, stop) : null;
+                          const isSpeedError = Boolean(speedStatus && speedStatus.speed > speedThreshold && speedStatus.speed <= 900);
+                          const isTimeError = Boolean(speedStatus && speedStatus.speed > 900);
+                          const isDistanceError = Boolean(speedStatus && speedStatus.dist > 0 && speedStatus.dist <= (distThreshold / 1000));
+                          const currentRouteError: RouteError | null = speedStatus && (isSpeedError || isTimeError || isDistanceError)
+                            ? {
+                                fc: selectedFC,
+                                fcName: data?.[selectedFC]?.center?.name || selectedFC,
+                                shift: selectedShift,
+                                route: selectedRoute,
+                                idx,
+                                stopName: stop.Name,
+                                type: isTimeError ? 'TIME' : isDistanceError ? 'DISTANCE' : 'SPEED',
+                                ...speedStatus,
+                              }
+                            : null;
+                          const isCurrentErrorSkipped = currentRouteError
+                            ? skippedErrorKeys.has(routeErrorKey(currentRouteError))
+                            : false;
                           
                           return (
                             <div key={idx} className="space-y-4">
@@ -1396,9 +1509,26 @@ function EditorContent() {
                                     onClick={() => setHighlightedStopIndex(idx)}
                                 >
                                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-                                        <div className="md:col-span-1 flex flex-col items-center justify-center pt-2">
-                                            <span className={`text-[10px] font-black ${highlightedStopIndex === idx ? 'text-indigo-500' : 'text-slate-200'}`}>#{idx+1}</span>
-                                        </div>
+                                         <div className="md:col-span-1 flex flex-col items-center justify-center pt-2">
+                                             <span className={`text-[10px] font-black ${highlightedStopIndex === idx ? 'text-indigo-500' : 'text-slate-200'}`}>#{idx+1}</span>
+                                             {currentRouteError && (
+                                                 <button
+                                                     type="button"
+                                                     onClick={(event) => {
+                                                       event.stopPropagation();
+                                                       if (isCurrentErrorSkipped) {
+                                                         handleUnskipRouteError(currentRouteError);
+                                                       } else {
+                                                         handleSkipRouteError(currentRouteError, true);
+                                                       }
+                                                     }}
+                                                     className={`mt-3 rounded-lg px-2 py-1.5 text-[9px] font-black leading-tight transition-all ${isCurrentErrorSkipped ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
+                                                     title={isCurrentErrorSkipped ? '스킵을 취소하고 검토 목록에 다시 표시' : '정상으로 판단하고 다음 검토 항목으로 이동'}
+                                                 >
+                                                     {isCurrentErrorSkipped ? '스킵 취소' : '정상 스킵'}
+                                                 </button>
+                                             )}
+                                         </div>
                                         
                                         <div className="md:col-span-11 grid grid-cols-1 md:grid-cols-4 gap-4">
                                             <div className="md:col-span-2 space-y-1.5">
@@ -1672,7 +1802,7 @@ function EditorContent() {
                   <div className="absolute -left-[25px] top-1 w-5 h-5 rounded-full bg-indigo-600 border-4 border-white shadow-sm flex items-center justify-center text-white text-[9px] font-black">3</div>
                   <h4 className="font-black text-slate-800 text-sm font-sans">3단계. 에디터에서 위경도/시간 수정</h4>
                   <p className="text-xs text-slate-500 leading-relaxed pl-1 font-sans">
-                    에디터 상단의 <span className="font-bold text-slate-700">Health Monitor</span>를 통해 <span className="text-red-500 font-bold">SPEED</span> 또는 <span className="text-amber-500 font-bold">TIME</span> 오류를 체크한 뒤 해당 정류장 값을 수정합니다.
+                    에디터 상단의 <span className="font-bold text-slate-700">Health Monitor</span>를 통해 <span className="text-red-500 font-bold">SPEED</span>, <span className="text-amber-500 font-bold">TIME</span>, <span className="text-purple-500 font-bold">DIST</span> 항목을 검토합니다. 실제 정류장이 맞다면 <span className="font-bold text-emerald-600">정상 스킵</span>을 눌러 다음 항목으로 이동할 수 있으며, 스킵은 셔틀 데이터와 변경 로그를 수정하지 않습니다.
                   </p>
                 </div>
 

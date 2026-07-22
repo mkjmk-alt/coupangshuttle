@@ -18,7 +18,7 @@ export default function PrivacyPolicy() {
         </p>
         <h1 className="mb-4 text-3xl font-bold">개인정보처리방침</h1>
         <p className="text-sm text-slate-600">
-          Coupang Shuttle Map(이하 &quot;서비스&quot;) · 시행일 2026년 7월 19일
+          Coupang Shuttle Map(이하 &quot;서비스&quot;) · 시행일 2026년 7월 22일
         </p>
       </div>
 
@@ -102,7 +102,9 @@ export default function PrivacyPolicy() {
           <ul className="list-disc space-y-3 pl-5">
             <li>
               <b>기능 저장값:</b> 노선 비교 기능의 일시 해제 만료 시각을 기기의 로컬 저장공간에
-              최대 1시간 동안 저장할 수 있습니다.
+              최대 1시간 동안 저장할 수 있습니다. 관리자 편집 화면에서는 정상으로 판단해 스킵한
+              오류 후보의 식별값을 같은 기기에 저장하며, 편집 화면의 &quot;모두 복원&quot; 기능으로
+              언제든지 삭제할 수 있습니다.
             </li>
             <li>
               <b>개인정보·광고 설정:</b> 선택한 광고 동의 상태를 기기의 로컬 저장공간에 저장합니다.
@@ -316,7 +318,7 @@ export default function PrivacyPolicy() {
 
         <div className="border-t border-slate-200 pt-8">
           <p className="font-bold text-slate-900">부칙</p>
-          <p className="mt-2 text-sm text-slate-500">공고일 및 시행일: 2026년 7월 19일</p>
+          <p className="mt-2 text-sm text-slate-500">공고일 및 시행일: 2026년 7월 22일</p>
         </div>
 
         <div className="flex flex-wrap gap-6 border-t border-slate-100 pt-8">
