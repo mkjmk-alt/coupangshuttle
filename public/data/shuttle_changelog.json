@@ -1,6 +1,684 @@
 {
   "entries": [
     {
+      "id": "b6222363-c4b5-49e0-bb73-af2f1c87f5ff",
+      "timestamp": "2026-07-25 00:12",
+      "source": "automatic",
+      "action": "auto_deploy",
+      "summary": "노선 1186개 · 정류장 5948개 변경",
+      "stats": {
+        "centersAdded": 0,
+        "centersRemoved": 0,
+        "centersChanged": 0,
+        "routesAdded": 308,
+        "routesRemoved": 169,
+        "routesChanged": 709,
+        "stopsAdded": 2908,
+        "stopsRemoved": 1821,
+        "stopsChanged": 1219
+      },
+      "affectedCenters": [
+        "ANS4",
+        "ANS5",
+        "ANS8",
+        "BUC1",
+        "CAL1",
+        "CHA2",
+        "CHA3",
+        "CHA6",
+        "CHA9",
+        "CHW1",
+        "CHW2",
+        "CHW3",
+        "CHW4",
+        "DAJ1",
+        "DON1",
+        "ECH1",
+        "ECH2",
+        "ECH3",
+        "GON1",
+        "GOY1",
+        "GOY3",
+        "GWJ1",
+        "GWJ3",
+        "INC11",
+        "INC12",
+        "INC14",
+        "INC15",
+        "INC21",
+        "INC22",
+        "INC26",
+        "INC28",
+        "INC30",
+        "INC31",
+        "INC32",
+        "INC36",
+        "INC37",
+        "INC4",
+        "INC40",
+        "INC41",
+        "INC42",
+        "INC43",
+        "INC48",
+        "INC5",
+        "KKW1",
+        "KKW5",
+        "MCN1",
+        "PYT1",
+        "PYT2",
+        "SIH1",
+        "SIH2",
+        "SIH3",
+        "TW1",
+        "YAN4",
+        "YEO1",
+        "YEO2",
+        "YON1"
+      ],
+      "affectedRoutes": [
+        {
+          "fc": "GOY1",
+          "shift": "주간조",
+          "route": "진접/별내",
+          "change": "changed"
+        },
+        {
+          "fc": "GOY1",
+          "shift": "주간조",
+          "route": "대원/중산",
+          "change": "changed"
+        },
+        {
+          "fc": "GOY1",
+          "shift": "주간조",
+          "route": "서대문/세검정",
+          "change": "changed"
+        },
+        {
+          "fc": "GOY1",
+          "shift": "주간조",
+          "route": "수유",
+          "change": "changed"
+        },
+        {
+          "fc": "GOY1",
+          "shift": "오후조",
+          "route": "수유",
+          "change": "changed"
+        },
+        {
+          "fc": "ECH3",
+          "shift": "오후조",
+          "route": "북수원",
+          "change": "changed"
+        },
+        {
+          "fc": "ECH3",
+          "shift": "오후조",
+          "route": "노원_(7/26부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "ECH3",
+          "shift": "오후조",
+          "route": "원주",
+          "change": "changed"
+        },
+        {
+          "fc": "ECH3",
+          "shift": "오후조",
+          "route": "노원",
+          "change": "changed"
+        },
+        {
+          "fc": "ECH3",
+          "shift": "오후조",
+          "route": "원주_(7/26부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "ECH3",
+          "shift": "오후조",
+          "route": "쌍문/수유",
+          "change": "changed"
+        },
+        {
+          "fc": "ECH3",
+          "shift": "오후조",
+          "route": "북수원_(7/26부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "ECH3",
+          "shift": "오후조",
+          "route": "쌍문/수유_(7/26부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "ECH3",
+          "shift": "주간조",
+          "route": "원주_(7/26부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "ECH3",
+          "shift": "주간조",
+          "route": "북수원_(7/26부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "ECH3",
+          "shift": "주간조",
+          "route": "쌍문/수유_(7/26부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "ECH3",
+          "shift": "주간조",
+          "route": "노원_(7/26부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "PYT1",
+          "shift": "주간조",
+          "route": "화성",
+          "change": "removed"
+        },
+        {
+          "fc": "YON1",
+          "shift": "오후조",
+          "route": "노원",
+          "change": "changed"
+        },
+        {
+          "fc": "YON1",
+          "shift": "주간조",
+          "route": "의왕/수원",
+          "change": "changed"
+        },
+        {
+          "fc": "GOY3",
+          "shift": "주간조",
+          "route": "진접/별내",
+          "change": "changed"
+        },
+        {
+          "fc": "GOY3",
+          "shift": "주간조",
+          "route": "대원/중산",
+          "change": "changed"
+        },
+        {
+          "fc": "GOY3",
+          "shift": "주간조",
+          "route": "서대문/세검정",
+          "change": "changed"
+        },
+        {
+          "fc": "GOY3",
+          "shift": "주간조",
+          "route": "수유",
+          "change": "changed"
+        },
+        {
+          "fc": "GOY3",
+          "shift": "오후조",
+          "route": "수유",
+          "change": "changed"
+        },
+        {
+          "fc": "ANS8",
+          "shift": "주간조",
+          "route": "천안",
+          "change": "changed"
+        },
+        {
+          "fc": "ANS8",
+          "shift": "주간조",
+          "route": "안성_(7/27부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "ANS8",
+          "shift": "주간조",
+          "route": "충주",
+          "change": "changed"
+        },
+        {
+          "fc": "ANS8",
+          "shift": "주간조",
+          "route": "천안_(7/27부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "ANS8",
+          "shift": "오후조",
+          "route": "천안",
+          "change": "changed"
+        },
+        {
+          "fc": "ANS8",
+          "shift": "오후조",
+          "route": "안성_(7/27부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "ANS8",
+          "shift": "오후조",
+          "route": "충주",
+          "change": "changed"
+        },
+        {
+          "fc": "ANS8",
+          "shift": "오후조",
+          "route": "천안_(7/27부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "상수",
+          "change": "changed"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "만수_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "십정_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "원종_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "마포_(7/27부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "구월_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "동인천_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "청라_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "작전_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "숭의_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "일산_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "논현_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "부천_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "당하_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "개봉_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "계양_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "상수_(7/27부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "송내_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "가정_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "주간조",
+          "route": "연수_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "상수",
+          "change": "changed"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "만수_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "십정_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "계양_(30센터 경유)_(KKR노선)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "원종_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "마포_(7/27부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "구월_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "동인천_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "청라_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "작전_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "숭의_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "일산_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "논현_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "부천_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "당하_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "상수_(7/27부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "송내_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": " 개봉_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "가정_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC26",
+          "shift": "오후조",
+          "route": "연수_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "상수",
+          "change": "changed"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "만수_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "십정_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "원종_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "마포_(7/27부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "구월_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "동인천_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "청라_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "작전_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "숭의_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "일산_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "논현_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "부천_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "당하_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "개봉_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "계양_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "상수_(7/27부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "송내_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "가정_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "주간조",
+          "route": "연수_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "오후조",
+          "route": "상수",
+          "change": "changed"
+        },
+        {
+          "fc": "INC28",
+          "shift": "오후조",
+          "route": "만수_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "오후조",
+          "route": "십정_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "오후조",
+          "route": "계양_(30센터 경유)_(KKR노선)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "오후조",
+          "route": "원종_(30센터 경유)_(KKR)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "오후조",
+          "route": "마포_(7/27부터운행)",
+          "change": "added"
+        },
+        {
+          "fc": "INC28",
+          "shift": "오후조",
+          "route": "구월_(30센터 경유)_(KKR)",
+          "change": "added"
+        }
+      ]
+    },
+    {
       "id": "247719e1-0d62-441a-87d1-8f62230c4fa7",
       "timestamp": "2026-07-24 16:04",
       "source": "manual",
