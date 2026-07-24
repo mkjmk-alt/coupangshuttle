@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { loadInitialShuttleData, loadShuttleCenter } from '../utils/shuttleDataLoader';
 
 interface Stop {
   Latitude: number;
@@ -39,22 +40,55 @@ interface ShuttleData {
 export default function ShuttleDashboard() {
   const [data, setData] = useState<ShuttleData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dataVersion, setDataVersion] = useState('');
+  const [usesCenterFiles, setUsesCenterFiles] = useState(false);
+  const loadedCenters = useRef(new Set<string>());
   const [selectedFC, setSelectedFC] = useState<string>('');
   const [selectedShift, setSelectedShift] = useState<string>('');
   const [selectedRoute, setSelectedRoute] = useState<string>('');
 
   useEffect(() => {
-    fetch('/data/shuttle_data.json')
-      .then((res) => res.json())
-      .then((json) => {
-        setData(json);
+    let cancelled = false;
+
+    loadInitialShuttleData<ShuttleData>()
+      .then((result) => {
+        if (cancelled) return;
+        setData(result.data);
+        setDataVersion(result.version);
+        setUsesCenterFiles(result.usesCenterFiles);
+        if (!result.usesCenterFiles) {
+          loadedCenters.current = new Set(Object.keys(result.data));
+        }
         setLoading(false);
       })
       .catch((err) => {
+        if (cancelled) return;
         console.error('Error loading shuttle data:', err);
         setLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  useEffect(() => {
+    if (!selectedFC || !usesCenterFiles || loadedCenters.current.has(selectedFC)) return;
+
+    const controller = new AbortController();
+    loadShuttleCenter<FCCard>(selectedFC, dataVersion, controller.signal)
+      .then((center) => {
+        loadedCenters.current.add(selectedFC);
+        setData((current) => current ? { ...current, [selectedFC]: center } : current);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          console.error(`Error loading shuttle center ${selectedFC}:`, err);
+        }
+      });
+
+    return () => controller.abort();
+  }, [selectedFC, usesCenterFiles, dataVersion]);
 
   const fcList = useMemo(() => {
     if (!data) return [];
@@ -98,7 +132,7 @@ export default function ShuttleDashboard() {
   const tableData = useMemo(() => {
     if (!data || !selectedFC) return [];
     const shifts = data[selectedFC].shifts;
-    let stops: (Stop & { shift: string; route: string })[] = [];
+    const stops: (Stop & { shift: string; route: string })[] = [];
 
     Object.entries(shifts).forEach(([shiftName, routes]) => {
       if (selectedShift && shiftName !== selectedShift) return;

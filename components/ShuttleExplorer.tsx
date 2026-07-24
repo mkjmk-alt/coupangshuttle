@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { ShuttleStop } from '../types/shuttle';
 import { getRouteColor } from '../utils/color';
+import { loadInitialShuttleData, loadShuttleCenter } from '../utils/shuttleDataLoader';
 import CoupangBanner from './CoupangBanner';
 
 // Dynamically import the map to ensure it stays client-side
@@ -71,6 +72,11 @@ interface CompareItem {
 export default function ShuttleExplorer() {
   const [data, setData] = useState<ShuttleData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dataVersion, setDataVersion] = useState('');
+  const [usesCenterFiles, setUsesCenterFiles] = useState(false);
+  const [centerLoading, setCenterLoading] = useState(false);
+  const [centerLoadError, setCenterLoadError] = useState('');
+  const loadedCenters = useRef(new Set<string>());
   const [selectedFC, setSelectedFC] = useState<string>('');
   const [selectedShift, setSelectedShift] = useState<string>('');
   const [selectedRoute, setSelectedRoute] = useState<string>('');
@@ -83,17 +89,56 @@ export default function ShuttleExplorer() {
   const [unlockedTimeLeft, setUnlockedTimeLeft] = useState<string>('');
 
   useEffect(() => {
-    fetch('/data/shuttle_data.json')
-      .then((res) => res.json())
-      .then((json) => {
-        setData(json);
+    let cancelled = false;
+
+    loadInitialShuttleData<ShuttleData>()
+      .then((result) => {
+        if (cancelled) return;
+        setData(result.data);
+        setDataVersion(result.version);
+        setUsesCenterFiles(result.usesCenterFiles);
+        if (!result.usesCenterFiles) {
+          loadedCenters.current = new Set(Object.keys(result.data));
+        }
         setLoading(false);
       })
       .catch((err) => {
+        if (cancelled) return;
         console.error('Error loading shuttle data:', err);
         setLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  useEffect(() => {
+    if (!selectedFC || !usesCenterFiles || loadedCenters.current.has(selectedFC)) {
+      setCenterLoading(false);
+      setCenterLoadError('');
+      return;
+    }
+
+    const controller = new AbortController();
+    setCenterLoading(true);
+    setCenterLoadError('');
+
+    loadShuttleCenter<FCCard>(selectedFC, dataVersion, controller.signal)
+      .then((center) => {
+        loadedCenters.current.add(selectedFC);
+        setData((current) => current ? { ...current, [selectedFC]: center } : current);
+        setCenterLoading(false);
+      })
+      .catch((err) => {
+        if (controller.signal.aborted) return;
+        console.error(`Error loading shuttle center ${selectedFC}:`, err);
+        setCenterLoadError('센터 노선 정보를 불러오지 못했습니다. 잠시 후 다시 선택해주세요.');
+        setCenterLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [selectedFC, usesCenterFiles, dataVersion]);
 
   // 잠금 해제 상태 복구 및 주기적 기한 체크
   useEffect(() => {
@@ -517,6 +562,18 @@ export default function ShuttleExplorer() {
                     </div>
                 </div>
             </div>
+            {(centerLoading || centerLoadError) && (
+              <div
+                className={`mt-5 rounded-xl px-4 py-3 text-xs font-bold ${
+                  centerLoadError
+                    ? 'bg-red-50 text-red-600 border border-red-100'
+                    : 'bg-indigo-50 text-indigo-600 border border-indigo-100'
+                }`}
+                role="status"
+              >
+                {centerLoadError || '선택한 센터의 최신 노선 정보를 불러오는 중입니다...'}
+              </div>
+            )}
         </div>
       </section>
 

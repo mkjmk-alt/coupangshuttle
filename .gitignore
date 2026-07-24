@@ -20,6 +20,10 @@
 # production
 /build
 
+# generated shuttle data (created automatically before every build)
+/public/data/shuttle_index.json
+/public/data/centers/
+
 # misc
 .DS_Store
 *.pem
