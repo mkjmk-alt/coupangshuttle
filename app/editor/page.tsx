@@ -738,6 +738,35 @@ function EditorContent() {
     setData(newData);
   };
 
+  const handleApplyMapCoordinate = (latitude: string, longitude: string) => {
+    if (
+      highlightedStopIndex === null ||
+      !data ||
+      !selectedFC ||
+      !selectedShift ||
+      !selectedRoute
+    ) {
+      setMessage({ type: 'error', text: '좌표를 적용할 정류장을 먼저 선택해 주세요.' });
+      return;
+    }
+
+    const newData = JSON.parse(JSON.stringify(data));
+    const stops = newData[selectedFC].shifts[selectedShift][selectedRoute];
+    const selectedStop = stops[highlightedStopIndex];
+
+    stops[highlightedStopIndex] = {
+      ...selectedStop,
+      Latitude: latitude,
+      Longitude: longitude,
+    };
+
+    setData(newData);
+    setMessage({
+      type: 'success',
+      text: `'${selectedStop.Name}' 정류장에 위도 ${latitude}, 경도 ${longitude}를 적용했습니다. 저장 전까지는 운영 데이터에 반영되지 않습니다.`,
+    });
+  };
+
   const saveSkippedErrorKeys = (keys: Set<string>) => {
     try {
       localStorage.setItem(SKIPPED_ERRORS_STORAGE_KEY, JSON.stringify([...keys].slice(-2000)));
@@ -1648,6 +1677,7 @@ function EditorContent() {
             <MapPreview 
               stops={currentStops} 
               highlightIndex={highlightedStopIndex}
+              onApplyCoordinate={handleApplyMapCoordinate}
             />
         </div>
       </div>

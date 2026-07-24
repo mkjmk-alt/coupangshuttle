@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -28,6 +28,7 @@ interface MapPreviewStop {
 interface MapPreviewProps {
   stops: MapPreviewStop[];
   highlightIndex: number | null;
+  onApplyCoordinate?: (latitude: string, longitude: string) => void;
 }
 
 // Fixed: Invalidate size on load to fix "gray screen" issue
@@ -45,9 +46,21 @@ function MapController({ center, zoom }: { center: [number, number], zoom: numbe
   return null;
 }
 
-export default function MapPreview({ stops, highlightIndex }: MapPreviewProps) {
+function CoordinatePicker({ onSelect }: { onSelect: (coordinate: [number, number]) => void }) {
+  useMapEvents({
+    click: (event) => {
+      onSelect([event.latlng.lat, event.latlng.lng]);
+    },
+  });
+
+  return null;
+}
+
+export default function MapPreview({ stops, highlightIndex, onApplyCoordinate }: MapPreviewProps) {
   const [mapCenter, setMapCenter] = useState<[number, number]>([36.5, 127.5]);
   const [zoom, setZoom] = useState(7);
+  const [selectedCoordinate, setSelectedCoordinate] = useState<[number, number] | null>(null);
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
 
   // Update map when highlightIndex changes
   useEffect(() => {
@@ -60,12 +73,32 @@ export default function MapPreview({ stops, highlightIndex }: MapPreviewProps) {
         setMapCenter([lat, lng]);
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setZoom(16);
+        setSelectedCoordinate([lat, lng]);
+        setCopyState('idle');
       }
     }
   }, [highlightIndex, stops]);
 
   const validStops = stops.filter(s => !isNaN(parseFloat(s.Latitude)) && !isNaN(parseFloat(s.Longitude)));
   const polylinePoints = validStops.map(s => [parseFloat(s.Latitude), parseFloat(s.Longitude)] as [number, number]);
+  const selectedLatitude = selectedCoordinate?.[0].toFixed(6) ?? '';
+  const selectedLongitude = selectedCoordinate?.[1].toFixed(6) ?? '';
+
+  const handleCoordinateSelect = (coordinate: [number, number]) => {
+    setSelectedCoordinate(coordinate);
+    setCopyState('idle');
+  };
+
+  const handleCopyCoordinate = async () => {
+    if (!selectedCoordinate) return;
+
+    try {
+      await navigator.clipboard.writeText(`${selectedLatitude}, ${selectedLongitude}`);
+      setCopyState('copied');
+    } catch {
+      setCopyState('failed');
+    }
+  };
 
   if (typeof window === 'undefined') return null;
 
@@ -78,6 +111,7 @@ export default function MapPreview({ stops, highlightIndex }: MapPreviewProps) {
         zoomControl={true}
       >
         <MapController center={mapCenter} zoom={zoom} />
+        <CoordinatePicker onSelect={handleCoordinateSelect} />
         <TileLayer
           attribution='&copy; OpenStreetMap'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -89,8 +123,10 @@ export default function MapPreview({ stops, highlightIndex }: MapPreviewProps) {
             position={[parseFloat(stop.Latitude), parseFloat(stop.Longitude)]}
             eventHandlers={{
                 click: () => {
-                    setMapCenter([parseFloat(stop.Latitude), parseFloat(stop.Longitude)]);
+                    const coordinate: [number, number] = [parseFloat(stop.Latitude), parseFloat(stop.Longitude)];
+                    setMapCenter(coordinate);
                     setZoom(16);
+                    handleCoordinateSelect(coordinate);
                 }
             }}
           >
@@ -104,10 +140,52 @@ export default function MapPreview({ stops, highlightIndex }: MapPreviewProps) {
         {polylinePoints.length > 1 && (
             <Polyline positions={polylinePoints} color="#4f46e5" weight={3} opacity={0.5} dashArray="10, 10" />
         )}
+
+        {selectedCoordinate && (
+          <Marker position={selectedCoordinate}>
+            <Popup>
+              <div className="font-bold text-slate-800">선택한 위치</div>
+              <div className="text-xs text-slate-500 font-mono">
+                {selectedLatitude}, {selectedLongitude}
+              </div>
+            </Popup>
+          </Marker>
+        )}
       </MapContainer>
       
-      <div className="absolute bottom-6 right-6 z-[1000] bg-white/80 backdrop-blur-md px-4 py-2 rounded-xl text-[10px] font-black text-slate-400 border border-white shadow-sm">
-        REAL-TIME COORDINATE PREVIEW
+      <div className="absolute bottom-4 left-4 right-4 z-[1000] rounded-2xl border border-white bg-white/95 p-3 shadow-xl backdrop-blur-md">
+        {selectedCoordinate ? (
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <div className="min-w-0">
+              <p className="text-[9px] font-black uppercase tracking-widest text-indigo-500">선택한 위치 좌표</p>
+              <p className="mt-1 break-all font-mono text-xs font-black text-slate-700">
+                위도 {selectedLatitude} · 경도 {selectedLongitude}
+              </p>
+            </div>
+            <div className="flex shrink-0 gap-2">
+              <button
+                type="button"
+                onClick={handleCopyCoordinate}
+                className="rounded-lg bg-slate-100 px-3 py-2 text-[10px] font-black text-slate-600 transition hover:bg-slate-200"
+              >
+                {copyState === 'copied' ? '복사됨' : copyState === 'failed' ? '복사 실패' : '좌표 복사'}
+              </button>
+              {highlightIndex !== null && onApplyCoordinate && (
+                <button
+                  type="button"
+                  onClick={() => onApplyCoordinate(selectedLatitude, selectedLongitude)}
+                  className="rounded-lg bg-indigo-600 px-3 py-2 text-[10px] font-black text-white transition hover:bg-slate-900"
+                >
+                  선택 정류장에 적용
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <p className="text-center text-[10px] font-black text-slate-500">
+            지도를 클릭하면 그 위치의 위도·경도가 표시됩니다.
+          </p>
+        )}
       </div>
     </div>
   );
