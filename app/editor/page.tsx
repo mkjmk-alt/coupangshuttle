@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState, useEffect, useMemo } from 'react';
+import { ClipboardEvent, FormEvent, useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
@@ -736,6 +736,54 @@ function EditorContent() {
     };
 
     setData(newData);
+  };
+
+  const handleCoordinatePaste = (event: ClipboardEvent<HTMLInputElement>, index: number) => {
+    if (!data || !selectedFC || !selectedShift || !selectedRoute) return;
+
+    const pastedText = event.clipboardData.getData('text').trim();
+    const coordinateValues = pastedText.match(/-?\d{1,3}(?:\.\d+)?/g);
+
+    if (!coordinateValues || coordinateValues.length < 2) return;
+
+    const latitude = Number(coordinateValues[0]);
+    const longitude = Number(coordinateValues[1]);
+
+    if (
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180
+    ) {
+      setMessage({
+        type: 'error',
+        text: '붙여넣은 좌표를 확인해 주세요. 위도, 경도 순서로 복사해야 합니다.',
+      });
+      return;
+    }
+
+    event.preventDefault();
+
+    const newData = JSON.parse(JSON.stringify(data));
+    const stops = newData[selectedFC].shifts[selectedShift][selectedRoute];
+    const selectedStop = stops[index];
+    const formattedLatitude = String(latitude);
+    const formattedLongitude = String(longitude);
+
+    stops[index] = {
+      ...selectedStop,
+      Latitude: formattedLatitude,
+      Longitude: formattedLongitude,
+    };
+
+    setData(newData);
+    setHighlightedStopIndex(index);
+    setMessage({
+      type: 'success',
+      text: `'${selectedStop.Name}' 정류장에 위도 ${formattedLatitude}, 경도 ${formattedLongitude}를 함께 붙여넣었습니다. 저장 전까지는 운영 데이터에 반영되지 않습니다.`,
+    });
   };
 
   const handleApplyMapCoordinate = (latitude: string, longitude: string) => {
@@ -1611,6 +1659,7 @@ function EditorContent() {
                                                         value={stop.Latitude}
                                                         onFocus={() => setHighlightedStopIndex(idx)}
                                                         onChange={(e) => handleStopChange(idx, 'Latitude', e.target.value)}
+                                                        onPaste={(e) => handleCoordinatePaste(e, idx)}
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5">
@@ -1621,8 +1670,12 @@ function EditorContent() {
                                                         value={stop.Longitude}
                                                         onFocus={() => setHighlightedStopIndex(idx)}
                                                         onChange={(e) => handleStopChange(idx, 'Longitude', e.target.value)}
+                                                        onPaste={(e) => handleCoordinatePaste(e, idx)}
                                                     />
                                                 </div>
+                                                <p className="col-span-2 px-1 text-[9px] font-bold leading-relaxed text-indigo-400">
+                                                    위도, 경도를 함께 복사했다면 Lat 또는 Lng 칸 한 곳에 한 번만 붙여넣으세요.
+                                                </p>
                                             </div>
 
                                             <div className="md:col-span-2 flex items-end justify-between">
