@@ -11,11 +11,11 @@ const UPDATE_PATH = 'public/data/shuttle_update.json';
 const MANUAL_PATH = 'public/data/shuttle_manual.json';
 const META_PATH = 'public/data/shuttle_meta.json';
 const CHANGELOG_PATH = 'public/data/shuttle_changelog.json';
+const MANUAL_QUEUE_DIR = 'manual_queue';
 const BRANCH = 'main';
 const MAX_PATCHES = 100;
 const MAX_STOPS_PER_ROUTE = 1_000;
 const MAX_CHANGE_LOG_ENTRIES = 100;
-const MAX_MANUAL_STOP_CHANGES = 500;
 
 type JsonObject = Record<string, unknown>;
 type Stop = JsonObject & {
@@ -93,6 +93,7 @@ interface RoutePatch {
   fc: string;
   shift: string;
   route: string;
+  previousStops: Stop[];
   stops: Stop[];
 }
 
@@ -130,7 +131,7 @@ function parseRoutePatches(value: unknown): RoutePatch[] | null {
   for (const item of value) {
     if (!isObject(item)) return null;
 
-    const { fc, shift, route, stops } = item;
+    const { fc, shift, route, previousStops, stops } = item;
     if (
       typeof fc !== 'string' ||
       typeof shift !== 'string' ||
@@ -141,6 +142,9 @@ function parseRoutePatches(value: unknown): RoutePatch[] | null {
       fc.length > 100 ||
       shift.length > 100 ||
       route.length > 200 ||
+      !Array.isArray(previousStops) ||
+      previousStops.length > MAX_STOPS_PER_ROUTE ||
+      !previousStops.every(isStop) ||
       !Array.isArray(stops) ||
       stops.length > MAX_STOPS_PER_ROUTE ||
       !stops.every(isStop)
@@ -149,17 +153,19 @@ function parseRoutePatches(value: unknown): RoutePatch[] | null {
     }
 
     if (
-      !stops.every((stop, index) =>
-        stop['Center (EN)'] === fc &&
-        stop.Shift === shift &&
-        stop['Route Name'] === route &&
-        stop.Order === index + 1,
+      ![previousStops, stops].every((routeStops) =>
+        routeStops.every((stop, index) =>
+          stop['Center (EN)'] === fc &&
+          stop.Shift === shift &&
+          stop['Route Name'] === route &&
+          stop.Order === index + 1,
+        ),
       )
     ) {
       return null;
     }
 
-    patches.push({ fc, shift, route, stops });
+    patches.push({ fc, shift, route, previousStops, stops });
   }
 
   return patches;
@@ -796,45 +802,24 @@ export async function POST(request: Request) {
         );
       }
 
-      const [current, manual] = await Promise.all([
-        fetchFile(DATA_PATH, githubToken),
-        fetchFile(MANUAL_PATH, githubToken, true),
-      ]);
-
-      const before = structuredClone(current);
-      applyRoutePatches(current, current, patches);
-      applyRoutePatches(manual, current, patches);
       const timestamp = kstTimestamp();
-      const stopChanges = collectManualStopChanges(before, current, patches);
-      if (stopChanges.length > MAX_MANUAL_STOP_CHANGES) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: `한 번에 기록할 수 있는 정류장 변경은 ${MAX_MANUAL_STOP_CHANGES}건입니다. 변경 사항을 나누어 저장해주세요.`,
-          },
-          { status: 400 },
-        );
-      }
-      const changeLogEntry = buildChangeLogEntry(
-        'manual',
-        'manual_save',
-        timestamp,
-        before,
-        current,
-        stopChanges,
+      const queueId = `${new Date().toISOString().replace(/[:.]/g, '-')}-${crypto.randomUUID()}`;
+      const queuePath = `${MANUAL_QUEUE_DIR}/${queueId}.json`;
+      await pushJson(
+        queuePath,
+        {
+          version: 1,
+          timestamp,
+          changes: patches,
+        },
+        'Queue manual editor changes',
+        githubToken,
       );
-
-      // 수동 보정본을 먼저 저장해 다음 자동 병합에서도 수정값이 유지되게 한다.
-      await pushJson(MANUAL_PATH, manual, '📝 Update manual shuttle overrides', githubToken);
-      await pushJson(DATA_PATH, current, '📝 Manual edit via Admin Editor', githubToken);
-      const metadata = await pushMetadata(githubToken, timestamp);
-      await pushChangeLog(githubToken, changeLogEntry);
 
       return NextResponse.json({
         success: true,
-        message: `${patches.length}개 노선을 저장했습니다.`,
-        metadata,
-        changeLogEntry,
+        queued: true,
+        message: `${patches.length}개 노선의 저장 요청을 접수했습니다. 자동 배포가 끝나면 지도에 반영됩니다.`,
       });
     }
 

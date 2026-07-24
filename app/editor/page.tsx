@@ -65,6 +65,7 @@ interface RoutePatch {
   fc: string;
   shift: string;
   route: string;
+  previousStops: Stop[];
   stops: Stop[];
 }
 
@@ -117,6 +118,7 @@ interface ChangeLogEntry {
 
 interface ApiResponse {
   success?: boolean;
+  queued?: boolean;
   message?: string;
   metadata?: ShuttleMetadata;
   changeLogEntry?: ChangeLogEntry;
@@ -981,7 +983,13 @@ function EditorContent() {
         for (const [route, stops] of Object.entries(routes)) {
           const persistedStops = persistedData[fc]?.shifts?.[shift]?.[route];
           if (JSON.stringify(stops) !== JSON.stringify(persistedStops)) {
-            patches.push({ fc, shift, route, stops });
+            patches.push({
+              fc,
+              shift,
+              route,
+              previousStops: structuredClone(persistedStops ?? []),
+              stops,
+            });
           }
         }
       }
@@ -990,7 +998,7 @@ function EditorContent() {
   };
 
   const splitPatchBatches = (patches: RoutePatch[]): RoutePatch[][] => {
-    const maxBatchBytes = 3 * 1024 * 1024;
+    const maxBatchBytes = 512 * 1024;
     const batches: RoutePatch[][] = [];
     let batch: RoutePatch[] = [];
 
@@ -1012,7 +1020,7 @@ function EditorContent() {
   };
 
   const postEditorRequest = async (body: Record<string, unknown>) => {
-    const response = await fetch('/api/save-data/', {
+    const response = await fetch('/api/save-data', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1020,7 +1028,15 @@ function EditorContent() {
       },
       body: JSON.stringify(body),
     });
-    const result = await response.json() as ApiResponse;
+    const responseText = await response.text();
+    let result: ApiResponse;
+    try {
+      result = JSON.parse(responseText) as ApiResponse;
+    } catch {
+      throw new Error(
+        `서버가 올바른 응답을 반환하지 않았습니다 (HTTP ${response.status}). 잠시 후 다시 시도해 주세요.`,
+      );
+    }
 
     if (response.status === 401) {
       handleLogout();
@@ -1044,9 +1060,13 @@ function EditorContent() {
 
       const batches = splitPatchBatches(patches);
       let latestMetadata: ShuttleMetadata | undefined;
+      let queued = false;
+      let latestMessage = '';
       const newChangeLogEntries: ChangeLogEntry[] = [];
       for (const changes of batches) {
         const result = await postEditorRequest({ type: 'manual', changes });
+        queued = queued || result.queued === true;
+        latestMessage = result.message || latestMessage;
         latestMetadata = result.metadata ?? latestMetadata;
         if (result.changeLogEntry) {
           newChangeLogEntries.unshift(result.changeLogEntry);
@@ -1062,7 +1082,9 @@ function EditorContent() {
       }
       setMessage({
         type: 'success',
-        text: `${patches.length}개 노선 저장 완료! 지도에 곧 반영됩니다.`,
+        text: queued
+          ? `${latestMessage || '저장 요청을 접수했습니다.'} 보통 1~3분 정도 걸립니다.`
+          : `${patches.length}개 노선 저장 완료! 지도에 곧 반영됩니다.`,
       });
     } catch (err: unknown) {
       console.error('Save failed:', err);

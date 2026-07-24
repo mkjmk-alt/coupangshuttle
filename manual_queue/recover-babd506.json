@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "timestamp": "2026-07-24 16:04",
+  "changes": [
+    {
+      "fc": "CHW2",
+      "shift": "주간조",
+      "route": "동래/구포/사상",
+      "source": "manual"
+    }
+  ]
+}
