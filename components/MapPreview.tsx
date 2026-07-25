@@ -282,8 +282,6 @@ export default function MapPreview({
         level={mapLevel}
         mapTypeId={mapViewType}
         isPanto
-        minLevel={1}
-        maxLevel={14}
         style={{ height: '100%', width: '100%' }}
         onCreate={(createdMap) => setMap(createdMap as KakaoMapInstance)}
         onClick={(_target, mouseEvent) => {
