@@ -1,6 +1,131 @@
 {
   "entries": [
     {
+      "id": "1e2694c7-f968-4a42-9bad-f2207b6cb461",
+      "timestamp": "2026-07-25 21:04",
+      "source": "manual",
+      "action": "manual_save",
+      "summary": "노선 2개 · 정류장 2개 변경",
+      "stats": {
+        "centersAdded": 0,
+        "centersRemoved": 0,
+        "centersChanged": 0,
+        "routesAdded": 0,
+        "routesRemoved": 0,
+        "routesChanged": 2,
+        "stopsAdded": 0,
+        "stopsRemoved": 0,
+        "stopsChanged": 2
+      },
+      "affectedCenters": [
+        "GYS1"
+      ],
+      "affectedRoutes": [
+        {
+          "fc": "GYS1",
+          "shift": "주간조",
+          "route": "경산",
+          "change": "changed"
+        },
+        {
+          "fc": "GYS1",
+          "shift": "심야조",
+          "route": "경산",
+          "change": "changed"
+        }
+      ],
+      "stopChanges": [
+        {
+          "fc": "GYS1",
+          "shift": "주간조",
+          "route": "경산",
+          "change": "changed",
+          "changedFields": [
+            "Latitude",
+            "Longitude"
+          ],
+          "before": {
+            "Center (EN)": "GYS1",
+            "Shift": "주간조",
+            "Route Name": "경산",
+            "Order": 6,
+            "Type": "Stop",
+            "Distance (km)": 0,
+            "Time": "06:41",
+            "Name": "LG럭셔리뷰티 경산센터점 앞",
+            "Address": "대구광역시 달서구 성당동  830-33",
+            "Latitude": "35.837844",
+            "Longitude": "128.552344",
+            "Image URL": "https://coufc.coupang.com/api/file/2191c38d-b00c-498c-969c-8e0a84b9eecc_슬라이드120.PNG",
+            "Remarks": "현실 불가능한 속도 (시속 488km/h 예상)",
+            "Naver Map": "https://map.naver.com/v5/search/35.837844,128.552344",
+            "Kakao Map": "https://map.kakao.com/link/map/LG%EB%9F%AD%EC%85%94%EB%A6%AC%EB%B7%B0%ED%8B%B0%20%EA%B2%BD%EC%82%B0%EC%84%BC%ED%84%B0%EC%A0%90%20%EC%95%9E,35.837844,128.552344"
+          },
+          "after": {
+            "Center (EN)": "GYS1",
+            "Shift": "주간조",
+            "Route Name": "경산",
+            "Order": 6,
+            "Type": "Stop",
+            "Distance (km)": 0,
+            "Time": "06:41",
+            "Name": "LG럭셔리뷰티 경산센터점 앞",
+            "Address": "대구광역시 달서구 성당동  830-33",
+            "Latitude": "35.822472",
+            "Longitude": "128.737451",
+            "Image URL": "https://coufc.coupang.com/api/file/2191c38d-b00c-498c-969c-8e0a84b9eecc_슬라이드120.PNG",
+            "Remarks": "현실 불가능한 속도 (시속 488km/h 예상)",
+            "Naver Map": "https://map.naver.com/v5/search/35.837844,128.552344",
+            "Kakao Map": "https://map.kakao.com/link/map/LG%EB%9F%AD%EC%85%94%EB%A6%AC%EB%B7%B0%ED%8B%B0%20%EA%B2%BD%EC%82%B0%EC%84%BC%ED%84%B0%EC%A0%90%20%EC%95%9E,35.837844,128.552344"
+          }
+        },
+        {
+          "fc": "GYS1",
+          "shift": "심야조",
+          "route": "경산",
+          "change": "changed",
+          "changedFields": [
+            "Latitude",
+            "Longitude"
+          ],
+          "before": {
+            "Center (EN)": "GYS1",
+            "Shift": "심야조",
+            "Route Name": "경산",
+            "Order": 6,
+            "Type": "Stop",
+            "Distance (km)": 0,
+            "Time": "19:32",
+            "Name": "LG럭셔리뷰티 경산센터점 앞",
+            "Address": "대구광역시 달서구 성당동  830-33",
+            "Latitude": "35.837844",
+            "Longitude": "128.552344",
+            "Image URL": "https://coufc.coupang.com/api/file/8060ebf5-4660-4bec-917d-c8b3040aefd4_슬라이드120.PNG",
+            "Remarks": "현실 불가능한 속도 (시속 488km/h 예상)",
+            "Naver Map": "https://map.naver.com/v5/search/35.837844,128.552344",
+            "Kakao Map": "https://map.kakao.com/link/map/LG%EB%9F%AD%EC%85%94%EB%A6%AC%EB%B7%B0%ED%8B%B0%20%EA%B2%BD%EC%82%B0%EC%84%BC%ED%84%B0%EC%A0%90%20%EC%95%9E,35.837844,128.552344"
+          },
+          "after": {
+            "Center (EN)": "GYS1",
+            "Shift": "심야조",
+            "Route Name": "경산",
+            "Order": 6,
+            "Type": "Stop",
+            "Distance (km)": 0,
+            "Time": "19:32",
+            "Name": "LG럭셔리뷰티 경산센터점 앞",
+            "Address": "대구광역시 달서구 성당동  830-33",
+            "Latitude": "35.822472",
+            "Longitude": "128.737451",
+            "Image URL": "https://coufc.coupang.com/api/file/8060ebf5-4660-4bec-917d-c8b3040aefd4_슬라이드120.PNG",
+            "Remarks": "현실 불가능한 속도 (시속 488km/h 예상)",
+            "Naver Map": "https://map.naver.com/v5/search/35.837844,128.552344",
+            "Kakao Map": "https://map.kakao.com/link/map/LG%EB%9F%AD%EC%85%94%EB%A6%AC%EB%B7%B0%ED%8B%B0%20%EA%B2%BD%EC%82%B0%EC%84%BC%ED%84%B0%EC%A0%90%20%EC%95%9E,35.837844,128.552344"
+          }
+        }
+      ]
+    },
+    {
       "id": "8ba824ee-84e6-4f2d-9ada-08f28ad0e56c",
       "timestamp": "2026-07-25 11:18",
       "source": "automatic",
