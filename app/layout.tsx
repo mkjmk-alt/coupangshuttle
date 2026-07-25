@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import CookieSettingsButton from '@/components/CookieSettingsButton';
 import PrivacyConsent from '@/components/PrivacyConsent';
 import './globals.css';
 import 'leaflet/dist/leaflet.css';
@@ -49,7 +50,7 @@ export default function RootLayout({
           </div>
         </nav>
 
-        <div className="min-h-screen pt-24">{children}</div>
+        <div className="min-h-screen pt-16 md:pt-24">{children}</div>
 
         <footer className="mt-40 border-t border-slate-200 bg-slate-50 pb-12 pt-24">
           <div className="mx-auto max-w-7xl px-6 lg:px-12">
@@ -97,6 +98,9 @@ export default function RootLayout({
                     >
                       서비스 이용약관
                     </Link>
+                  </li>
+                  <li>
+                    <CookieSettingsButton />
                   </li>
                 </ul>
               </div>

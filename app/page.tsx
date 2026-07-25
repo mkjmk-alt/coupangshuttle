@@ -57,22 +57,22 @@ export default function Home() {
   return (
     <main className="max-w-7xl mx-auto px-4 md:px-6 lg:px-12 font-sans overflow-x-hidden">
       {/* Premium Hero Header */}
-      <header className="relative pt-20 pb-24 text-center">
+      <header className="relative pb-12 pt-8 text-center sm:pb-16 sm:pt-12 md:pb-24 md:pt-20">
         {/* Decorative elements */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-indigo-50/50 rounded-full blur-[120px] -z-10 opacity-60"></div>
         <div className="absolute top-20 left-1/4 w-32 h-32 bg-purple-100 rounded-full blur-[60px] -z-10 animate-pulse"></div>
         
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-full border border-indigo-100 mb-8 animate-in slide-in-from-top duration-700">
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-4 py-2 animate-in slide-in-from-top duration-700 md:mb-8">
             <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
             <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em]">데이터 최종 업데이트: {formattedDate}</span>
         </div>
         
-        <h1 className="text-4xl sm:text-5xl md:text-7xl font-[900] text-slate-900 mb-8 tracking-tighter leading-[1.1] md:leading-[1.05] animate-in slide-in-from-bottom duration-700 delay-100">
+        <h1 className="mb-5 text-4xl font-[900] leading-[1.1] tracking-tighter text-slate-900 animate-in slide-in-from-bottom duration-700 delay-100 sm:text-5xl md:mb-8 md:text-7xl md:leading-[1.05]">
             내 출퇴근 노선을 <br />
             <span className="text-gradient">더 쉽고 빠르게</span>
         </h1>
         
-        <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed font-medium break-keep animate-in slide-in-from-bottom duration-700 delay-200">
+        <p className="mx-auto max-w-2xl break-keep text-base font-medium leading-relaxed text-slate-500 animate-in slide-in-from-bottom duration-700 delay-200 sm:text-lg md:text-xl">
           쿠팡 물류센터 근무자를 위한 비공식 셔틀 노선 안내 서비스입니다. 센터·근무조별 노선과 정류장 위치를 간편하게 확인해 보세요.
         </p>
       </header>

@@ -29,6 +29,12 @@ export default function PrivacyConsent() {
     }
   }, []);
 
+  useEffect(() => {
+    const openConsentPanel = () => setPanelOpen(true);
+    window.addEventListener('csm:open-consent', openConsentPanel);
+    return () => window.removeEventListener('csm:open-consent', openConsentPanel);
+  }, []);
+
   const saveChoice = (nextChoice: ConsentChoice) => {
     const adsWereLoaded = choice === 'accepted';
 
@@ -106,17 +112,6 @@ export default function PrivacyConsent() {
             </div>
           </div>
         </div>
-      )}
-
-      {ready && !panelOpen && (
-        <button
-          type="button"
-          onClick={() => setPanelOpen(true)}
-          className="fixed bottom-4 left-4 z-[200] rounded-full border border-slate-200 bg-white/95 px-4 py-2 text-[11px] font-black text-slate-600 shadow-lg backdrop-blur transition hover:text-indigo-600"
-          aria-label="광고 쿠키 설정 열기"
-        >
-          쿠키 설정
-        </button>
       )}
     </>
   );
