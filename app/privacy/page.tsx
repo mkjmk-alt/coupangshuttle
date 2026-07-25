@@ -18,7 +18,7 @@ export default function PrivacyPolicy() {
         </p>
         <h1 className="mb-4 text-3xl font-bold">개인정보처리방침</h1>
         <p className="text-sm text-slate-600">
-          Coupang Shuttle Map(이하 &quot;서비스&quot;) · 시행일 2026년 7월 22일
+          Coupang Shuttle Map(이하 &quot;서비스&quot;) · 시행일 2026년 7월 25일
         </p>
       </div>
 
@@ -97,14 +97,18 @@ export default function PrivacyPolicy() {
 
         <section>
           <h2 className="mb-4 border-b border-slate-200 pb-2 text-xl font-bold">
-            2. 브라우저 저장공간과 쿠키
+            2. 브라우저 저장공간, 관리자 검토값과 쿠키
           </h2>
           <ul className="list-disc space-y-3 pl-5">
             <li>
               <b>기능 저장값:</b> 노선 비교 기능의 일시 해제 만료 시각을 기기의 로컬 저장공간에
-              최대 1시간 동안 저장할 수 있습니다. 관리자 편집 화면에서는 정상으로 판단해 스킵한
-              오류 후보의 식별값을 같은 기기에 저장하며, 편집 화면의 &quot;모두 복원&quot; 기능으로
-              언제든지 삭제할 수 있습니다.
+              최대 1시간 동안 저장할 수 있습니다.
+            </li>
+            <li>
+              <b>관리자 스킵 검토값:</b> 관리자 편집 화면에서 정상으로 판단해 스킵한 오류 후보의
+              센터·근무조·노선·정류장 식별정보, 오류 유형과 스킵 시각을 Cloudflare D1에 저장합니다.
+              관리자는 편집 화면에서 원하는 항목을 선택해 복원하거나 전체 복원할 수 있습니다.
+              브라우저에 남아 있던 기존 스킵 식별값은 최초 D1 연결 시 이전한 뒤 삭제합니다.
             </li>
             <li>
               <b>개인정보·광고 설정:</b> 선택한 광고 동의 상태를 기기의 로컬 저장공간에 저장합니다.
@@ -134,11 +138,12 @@ export default function PrivacyPolicy() {
           </p>
           <div className="space-y-4">
             <div className="rounded-xl border border-slate-200 p-5">
-              <p className="font-bold">Cloudflare, Inc. · 웹 호스팅, 전송 및 보안</p>
+              <p className="font-bold">Cloudflare, Inc. · 웹 호스팅, 전송·보안 및 D1 저장</p>
               <p className="mt-2 text-slate-600">
                 IP 주소, 요청 헤더, 접속·보안 로그가 접속 시 자동 전송될 수 있습니다. 운영자는
-                Cloudflare가 자동 처리한 로그를 별도 회원정보로 결합하지 않습니다. 보유 및 삭제는
-                서비스 설정과 Cloudflare 정책에 따릅니다.
+                Cloudflare가 자동 처리한 로그를 별도 회원정보로 결합하지 않습니다. 관리자 스킵
+                검토값은 D1에 저장하며 복원 또는 운영상 정리 시 삭제합니다. 그 밖의 자동 처리 정보의
+                보유 및 삭제는 서비스 설정과 Cloudflare 정책에 따릅니다.
               </p>
               <a
                 className={externalLinkClass}
@@ -207,6 +212,9 @@ export default function PrivacyPolicy() {
               저장값은 세션 종료 시 제거됩니다.
             </li>
             <li>
+              관리자 스킵 검토값은 해당 항목을 선택 복원 또는 전체 복원할 때 D1에서 삭제합니다.
+            </li>
+            <li>
               외부 사업자가 자동 처리하는 정보는 각 사업자의 보유 정책과 이용자 설정에 따라
               삭제됩니다.
             </li>
@@ -255,7 +263,7 @@ export default function PrivacyPolicy() {
           </h2>
           <ul className="list-disc space-y-3 pl-5">
             <li>HTTPS 암호화 통신과 Cloudflare의 전송·보안 기능을 사용합니다.</li>
-            <li>관리자 데이터 변경 API는 서버에서 편집 키를 검증하며, 키는 공개 코드에 포함하지 않습니다.</li>
+            <li>관리자 데이터 변경 및 스킵 관리 API는 서버에서 편집 키를 검증하며, 키는 공개 코드에 포함하지 않습니다.</li>
             <li>관리 권한과 운영 데이터 접근 범위를 필요한 수준으로 제한합니다.</li>
           </ul>
         </section>
@@ -318,7 +326,7 @@ export default function PrivacyPolicy() {
 
         <div className="border-t border-slate-200 pt-8">
           <p className="font-bold text-slate-900">부칙</p>
-          <p className="mt-2 text-sm text-slate-500">공고일 및 시행일: 2026년 7월 22일</p>
+          <p className="mt-2 text-sm text-slate-500">공고일 및 시행일: 2026년 7월 25일</p>
         </div>
 
         <div className="flex flex-wrap gap-6 border-t border-slate-100 pt-8">

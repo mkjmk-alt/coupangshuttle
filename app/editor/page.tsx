@@ -137,7 +137,20 @@ interface RouteError {
   timeDiff: number;
 }
 
+interface SkippedErrorRecord {
+  key: string;
+  fc: string;
+  fcName: string;
+  shift: string;
+  route: string;
+  stopIndex: number;
+  stopName: string;
+  errorType: RouteError['type'];
+  skippedAt?: string;
+}
+
 type AuthStatus = 'checking' | 'locked' | 'authenticated';
+type SkipStorageStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 const SKIPPED_ERRORS_STORAGE_KEY = 'shuttle_editor_skipped_errors_v1';
 
@@ -182,6 +195,19 @@ function routeErrorKey(error: RouteError): string {
     error.timeDiff,
     error.dist.toFixed(4),
   ].join('|');
+}
+
+function routeErrorToRecord(error: RouteError): SkippedErrorRecord {
+  return {
+    key: routeErrorKey(error),
+    fc: error.fc,
+    fcName: error.fcName,
+    shift: error.shift,
+    route: error.route,
+    stopIndex: error.idx,
+    stopName: error.stopName ?? `#${error.idx + 1}`,
+    errorType: error.type,
+  };
 }
 
 function collectRouteErrors(
@@ -236,6 +262,39 @@ async function verifyEditorKey(editorKey: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+async function skippedErrorsRequest(
+  editorKey: string,
+  init?: RequestInit,
+): Promise<Record<string, unknown>> {
+  const response = await fetch('/api/skipped-errors', {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      'x-editor-key': editorKey,
+      ...(init?.headers ?? {}),
+    },
+    cache: 'no-store',
+  });
+  const responseText = await response.text();
+  let payload: Record<string, unknown> = {};
+  try {
+    const parsed: unknown = responseText ? JSON.parse(responseText) : {};
+    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+      payload = parsed as Record<string, unknown>;
+    }
+  } catch {
+    throw new Error(`스킵 저장소가 올바르지 않은 응답을 반환했습니다. (HTTP ${response.status})`);
+  }
+  if (!response.ok || payload.success !== true) {
+    throw new Error(
+      typeof payload.message === 'string'
+        ? payload.message
+        : '스킵 저장소 요청에 실패했습니다.',
+    );
+  }
+  return payload;
 }
 
 function normalizeMetadata(metadata: ShuttleMetadata): ShuttleMetadata {
@@ -574,6 +633,14 @@ function EditorContent() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [errorFilter, setErrorFilter] = useState<'ALL' | 'SPEED' | 'TIME' | 'DISTANCE'>('ALL');
   const [skippedErrorKeys, setSkippedErrorKeys] = useState<Set<string>>(new Set());
+  const [skippedErrorRecords, setSkippedErrorRecords] = useState<SkippedErrorRecord[]>([]);
+  const [skipStorageStatus, setSkipStorageStatus] = useState<SkipStorageStatus>('idle');
+  const [skipStorageMessage, setSkipStorageMessage] = useState('');
+  const [isSkipManagerOpen, setIsSkipManagerOpen] = useState(false);
+  const [selectedSkippedKeys, setSelectedSkippedKeys] = useState<Set<string>>(new Set());
+  const [skippedSearch, setSkippedSearch] = useState('');
+  const [skipActionPending, setSkipActionPending] = useState(false);
+  const [localSkipMigrationDone, setLocalSkipMigrationDone] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -599,16 +666,47 @@ function EditorContent() {
   }, []);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(SKIPPED_ERRORS_STORAGE_KEY);
-      const parsed: unknown = stored ? JSON.parse(stored) : [];
-      if (Array.isArray(parsed)) {
-        setSkippedErrorKeys(new Set(parsed.filter((key): key is string => typeof key === 'string')));
+    if (authStatus !== 'authenticated' || !editorKey) return;
+
+    let cancelled = false;
+    const loadSkippedErrors = async () => {
+      setSkipStorageStatus('loading');
+      setSkipStorageMessage('');
+      try {
+        const payload = await skippedErrorsRequest(editorKey);
+        if (cancelled) return;
+        const items = Array.isArray(payload.items)
+          ? payload.items.filter((item): item is SkippedErrorRecord =>
+              typeof item === 'object' && item !== null && typeof (item as { key?: unknown }).key === 'string',
+            )
+          : [];
+        setSkippedErrorRecords(items);
+        setSkippedErrorKeys(new Set(items.map(item => item.key)));
+        setSkipStorageStatus('ready');
+      } catch (error) {
+        if (cancelled) return;
+        console.error('Error loading skipped review items from D1:', error);
+        let localKeys: string[] = [];
+        try {
+          const stored = localStorage.getItem(SKIPPED_ERRORS_STORAGE_KEY);
+          const parsed: unknown = stored ? JSON.parse(stored) : [];
+          localKeys = Array.isArray(parsed)
+            ? parsed.filter((key): key is string => typeof key === 'string')
+            : [];
+        } catch (localError) {
+          console.error('Error restoring local skipped review items:', localError);
+        }
+        setSkippedErrorKeys(new Set(localKeys));
+        setSkipStorageStatus('error');
+        setSkipStorageMessage(error instanceof Error ? error.message : 'D1 스킵 저장소에 연결하지 못했습니다.');
       }
-    } catch (error) {
-      console.error('Error restoring skipped review items:', error);
-    }
-  }, []);
+    };
+
+    void loadSkippedErrors();
+    return () => {
+      cancelled = true;
+    };
+  }, [authStatus, editorKey]);
 
   useEffect(() => {
     const restoreSession = async () => {
@@ -709,6 +807,89 @@ function EditorContent() {
   );
 
   const currentSkippedErrorCount = allRouteErrors.length - activeRouteErrors.length;
+
+  const filteredSkippedRecords = useMemo(() => {
+    const query = skippedSearch.trim().toLowerCase();
+    if (!query) return skippedErrorRecords;
+    return skippedErrorRecords.filter(item =>
+      [item.fc, item.fcName, item.shift, item.route, item.stopName, item.errorType]
+        .some(value => value.toLowerCase().includes(query)),
+    );
+  }, [skippedErrorRecords, skippedSearch]);
+
+  useEffect(() => {
+    if (
+      localSkipMigrationDone ||
+      skipStorageStatus !== 'ready' ||
+      authStatus !== 'authenticated' ||
+      !editorKey ||
+      !data
+    ) {
+      return;
+    }
+
+    const migrateLocalSkips = async () => {
+      let localKeys: string[] = [];
+      try {
+        const stored = localStorage.getItem(SKIPPED_ERRORS_STORAGE_KEY);
+        const parsed: unknown = stored ? JSON.parse(stored) : [];
+        localKeys = Array.isArray(parsed)
+          ? parsed.filter((key): key is string => typeof key === 'string')
+          : [];
+      } catch (error) {
+        console.error('Error reading local skipped review items for migration:', error);
+      }
+
+      if (localKeys.length === 0) {
+        setLocalSkipMigrationDone(true);
+        return;
+      }
+
+      const localKeySet = new Set(localKeys);
+      const importedAt = new Date().toISOString();
+      const items = allRouteErrors
+        .filter(error => localKeySet.has(routeErrorKey(error)))
+        .map(error => ({ ...routeErrorToRecord(error), skippedAt: importedAt }));
+
+      try {
+        if (items.length > 0) {
+          await skippedErrorsRequest(editorKey, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'import', items }),
+          });
+          setSkippedErrorRecords(current => {
+            const merged = new Map(current.map(item => [item.key, item]));
+            items.forEach(item => merged.set(item.key, item));
+            return [...merged.values()].sort((a, b) =>
+              (b.skippedAt ?? '').localeCompare(a.skippedAt ?? ''),
+            );
+          });
+          setSkippedErrorKeys(current => {
+            const next = new Set(current);
+            items.forEach(item => next.add(item.key));
+            return next;
+          });
+        }
+        localStorage.removeItem(SKIPPED_ERRORS_STORAGE_KEY);
+        setLocalSkipMigrationDone(true);
+      } catch (error) {
+        console.error('Error migrating skipped review items to D1:', error);
+        setSkipStorageStatus('error');
+        setSkipStorageMessage(
+          error instanceof Error ? error.message : '브라우저 스킵 정보를 D1으로 이전하지 못했습니다.',
+        );
+      }
+    };
+
+    void migrateLocalSkips();
+  }, [
+    allRouteErrors,
+    authStatus,
+    data,
+    editorKey,
+    localSkipMigrationDone,
+    skipStorageStatus,
+  ]);
 
   const searchResults = useMemo(() => {
     if (!data || routeSearch.length < 1) return [];
@@ -817,14 +998,6 @@ function EditorContent() {
     });
   };
 
-  const saveSkippedErrorKeys = (keys: Set<string>) => {
-    try {
-      localStorage.setItem(SKIPPED_ERRORS_STORAGE_KEY, JSON.stringify([...keys].slice(-2000)));
-    } catch (error) {
-      console.error('Error saving skipped review items:', error);
-    }
-  };
-
   const jumpToRouteError = (error: RouteError) => {
     setSelectedFC(error.fc);
     setSelectedShift(error.shift);
@@ -840,51 +1013,128 @@ function EditorContent() {
     }, 100);
   };
 
-  const handleSkipRouteError = (error: RouteError, jumpToNext = false) => {
-    const currentKey = routeErrorKey(error);
-    const remainingErrors = activeRouteErrors.filter(item => routeErrorKey(item) !== currentKey);
-    const currentIndex = activeRouteErrors.findIndex(item => routeErrorKey(item) === currentKey);
+  const handleSkipRouteError = async (error: RouteError, jumpToNext = false) => {
+    if (!editorKey || skipActionPending) return;
+
+    const record = { ...routeErrorToRecord(error), skippedAt: new Date().toISOString() };
+    const remainingErrors = activeRouteErrors.filter(item => routeErrorKey(item) !== record.key);
+    const currentIndex = activeRouteErrors.findIndex(item => routeErrorKey(item) === record.key);
     const nextError = remainingErrors.length > 0
       ? remainingErrors[Math.min(Math.max(currentIndex, 0), remainingErrors.length - 1)]
       : null;
 
-    setSkippedErrorKeys(current => {
-      const next = new Set(current);
-      next.add(currentKey);
-      saveSkippedErrorKeys(next);
-      return next;
-    });
-    setMessage({
-      type: 'success',
-      text: `'${error.stopName ?? `#${error.idx + 1}`}' 정류장을 정상으로 판단해 이 기기에서 스킵했습니다. 데이터와 변경 로그는 수정되지 않습니다.`,
-    });
+    setSkipActionPending(true);
+    setSkippedErrorKeys(current => new Set(current).add(record.key));
+    setSkippedErrorRecords(current => [record, ...current.filter(item => item.key !== record.key)]);
 
-    if (jumpToNext && nextError) {
-      setTimeout(() => jumpToRouteError(nextError), 100);
-    }
-  };
-
-  const handleUnskipRouteError = (error: RouteError) => {
-    const currentKey = routeErrorKey(error);
-    setSkippedErrorKeys(current => {
-      const next = new Set(current);
-      next.delete(currentKey);
-      saveSkippedErrorKeys(next);
-      return next;
-    });
-    setMessage({ type: 'success', text: `'${error.stopName ?? `#${error.idx + 1}`}' 정류장을 검토 목록에 다시 표시합니다.` });
-  };
-
-  const handleRestoreSkippedErrors = () => {
-    setSkippedErrorKeys(new Set());
     try {
-      localStorage.removeItem(SKIPPED_ERRORS_STORAGE_KEY);
+      await skippedErrorsRequest(editorKey, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'skip', item: record }),
+      });
+      setSkipStorageStatus('ready');
+      setSkipStorageMessage('');
+      setMessage({
+        type: 'success',
+        text: `'${record.stopName}' 정류장을 공용 스킵 목록에 저장했습니다. 셔틀 데이터와 변경 로그는 수정되지 않습니다.`,
+      });
+      if (jumpToNext && nextError) {
+        setTimeout(() => jumpToRouteError(nextError), 100);
+      }
     } catch (error) {
-      console.error('Error clearing skipped review items:', error);
+      setSkippedErrorKeys(current => {
+        const next = new Set(current);
+        next.delete(record.key);
+        return next;
+      });
+      setSkippedErrorRecords(current => current.filter(item => item.key !== record.key));
+      setSkipStorageStatus('error');
+      const text = error instanceof Error ? error.message : 'D1에 스킵 상태를 저장하지 못했습니다.';
+      setSkipStorageMessage(text);
+      setMessage({ type: 'error', text });
+    } finally {
+      setSkipActionPending(false);
     }
-    setMessage({ type: 'success', text: '스킵했던 정류장을 모두 검토 목록에 복원했습니다.' });
   };
 
+  const restoreSkippedKeys = async (keys: string[]) => {
+    if (!editorKey || keys.length === 0 || skipActionPending) return false;
+    setSkipActionPending(true);
+    try {
+      await skippedErrorsRequest(editorKey, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'restore', keys }),
+      });
+      const restored = new Set(keys);
+      setSkippedErrorKeys(current => {
+        const next = new Set(current);
+        restored.forEach(key => next.delete(key));
+        return next;
+      });
+      setSkippedErrorRecords(current => current.filter(item => !restored.has(item.key)));
+      setSelectedSkippedKeys(current => {
+        const next = new Set(current);
+        restored.forEach(key => next.delete(key));
+        return next;
+      });
+      setSkipStorageStatus('ready');
+      setSkipStorageMessage('');
+      return true;
+    } catch (error) {
+      const text = error instanceof Error ? error.message : 'D1에서 스킵 항목을 복원하지 못했습니다.';
+      setSkipStorageStatus('error');
+      setSkipStorageMessage(text);
+      setMessage({ type: 'error', text });
+      return false;
+    } finally {
+      setSkipActionPending(false);
+    }
+  };
+
+  const handleUnskipRouteError = async (error: RouteError) => {
+    const restored = await restoreSkippedKeys([routeErrorKey(error)]);
+    if (restored) {
+      setMessage({
+        type: 'success',
+        text: `'${error.stopName ?? `#${error.idx + 1}`}' 정류장을 검토 목록에 다시 표시합니다.`,
+      });
+    }
+  };
+
+  const handleRestoreSelectedErrors = async () => {
+    const keys = [...selectedSkippedKeys];
+    const restored = await restoreSkippedKeys(keys);
+    if (restored) {
+      setMessage({ type: 'success', text: `선택한 스킵 ${keys.length}개를 검토 목록에 복원했습니다.` });
+    }
+  };
+
+  const handleRestoreSkippedErrors = async () => {
+    if (!editorKey || skippedErrorRecords.length === 0 || skipActionPending) return;
+    if (!confirm(`스킵 ${skippedErrorRecords.length}개를 모두 복원하시겠습니까?`)) return;
+
+    setSkipActionPending(true);
+    try {
+      await skippedErrorsRequest(editorKey, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'restore-all' }),
+      });
+      setSkippedErrorKeys(new Set());
+      setSkippedErrorRecords([]);
+      setSelectedSkippedKeys(new Set());
+      setIsSkipManagerOpen(false);
+      setSkipStorageStatus('ready');
+      setSkipStorageMessage('');
+      setMessage({ type: 'success', text: '스킵했던 정류장을 모두 검토 목록에 복원했습니다.' });
+    } catch (error) {
+      const text = error instanceof Error ? error.message : 'D1에서 전체 스킵을 복원하지 못했습니다.';
+      setSkipStorageStatus('error');
+      setSkipStorageMessage(text);
+      setMessage({ type: 'error', text });
+    } finally {
+      setSkipActionPending(false);
+    }
+  };
   const handleRollback = () => {
     if (!data || !baseData || !selectedFC || !selectedShift || !selectedRoute) return;
 
@@ -971,6 +1221,15 @@ function EditorContent() {
     setData(null);
     setPersistedData(null);
     setBaseData(null);
+    setSkippedErrorKeys(new Set());
+    setSkippedErrorRecords([]);
+    setSkipStorageStatus('idle');
+    setSkipStorageMessage('');
+    setIsSkipManagerOpen(false);
+    setSelectedSkippedKeys(new Set());
+    setSkippedSearch('');
+    setSkipActionPending(false);
+    setLocalSkipMigrationDone(false);
     setAuthStatus('locked');
   };
 
@@ -1339,12 +1598,24 @@ function EditorContent() {
                                   {visibleRouteErrors.length} {errorFilter} Found
                               </span>
                           </div>
-                          {currentSkippedErrorCount > 0 && (
+                          {skipStorageStatus === 'loading' && (
+                              <span className="px-3 py-2 text-[10px] font-black text-slate-400">D1 동기화 중...</span>
+                          )}
+                          {skipStorageStatus === 'error' && (
+                              <span
+                                  className="max-w-56 truncate rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-[10px] font-black text-rose-300"
+                                  title={skipStorageMessage}
+                              >
+                                  D1 연결 확인 필요
+                              </span>
+                          )}
+                          {skippedErrorRecords.length > 0 && (
                               <button
-                                  onClick={handleRestoreSkippedErrors}
+                                  type="button"
+                                  onClick={() => setIsSkipManagerOpen(true)}
                                   className="px-4 py-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-[10px] font-black text-emerald-300 hover:bg-emerald-500/20 transition-all"
                               >
-                                  스킵 {currentSkippedErrorCount}개 · 모두 복원
+                                  스킵 관리 {skippedErrorRecords.length}개
                               </button>
                           )}
                       </div>
@@ -1406,6 +1677,155 @@ function EditorContent() {
                   </div>
               </div>
           </section>
+      )}
+
+      {isSkipManagerOpen && (
+        <div
+          className="fixed inset-0 z-[3000] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="skip-manager-title"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setIsSkipManagerOpen(false);
+          }}
+        >
+          <div className="flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600">Cloudflare D1</p>
+                <h2 id="skip-manager-title" className="mt-1 text-xl font-black text-slate-900">
+                  스킵 관리
+                </h2>
+                <p className="mt-1 text-xs font-semibold text-slate-500">
+                  공용 스킵 {skippedErrorRecords.length}개 · 현재 데이터와 일치 {currentSkippedErrorCount}개
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSkipManagerOpen(false)}
+                className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-500 hover:bg-slate-200"
+              >
+                닫기
+              </button>
+            </div>
+
+            <div className="space-y-3 border-b border-slate-100 bg-slate-50/80 px-6 py-4">
+              <input
+                type="search"
+                value={skippedSearch}
+                onChange={event => setSkippedSearch(event.target.value)}
+                placeholder="센터, 근무조, 노선, 정류장 검색"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              />
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const visibleKeys = filteredSkippedRecords.map(item => item.key);
+                      const allSelected = visibleKeys.length > 0 && visibleKeys.every(key => selectedSkippedKeys.has(key));
+                      setSelectedSkippedKeys(current => {
+                        const next = new Set(current);
+                        visibleKeys.forEach(key => allSelected ? next.delete(key) : next.add(key));
+                        return next;
+                      });
+                    }}
+                    disabled={filteredSkippedRecords.length === 0 || skipActionPending}
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-black text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+                  >
+                    {filteredSkippedRecords.length > 0 && filteredSkippedRecords.every(item => selectedSkippedKeys.has(item.key))
+                      ? '검색 결과 선택 해제'
+                      : '검색 결과 전체 선택'}
+                  </button>
+                  <span className="text-[10px] font-black text-slate-400">선택 {selectedSkippedKeys.size}개</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void handleRestoreSelectedErrors()}
+                    disabled={selectedSkippedKeys.size === 0 || skipActionPending}
+                    className="rounded-xl bg-indigo-600 px-4 py-2 text-[10px] font-black text-white hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {skipActionPending ? '처리 중...' : '선택 항목 복원'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleRestoreSkippedErrors()}
+                    disabled={skippedErrorRecords.length === 0 || skipActionPending}
+                    className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-[10px] font-black text-rose-600 hover:bg-rose-100 disabled:opacity-40"
+                  >
+                    전체 복원
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+              {filteredSkippedRecords.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-slate-200 py-16 text-center text-sm font-bold text-slate-400">
+                  검색 조건에 맞는 스킵 항목이 없습니다.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {filteredSkippedRecords.map(item => {
+                    const matchingError = allRouteErrors.find(error => routeErrorKey(error) === item.key);
+                    const isSelected = selectedSkippedKeys.has(item.key);
+                    return (
+                      <article
+                        key={item.key}
+                        className={`rounded-2xl border p-4 transition ${isSelected ? 'border-indigo-400 bg-indigo-50/70' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {
+                              setSelectedSkippedKeys(current => {
+                                const next = new Set(current);
+                                if (next.has(item.key)) next.delete(item.key);
+                                else next.add(item.key);
+                                return next;
+                              });
+                            }}
+                            aria-label={`${item.stopName} 복원 선택`}
+                            className="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="rounded-md bg-slate-900 px-2 py-1 text-[9px] font-black text-white">{item.fcName} ({item.fc})</span>
+                              <span className="text-[10px] font-black text-slate-400">{item.shift}</span>
+                              <span className={`rounded-md px-2 py-1 text-[9px] font-black ${item.errorType === 'SPEED' ? 'bg-red-50 text-red-600' : item.errorType === 'TIME' ? 'bg-amber-50 text-amber-600' : 'bg-purple-50 text-purple-600'}`}>
+                                {item.errorType}
+                              </span>
+                            </div>
+                            <p className="mt-2 truncate text-sm font-black text-slate-800">{item.route}</p>
+                            <p className="mt-1 text-xs font-semibold text-slate-600">#{item.stopIndex + 1} {item.stopName}</p>
+                            <div className="mt-2 flex flex-wrap items-center gap-3 text-[9px] font-bold text-slate-400">
+                              <span>{item.skippedAt ? new Date(item.skippedAt).toLocaleString('ko-KR') : '이전된 스킵'}</span>
+                              {!matchingError && <span className="text-amber-600">현재 데이터와 일치하지 않음</span>}
+                            </div>
+                          </div>
+                          {matchingError && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                jumpToRouteError(matchingError);
+                                setIsSkipManagerOpen(false);
+                              }}
+                              className="shrink-0 rounded-xl bg-slate-100 px-3 py-2 text-[10px] font-black text-slate-600 hover:bg-indigo-100 hover:text-indigo-700"
+                            >
+                              위치 열기
+                            </button>
+                          )}
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Main Layout */}
@@ -1907,7 +2327,7 @@ function EditorContent() {
                   <div className="absolute -left-[25px] top-1 w-5 h-5 rounded-full bg-indigo-600 border-4 border-white shadow-sm flex items-center justify-center text-white text-[9px] font-black">3</div>
                   <h4 className="font-black text-slate-800 text-sm font-sans">3단계. 에디터에서 위경도/시간 수정</h4>
                   <p className="text-xs text-slate-500 leading-relaxed pl-1 font-sans">
-                    에디터 상단의 <span className="font-bold text-slate-700">Health Monitor</span>를 통해 <span className="text-red-500 font-bold">SPEED</span>, <span className="text-amber-500 font-bold">TIME</span>, <span className="text-purple-500 font-bold">DIST</span> 항목을 검토합니다. 실제 정류장이 맞다면 <span className="font-bold text-emerald-600">정상 스킵</span>을 눌러 다음 항목으로 이동할 수 있으며, 스킵은 셔틀 데이터와 변경 로그를 수정하지 않습니다.
+                    에디터 상단의 <span className="font-bold text-slate-700">Health Monitor</span>를 통해 <span className="text-red-500 font-bold">SPEED</span>, <span className="text-amber-500 font-bold">TIME</span>, <span className="text-purple-500 font-bold">DIST</span> 항목을 검토합니다. 실제 정류장이 맞다면 <span className="font-bold text-emerald-600">정상 스킵</span>을 눌러 다음 항목으로 이동할 수 있습니다. 스킵 상태는 D1에 저장되어 다른 기기에서도 유지되며, <span className="font-bold text-slate-700">스킵 관리</span>에서 원하는 항목만 선택해 복원할 수 있습니다. 스킵은 셔틀 데이터와 변경 로그를 수정하지 않습니다.
                   </p>
                 </div>
 
