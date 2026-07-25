@@ -38,6 +38,18 @@ interface ValidStop {
   longitude: number;
 }
 
+ interface KakaoMapInstance {
+  setCenter(position: unknown): void;
+  setLevel(level: number): void;
+  setBounds(
+    bounds: unknown,
+    paddingTop?: number,
+    paddingRight?: number,
+    paddingBottom?: number,
+    paddingLeft?: number,
+  ): void;
+}
+
 type MapViewType = 'ROADMAP' | 'HYBRID';
 
 const DEFAULT_CENTER = { lat: 36.5, lng: 127.5 };
@@ -52,7 +64,7 @@ export default function MapPreview({
     appkey: appKey,
     libraries: ['services'],
   });
-  const [map, setMap] = useState<kakao.maps.Map | null>(null);
+  const [map, setMap] = useState<KakaoMapInstance | null>(null);
   const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
   const [mapLevel, setMapLevel] = useState(13);
   const [mapViewType, setMapViewType] = useState<MapViewType>('ROADMAP');
@@ -263,7 +275,7 @@ export default function MapPreview({
         minLevel={1}
         maxLevel={14}
         style={{ height: '100%', width: '100%' }}
-        onCreate={setMap}
+        onCreate={(createdMap) => setMap(createdMap as KakaoMapInstance)}
         onClick={(_target, mouseEvent) => {
           selectCoordinate(
             mouseEvent.latLng.getLat(),
