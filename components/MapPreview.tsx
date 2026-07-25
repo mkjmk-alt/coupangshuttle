@@ -38,7 +38,7 @@ interface ValidStop {
   longitude: number;
 }
 
- interface KakaoMapInstance {
+interface KakaoMapInstance {
   setCenter(position: unknown): void;
   setLevel(level: number): void;
   setBounds(
@@ -110,6 +110,18 @@ export default function MapPreview({
   const selectedLatitude = selectedCoordinate?.latitude.toFixed(6) ?? '';
   const selectedLongitude = selectedCoordinate?.longitude.toFixed(6) ?? '';
 
+  const moveMapTo = useCallback(
+    (latitude: number, longitude: number, level = 3) => {
+      setMapCenter({ lat: latitude, lng: longitude });
+      setMapLevel(level);
+
+      if (map && typeof window !== 'undefined' && window.kakao?.maps) {
+        map.setCenter(new window.kakao.maps.LatLng(latitude, longitude));
+        map.setLevel(level);
+      }
+    },
+    [map],
+  );
   const fitRouteToMap = useCallback(() => {
     if (!map || validStops.length === 0 || typeof window === 'undefined' || !window.kakao?.maps) {
       return;
@@ -142,12 +154,11 @@ export default function MapPreview({
     if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
 
     // Selecting a station intentionally synchronizes the controlled map.
-    setMapCenter({ lat: latitude, lng: longitude });
-    setMapLevel(3);
+    moveMapTo(latitude, longitude);
     setSelectedCoordinate({ latitude, longitude });
     setSelectedPlaceName(stop.Name);
     setCopyState('idle');
-  }, [highlightIndex, stops]);
+  }, [highlightIndex, moveMapTo, stops]);
 
   const selectCoordinate = (
     latitude: number,
@@ -202,8 +213,7 @@ export default function MapPreview({
   };
 
   const handleSearchResultSelect = (result: LocationSearchResult) => {
-    setMapCenter({ lat: result.latitude, lng: result.longitude });
-    setMapLevel(3);
+    moveMapTo(result.latitude, result.longitude);
     selectCoordinate(result.latitude, result.longitude, result.name);
     setSearchQuery(result.name);
     setSearchResults([]);
@@ -309,8 +319,7 @@ export default function MapPreview({
               <button
                 type="button"
                 onClick={() => {
-                  setMapCenter({ lat: latitude, lng: longitude });
-                  setMapLevel(3);
+                  moveMapTo(latitude, longitude);
                   selectCoordinate(latitude, longitude, stop.Name);
                 }}
                 className="group flex -translate-y-1 flex-col items-center"
