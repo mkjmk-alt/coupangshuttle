@@ -1354,25 +1354,6 @@ function EditorContent() {
     }
   };
 
-  const handleManualMerge = async () => {
-    setSaving(true);
-    setMessage(null);
-    try {
-      const result = await postEditorRequest({ type: 'merge' });
-      if (result.metadata) setMetadata(normalizeMetadata(result.metadata));
-      if (result.changeLogEntry) {
-        setChangeLogEntries((current) =>
-          [result.changeLogEntry as ChangeLogEntry, ...current].slice(0, 100),
-        );
-      }
-      setMessage({ type: 'success', text: '수동 머지가 완료되었습니다! 지도가 곧 업데이트됩니다.' });
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : '서버 연결 오류';
-      setMessage({ type: 'error', text: `머지 실패: ${errorMessage}` });
-    } finally {
-      setSaving(false);
-    }
-  };
   const handleExportExcel = () => {
     if (!currentStops || currentStops.length === 0) {
       alert('추출할 데이터가 없습니다.');
@@ -1509,13 +1490,6 @@ function EditorContent() {
                 className="px-5 py-2.5 bg-slate-50 text-slate-500 font-black text-[11px] rounded-xl hover:bg-slate-100 transition-all uppercase font-sans"
             >
                 Map View
-            </button>
-            <button 
-                onClick={handleManualMerge}
-                disabled={saving}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-black transition-all uppercase tracking-widest border ${saving ? 'bg-slate-50 text-slate-300 border-slate-100' : 'bg-white text-indigo-600 border-indigo-100 hover:bg-indigo-50 hover:border-indigo-200'}`}
-            >
-                {saving ? 'Processing...' : 'Run Manual Merge'}
             </button>
             <button 
                 onClick={handleSave}
