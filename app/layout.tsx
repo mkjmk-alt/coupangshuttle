@@ -52,7 +52,7 @@ export default function RootLayout({
 
         <div className="min-h-screen pt-16 md:pt-24">{children}</div>
 
-        <footer className="mt-40 border-t border-slate-200 bg-slate-50 pb-12 pt-24">
+        <footer className="mt-20 border-t border-slate-200 bg-slate-50 pb-12 pt-16 md:mt-28 md:pt-24">
           <div className="mx-auto max-w-7xl px-6 lg:px-12">
             <div className="mb-20 grid grid-cols-1 gap-16 md:grid-cols-3">
               <div className="space-y-6">

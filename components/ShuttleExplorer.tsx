@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic';
 import { ShuttleStop } from '../types/shuttle';
 import { getRouteColor } from '../utils/color';
 import { loadInitialShuttleData, loadShuttleCenter } from '../utils/shuttleDataLoader';
-import CoupangBanner from './CoupangBanner';
 
 // Dynamically import the map to ensure it stays client-side
 const KakaoMapWrapper = dynamic(() => import('./KakaoMapWrapper'), {
@@ -647,44 +646,42 @@ export default function ShuttleExplorer() {
       )}
 
       {/* Map Display */}
-      <section className="kakao-map-container relative mx-[-4px] sm:mx-0">
+      {!selectedFC && !compareMode ? (
+        <section className="premium-card mx-[-4px] flex min-h-[190px] items-center justify-center p-6 text-center sm:mx-0 sm:min-h-[220px]">
+          <div className="max-w-md">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-2xl">
+              🗺️
+            </div>
+            <h3 className="mb-2 text-xl font-black tracking-tight text-slate-900">
+              먼저 물류센터를 선택해 주세요
+            </h3>
+            <p className="text-sm font-medium leading-relaxed text-slate-500">
+              센터를 선택하면 해당 센터의 노선과 정류장을 지도에서 확인할 수 있습니다.
+            </p>
+          </div>
+        </section>
+      ) : (
+        <section className="kakao-map-container relative mx-[-4px] sm:mx-0">
           <div className="h-[550px] w-full relative group">
             <KakaoMapWrapper stops={mapStops.length > 0 ? mapStops : []} />
-            {(!compareMode && !selectedFC) && (
-              <div className="absolute inset-0 glass-effect z-10 flex items-center justify-center p-6 text-center animate-in fade-in duration-500">
-                 <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl border border-white max-w-md relative overflow-hidden group/box">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500"></div>
-                    <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover/box:scale-110 transition-transform duration-500">
-                        <span className="text-4xl">🗺️</span>
-                    </div>
-                    <h3 className="font-black text-slate-900 text-2xl mb-3 tracking-tight">먼저 물류센터를 선택해 주세요</h3>
-                    <p className="text-slate-500 font-medium leading-relaxed">
-                        위에서 물류센터를 선택하면 해당 센터의<br />
-                        노선과 정류장이 지도에 표시됩니다.
-                    </p>
-                 </div>
-              </div>
-            )}
-            
+
             {/* Legend / Overlay */}
             {data && (selectedFC || compareMode) && (
-                <div className="absolute top-6 left-6 z-20 hidden md:block">
-                    <div className="glass-effect px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3">
-                        <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
-                        <span className="text-sm font-black text-slate-800 tracking-tight">
-                          {compareMode ? `노선 비교 모드 (${compareList.length}개 노선)` : `${data[selectedFC]?.center?.name} - ${selectedShift || '전체'}`}
-                        </span>
-                    </div>
+              <div className="absolute top-6 left-6 z-20 hidden md:block">
+                <div className="glass-effect px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3">
+                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+                  <span className="text-sm font-black text-slate-800 tracking-tight">
+                    {compareMode ? `노선 비교 모드 (${compareList.length}개 노선)` : `${data[selectedFC]?.center?.name} - ${selectedShift || '전체'}`}
+                  </span>
                 </div>
+              </div>
             )}
           </div>
-      </section>
-
-      {/* Premium Coupang Partners Banner (Directly below the map) */}
-      <CoupangBanner />
-
+        </section>
+      )}
       {/* Results Section */}
-      <section className="premium-card overflow-hidden">
+      {(selectedRoute || compareMode) && (
+        <section className="premium-card overflow-hidden">
         <div className="px-6 sm:px-10 py-6 sm:py-8 bg-slate-50/50 backdrop-blur-sm border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
                 <div className="w-1.5 h-8 bg-indigo-600 rounded-full"></div>
@@ -844,7 +841,8 @@ export default function ShuttleExplorer() {
             </tbody>
           </table>
         </div>
-      </section>
+        </section>
+      )}
 
       {/* Ad Gate / Premium Lock Modal */}
       {showAdModal && (
