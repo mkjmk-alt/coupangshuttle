@@ -5,8 +5,8 @@ import './globals.css';
 import 'leaflet/dist/leaflet.css';
 
 export const metadata: Metadata = {
-  title: 'Coupang Shuttle Map | 인텔리전트 셔틀 가이드',
-  description: '전국 쿠팡 물류센터 셔틀버스 통합 노선 안내 시스템',
+  title: 'Coupang Shuttle Map | 물류센터 셔틀 노선 안내',
+  description: '전국 쿠팡 물류센터 셔틀버스 노선·정류장 참고 안내 서비스',
   other: {
     'google-adsense-account': 'ca-pub-7954802956462064',
   },
@@ -32,19 +32,19 @@ export default function RootLayout({
 
           <div className="hidden items-center gap-2 md:flex">
             <Link href="/" className="nav-link bg-indigo-50/50 text-indigo-600">
-              Explorer
+              노선 조회
             </Link>
             <Link href="/operations" className="nav-link">
-              Operations
+              운영·데이터 정책
             </Link>
             <Link href="/privacy" className="nav-link">
-              Privacy
+              개인정보처리방침
             </Link>
             <Link href="/terms" className="nav-link">
-              Terms
+              이용약관
             </Link>
             <Link href="/contact" className="nav-link">
-              Support
+              문의·제보
             </Link>
           </div>
         </nav>
@@ -64,14 +64,14 @@ export default function RootLayout({
                   </span>
                 </div>
                 <p className="text-sm font-medium leading-relaxed text-slate-400">
-                  물류센터 임직원을 위한 비공식 셔틀버스 참고 안내 서비스입니다. 탑승 전 소속 센터의
-                  최신 공식 공지를 반드시 확인해 주세요.
+                  쿠팡 물류센터 근무자를 위한 비공식 셔틀 노선 참고 서비스입니다. 실제 운행 정보는
+                  소속 센터의 공식 공지를 우선해 주세요.
                 </p>
               </div>
 
               <div className="space-y-6">
                 <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-500">
-                  Policies
+                  정책 안내
                 </h2>
                 <ul className="space-y-4">
                   <li>
@@ -103,7 +103,7 @@ export default function RootLayout({
 
               <div className="space-y-6">
                 <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-500">
-                  Support
+                  고객 지원
                 </h2>
                 <ul className="space-y-4">
                   <li>
@@ -111,7 +111,7 @@ export default function RootLayout({
                       href="/contact"
                       className="text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-600"
                     >
-                      문의 및 오류·데이터 제보
+                      노선 오류·데이터 제보
                     </Link>
                   </li>
                   <li>
@@ -141,7 +141,7 @@ export default function RootLayout({
                 © 2026 Coupang Shuttle Map.
               </p>
               <p className="text-center text-[10px] font-bold text-slate-400 md:text-right">
-                쿠팡 및 관계사가 운영하는 공식 서비스가 아닙니다.
+                본 서비스는 쿠팡 및 관계사가 운영하는 공식 서비스가 아닙니다.
               </p>
             </div>
           </div>

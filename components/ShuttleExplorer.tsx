@@ -13,7 +13,7 @@ const KakaoMapWrapper = dynamic(() => import('./KakaoMapWrapper'), {
   loading: () => <div className="w-full h-full bg-slate-50 animate-pulse flex items-center justify-center">
     <div className="flex flex-col items-center gap-3">
         <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-        <span className="text-slate-400 font-medium">지도 모듈 로드 중...</span>
+        <span className="text-slate-400 font-medium">지도를 불러오는 중...</span>
     </div>
   </div>
 });
@@ -133,7 +133,7 @@ export default function ShuttleExplorer() {
       .catch((err) => {
         if (controller.signal.aborted) return;
         console.error(`Error loading shuttle center ${selectedFC}:`, err);
-        setCenterLoadError('센터 노선 정보를 불러오지 못했습니다. 잠시 후 다시 선택해주세요.');
+        setCenterLoadError('센터 노선 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
         setCenterLoading(false);
       });
 
@@ -215,7 +215,7 @@ export default function ShuttleExplorer() {
     // 즉시 남은 시간 업데이트
     setUnlockedTimeLeft('60분 남음');
     
-    alert('🎉 다중 노선 비교 기능이 1시간 동안 잠금 해제되었습니다!');
+    alert('노선 비교 기능을 1시간 동안 이용할 수 있습니다.');
   };
 
   // 1단계 미션: 쿠팡 간식 쇼핑 클릭 미션 완료 처리
@@ -308,12 +308,12 @@ export default function ShuttleExplorer() {
     );
 
     if (isExist) {
-      alert('이미 비교함에 추가된 노선입니다.');
+      alert('이미 비교함에 담긴 노선입니다.');
       return;
     }
 
     if (compareList.length >= 5) {
-      alert('비교는 최대 5개 노선까지만 가능합니다.');
+      alert('비교함에는 최대 5개 노선까지 추가할 수 있습니다.');
       return;
     }
 
@@ -341,7 +341,7 @@ export default function ShuttleExplorer() {
   // 비교하기 모드 작동 제어 (광고 게이트 체크)
   const handleStartComparison = () => {
     if (compareList.length < 2) {
-      alert('비교를 수행하려면 최소 2개 이상의 노선을 비교함에 추가해야 합니다.');
+      alert('비교하려면 노선을 2개 이상 추가해 주세요.');
       return;
     }
 
@@ -446,8 +446,8 @@ export default function ShuttleExplorer() {
             <div className="absolute inset-0 bg-indigo-500 blur-2xl opacity-20 animate-pulse"></div>
             <div className="relative w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
         </div>
-        <p className="text-xl font-bold text-slate-900 mb-2">데이터 엔진 최적화 중</p>
-        <p className="text-slate-400 font-medium">실시간 전국 셔틀 정보를 동기화하고 있습니다...</p>
+        <p className="text-xl font-bold text-slate-900 mb-2">셔틀 데이터를 불러오는 중</p>
+        <p className="text-slate-400 font-medium">최신 셔틀 노선 정보를 준비하고 있습니다.</p>
       </div>
     );
   }
@@ -466,8 +466,8 @@ export default function ShuttleExplorer() {
                         </svg>
                     </div>
                     <div>
-                        <h2 className="text-2xl font-black text-slate-900 tracking-tight">셔틀 노선 조회</h2>
-                        <p className="text-sm font-semibold text-slate-400">물류센터와 근무조를 선택해 조회를 시작하거나 비교해 보세요.</p>
+                        <h2 className="text-2xl font-black text-slate-900 tracking-tight">센터별 셔틀 노선 찾기</h2>
+                        <p className="text-sm font-semibold text-slate-400">물류센터, 근무조와 노선을 순서대로 선택해 주세요. 여러 노선은 비교함에 담아 한눈에 확인할 수 있습니다.</p>
                     </div>
                 </div>
 
@@ -481,14 +481,14 @@ export default function ShuttleExplorer() {
                         <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                         </svg>
-                        Official Page
+                        센터 공식 셔틀 안내
                     </a>
                 )}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8 items-end">
                 <div className="group space-y-3">
-                    <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">Center Division</label>
+                    <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">물류센터</label>
                     <div className="relative">
                         <select 
                         className="premium-input appearance-none pr-12 cursor-pointer"
@@ -499,7 +499,7 @@ export default function ShuttleExplorer() {
                             setSelectedRoute('');
                         }}
                         >
-                        <option value="">물류센터를 선택하세요</option>
+                        <option value="">조회할 물류센터를 선택하세요</option>
                         {fcList.map(fc => (
                             <option key={fc.code} value={fc.code}>{fc.name}</option>
                         ))}
@@ -511,7 +511,7 @@ export default function ShuttleExplorer() {
                 </div>
 
                 <div className="group space-y-3">
-                    <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">Service Shift</label>
+                    <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">근무조</label>
                     <div className="relative">
                         <select 
                         className="premium-input appearance-none pr-12 cursor-pointer disabled:bg-slate-50 disabled:text-slate-300 disabled:border-slate-100"
@@ -525,7 +525,7 @@ export default function ShuttleExplorer() {
                         {shiftList.map(shift => (
                             <option key={shift} value={shift}>{shift}</option>
                         ))}
-                        <option value="">전체 근무조</option>
+                        <option value="">모든 근무조</option>
                         </select>
                         <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-indigo-500 transition-colors">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
@@ -535,13 +535,13 @@ export default function ShuttleExplorer() {
 
                 <div className="group space-y-3">
                     <div className="flex justify-between items-center px-1">
-                        <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">Route Segment</label>
+                        <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">노선</label>
                         {selectedFC && selectedRoute && (
                           <button
                             onClick={handleAddToCompare}
                             className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 transition-colors uppercase tracking-wider flex items-center gap-1 cursor-pointer"
                           >
-                            ➕ 비교함 추가
+                            노선 비교함에 추가
                           </button>
                         )}
                     </div>
@@ -571,7 +571,7 @@ export default function ShuttleExplorer() {
                 }`}
                 role="status"
               >
-                {centerLoadError || '선택한 센터의 최신 노선 정보를 불러오는 중입니다...'}
+                {centerLoadError || '선택한 센터의 노선 정보를 불러오고 있습니다.'}
               </div>
             )}
         </div>
@@ -583,15 +583,15 @@ export default function ShuttleExplorer() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">노선 비교함</span>
-                <span className="text-xs text-slate-400 font-bold">({compareList.length}/5 개 선택됨)</span>
+                <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">비교할 노선</span>
+                <span className="text-xs text-slate-400 font-bold">{compareList.length}개 선택 · 최대 5개</span>
                 {unlocked && (
                   <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                    🔓 프리미엄 해제됨 ({unlockedTimeLeft})
+                    🔓 비교 기능 이용 가능 ({unlockedTimeLeft})
                   </span>
                 )}
               </div>
-              <p className="text-slate-500 text-xs font-semibold">동시에 여러 노선을 선택해 지도에 한눈에 시각화해 비교할 수 있습니다.</p>
+              <p className="text-slate-500 text-xs font-semibold">최대 5개 노선의 정류장과 운행 시각을 한 지도에서 비교할 수 있습니다.</p>
             </div>
             
             <div className="flex flex-wrap gap-2">
@@ -600,14 +600,14 @@ export default function ShuttleExplorer() {
                   onClick={() => setCompareMode(false)}
                   className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
                 >
-                  비교 모드 해제
+                  비교 종료
                 </button>
               ) : (
                 <button
                   onClick={handleStartComparison}
                   className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-xs font-black hover:opacity-95 transition-opacity shadow-md shadow-indigo-100 cursor-pointer"
                 >
-                  비교 시작하기
+                  선택한 노선 비교하기
                 </button>
               )}
               <button
@@ -617,7 +617,7 @@ export default function ShuttleExplorer() {
                 }}
                 className="px-4 py-2.5 bg-white border border-slate-200 text-slate-500 rounded-xl text-xs font-black hover:bg-slate-50 transition-colors cursor-pointer"
               >
-                비우기
+                비교함 비우기
               </button>
             </div>
           </div>
@@ -657,10 +657,10 @@ export default function ShuttleExplorer() {
                     <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover/box:scale-110 transition-transform duration-500">
                         <span className="text-4xl">🗺️</span>
                     </div>
-                    <h3 className="font-black text-slate-900 text-2xl mb-3 tracking-tight">물류센터를 선택해주세요</h3>
+                    <h3 className="font-black text-slate-900 text-2xl mb-3 tracking-tight">먼저 물류센터를 선택해 주세요</h3>
                     <p className="text-slate-500 font-medium leading-relaxed">
-                        상단에서 물류센터를 먼저 선택하시면,<br />
-                        해당 지역의 상세 셔틀 노선이 지도에 표시됩니다.
+                        위에서 물류센터를 선택하면 해당 센터의<br />
+                        노선과 정류장이 지도에 표시됩니다.
                     </p>
                  </div>
               </div>
@@ -690,10 +690,10 @@ export default function ShuttleExplorer() {
                 <div className="w-1.5 h-8 bg-indigo-600 rounded-full"></div>
                 <div>
                    <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                     {compareMode ? 'Integrated Station Chronology' : 'Station Chronology'}
+                     {compareMode ? '비교 노선 통합 시간표' : '정류장·운행 시각'}
                    </h3>
                    <p className="text-xs font-bold text-slate-400 mt-0.5">
-                     {compareMode ? '비교 선택한 전체 노선의 통합 운행 시간표 (시간순 정렬)' : '운행 순서 및 상세 도착 시간 안내'}
+                     {compareMode ? '비교함에 담은 노선을 시간순으로 표시합니다.' : '노선에 등록된 정류장 순서와 운행 시각입니다.'}
                    </p>
                 </div>
             </div>
@@ -701,7 +701,7 @@ export default function ShuttleExplorer() {
                 <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-indigo-100 shadow-sm">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
-                      {compareMode ? 'COMPARISON ACTIVE' : `${selectedFC} DB CONNECTED`}
+                      {compareMode ? '노선 비교 중' : `${selectedFC} 노선 표시 중`}
                     </span>
                 </div>
             )}
@@ -756,8 +756,8 @@ export default function ShuttleExplorer() {
             })
           ) : (
              <div className="py-20 text-center px-6">
-                <p className="text-slate-900 font-black text-lg tracking-tight">조회된 노선이 없습니다</p>
-                <p className="text-slate-400 text-xs font-medium mt-2">물류센터를 선택하시거나 노선 비교를 시작하세요.</p>
+                <p className="text-slate-900 font-black text-lg tracking-tight">표시할 노선이 없습니다</p>
+                <p className="text-slate-400 text-xs font-medium mt-2">물류센터와 노선을 선택하거나 비교함에서 노선 비교를 시작해 주세요.</p>
              </div>
           )}
         </div>
@@ -767,11 +767,11 @@ export default function ShuttleExplorer() {
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 z-10">
               <tr className="bg-slate-50/95 backdrop-blur-md text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black border-b border-slate-200 shadow-sm">
-                <th className="pl-10 pr-4 py-6 w-20 text-center">SEQ</th>
-                <th className="px-6 py-6 w-40">Timing</th>
-                <th className="px-6 py-6">Station / Hub Name</th>
-                <th className="px-6 py-6">Route Segment</th>
-                <th className="px-6 py-6 pr-10">Location Details</th>
+                <th className="pl-10 pr-4 py-6 w-20 text-center">순서</th>
+                <th className="px-6 py-6 w-40">시각</th>
+                <th className="px-6 py-6">정류장명</th>
+                <th className="px-6 py-6">노선·근무조</th>
+                <th className="px-6 py-6 pr-10">위치·탑승 안내</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50/50">
@@ -833,9 +833,9 @@ export default function ShuttleExplorer() {
                         <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-2">
                             <span className="text-5xl grayscale opacity-30">🚍</span>
                         </div>
-                        <p className="text-slate-900 font-black text-xl tracking-tight">조회된 노선이 없습니다</p>
+                        <p className="text-slate-900 font-black text-xl tracking-tight">표시할 노선이 없습니다</p>
                         <p className="text-slate-400 text-sm font-medium leading-relaxed">
-                            물류센터를 선택하시거나 노선 비교함에 노선을 담아 비교해 보세요.
+                            물류센터와 노선을 선택하거나 비교함에 노선을 담아 비교해 주세요.
                         </p>
                     </div>
                   </td>
@@ -860,11 +860,11 @@ export default function ShuttleExplorer() {
               </div>
               
               <h3 className="font-black text-slate-900 text-2xl mb-4 tracking-tight leading-snug">
-                노선 다중 비교 활성화
+                여러 노선 비교하기
               </h3>
               
               <p className="text-slate-500 text-sm font-medium leading-relaxed break-keep mb-8">
-                동시에 여러 노선을 지도에서 비교하는 기능은 <strong>프리미엄 혜택</strong>입니다. 광고를 시청하거나 미션을 완료하시면 <strong>1시간 동안 무제한</strong>으로 활성화됩니다!
+                광고를 시청하거나 제휴 링크를 열면 여러 노선을 비교하는 기능을 <strong>1시간 동안</strong> 이용할 수 있습니다.
               </p>
 
               <div className="space-y-3">
@@ -874,7 +874,7 @@ export default function ShuttleExplorer() {
                     onClick={handleAppAdRequest}
                     className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-95 text-white text-sm font-black rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    📺 동영상 광고 보고 1시간 활성화
+                    📺 동영상 광고 보고 1시간 이용
                   </button>
                 ) : (
                   /* 2. 일반 웹 브라우저 접속 시 쿠팡 미션 버튼 */
@@ -882,7 +882,7 @@ export default function ShuttleExplorer() {
                     onClick={handleCoupangMissionClick}
                     className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-black rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    🍿 쿠팡에서 간식 구경하고 1시간 활성화
+                    🍿 제휴 링크 열고 1시간 이용
                   </button>
                 )}
 
@@ -892,7 +892,7 @@ export default function ShuttleExplorer() {
                     onClick={handleCoupangMissionClick}
                     className="w-full py-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold rounded-2xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    🚀 대체 미션: 쿠팡 간식 링크 구경하기
+                    🚀 제휴 링크로 잠금 해제
                   </button>
                 )}
 

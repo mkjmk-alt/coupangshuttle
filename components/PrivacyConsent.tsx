@@ -73,12 +73,12 @@ export default function PrivacyConsent() {
                   id="privacy-consent-title"
                   className="text-base font-black tracking-tight text-slate-900"
                 >
-                  광고 쿠키를 허용하시겠어요?
+                  선택적 광고 쿠키 사용에 동의하시겠어요?
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                  동의하면 Google AdSense가 광고 제공과 성과 측정을 위해 쿠키·기기 정보를 처리할 수
-                  있습니다. 거부해도 노선 검색과 지도 열람은 그대로 이용할 수 있습니다. 필수
-                  기능의 기기 저장값과 호스팅·지도 요청은 서비스 제공을 위해 별도로 처리됩니다.
+                  동의하면 Google AdSense가 광고 제공과 성과 측정을 위해 쿠키와 기기 정보를 처리할 수
+                  있습니다. 거부해도 노선 조회와 지도 기능은 그대로 이용할 수 있습니다. 필수 기능의
+                  기기 저장값과 호스팅·지도 요청은 서비스 제공을 위해 별도로 처리됩니다.
                 </p>
                 <Link
                   href="/privacy"
@@ -93,7 +93,7 @@ export default function PrivacyConsent() {
                   onClick={() => saveChoice('rejected')}
                   className="min-w-32 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-600 transition hover:bg-slate-50"
                 >
-                  광고 쿠키 거부
+                  거부하고 계속
                 </button>
                 <button
                   type="button"
@@ -113,9 +113,9 @@ export default function PrivacyConsent() {
           type="button"
           onClick={() => setPanelOpen(true)}
           className="fixed bottom-4 left-4 z-[200] rounded-full border border-slate-200 bg-white/95 px-4 py-2 text-[11px] font-black text-slate-600 shadow-lg backdrop-blur transition hover:text-indigo-600"
-          aria-label="개인정보 및 광고 쿠키 설정 열기"
+          aria-label="광고 쿠키 설정 열기"
         >
-          개인정보·쿠키 설정
+          쿠키 설정
         </button>
       )}
     </>

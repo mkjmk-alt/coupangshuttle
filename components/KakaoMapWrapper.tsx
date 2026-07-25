@@ -16,13 +16,12 @@ export default function KakaoMapWrapper({ stops }: { stops: ShuttleStop[] }) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-amber-50 text-center">
         <div className="text-4xl mb-4">🔑</div>
-        <h3 className="text-lg font-bold text-amber-900 mb-2">API 키 누락 (환경 변수)</h3>
+        <h3 className="text-lg font-bold text-amber-900 mb-2">지도를 표시할 수 없습니다</h3>
         <p className="text-sm text-amber-600 break-keep max-w-xs mb-4">
-          환경 변수 `NEXT_PUBLIC_KAKAO_APP_KEY`가 설정되지 않았습니다.
+          지도 설정을 확인하고 있습니다. 잠시 후 다시 이용해 주세요.
         </p>
         <div className="text-[11px] text-amber-700 bg-white p-3 rounded-xl border border-amber-200 shadow-sm leading-relaxed">
-           Cloudflare Pages 설정 &gt; Environment Variables에서 <br/> 
-           <b>Build</b> 환경에 변수를 추가하고 다시 배포해 주세요.
+           문제가 계속되면 운영자에게 문의해 주세요.
         </div>
       </div>
     );
@@ -32,12 +31,12 @@ export default function KakaoMapWrapper({ stops }: { stops: ShuttleStop[] }) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-red-50 text-center">
         <div className="text-4xl mb-4">🚫</div>
-        <h3 className="text-lg font-bold text-red-900 mb-2">도메인 등록 확인 필요</h3>
+        <h3 className="text-lg font-bold text-red-900 mb-2">카카오 지도를 불러오지 못했습니다</h3>
         <p className="text-sm text-red-600 break-keep max-w-xs mb-4">
-          카카오 개발자 콘솔에서 <b>&apos;플랫폼&apos;</b> 메뉴에 현재 배포된 도메인(pages.dev)을 추가해 주세요.
+          일시적인 지도 연결 오류가 발생했습니다. 페이지를 새로고침하거나 잠시 후 다시 시도해 주세요.
         </p>
         <code className="text-[10px] bg-red-100 px-2 py-1 rounded text-red-800">
-           SDK Load Error
+           지도 연결 오류
         </code>
       </div>
     );
@@ -47,7 +46,7 @@ export default function KakaoMapWrapper({ stops }: { stops: ShuttleStop[] }) {
     return (
       <div className="w-full h-full absolute inset-0 flex flex-col items-center justify-center p-4 bg-slate-50/50 z-10">
         <div className="w-10 h-10 border-4 border-indigo-50 border-t-indigo-600 rounded-full animate-spin"></div>
-        <p className="mt-4 text-sm text-slate-400 font-bold tracking-tight">지도 모듈 최적화 로딩 중...</p>
+        <p className="mt-4 text-sm text-slate-400 font-bold tracking-tight">카카오 지도를 불러오는 중...</p>
       </div>
     );
   }
