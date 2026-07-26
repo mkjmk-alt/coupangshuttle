@@ -1,4 +1,4 @@
-import CoupangBanner from '@/components/CoupangBanner';
+
 import ShuttleExplorer from '@/components/ShuttleExplorer';
 import fs from 'fs';
 import path from 'path';
@@ -114,7 +114,7 @@ export default function Home() {
           </div>
         </section>
 
-        <CoupangBanner />
+
       </div>
     </main>
   );

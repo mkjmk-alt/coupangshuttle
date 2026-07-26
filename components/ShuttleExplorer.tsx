@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { ShuttleStop } from '../types/shuttle';
 import { getRouteColor } from '../utils/color';
 import { loadInitialShuttleData, loadShuttleCenter } from '../utils/shuttleDataLoader';
+import CoupangBanner from './CoupangBanner';
 
 // Dynamically import the map to ensure it stays client-side
 const KakaoMapWrapper = dynamic(() => import('./KakaoMapWrapper'), {
@@ -679,6 +680,8 @@ export default function ShuttleExplorer() {
           </div>
         </section>
       )}
+      <CoupangBanner />
+
       {/* Results Section */}
       {(selectedRoute || compareMode) && (
         <section className="premium-card overflow-hidden">
