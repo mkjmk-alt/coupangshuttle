@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: '개인정보처리방침 | Coupang Shuttle Map',
-  description: 'Coupang Shuttle Map이 실제로 처리하는 정보와 이용자 권리를 안내합니다.',
+  title: '개인정보처리방침 | 물류센터 셔틀맵',
+  description: '물류센터 셔틀맵이 실제로 처리하는 정보와 이용자 권리를 안내합니다.',
 };
 
 const externalLinkClass =
@@ -11,14 +11,14 @@ const externalLinkClass =
 
 export default function PrivacyPolicy() {
   return (
-    <main className="mx-auto max-w-4xl bg-white px-6 py-12 text-slate-800 md:py-20">
+    <main className="policy-page legal-page mx-auto max-w-4xl bg-white px-6 py-12 text-slate-800 md:py-20">
       <div className="mb-12 border-b-2 border-slate-900 pb-8">
         <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-indigo-600">
           Privacy Policy
         </p>
         <h1 className="mb-4 text-3xl font-bold">개인정보처리방침</h1>
         <p className="text-sm text-slate-600">
-          Coupang Shuttle Map(이하 &quot;서비스&quot;) · 시행일 2026년 7월 25일
+          물류센터 셔틀맵(이하 &quot;서비스&quot;) · 시행일 2026년 7월 25일
         </p>
       </div>
 
@@ -274,7 +274,7 @@ export default function PrivacyPolicy() {
           </h2>
           <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-6">
             <p>
-              <b>개인정보 보호 업무 담당:</b> Coupang Shuttle Map 운영자
+              <b>개인정보 보호 업무 담당:</b> 물류센터 셔틀맵 운영자
             </p>
             <p>
               <b>이메일:</b>{' '}

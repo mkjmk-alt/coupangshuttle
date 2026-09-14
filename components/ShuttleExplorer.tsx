@@ -7,6 +7,9 @@ import { getRouteColor } from '../utils/color';
 import { loadInitialShuttleData, loadShuttleCenter } from '../utils/shuttleDataLoader';
 import CoupangBanner from './CoupangBanner';
 
+const ROUTE_NOTICE =
+  '노선과 운행 시각은 참고용이며 변경될 수 있습니다. 탑승 전 소속 센터의 최신 공식 공지를 확인해 주세요.';
+
 // Dynamically import the map to ensure it stays client-side
 const KakaoMapWrapper = dynamic(() => import('./KakaoMapWrapper'), {
   ssr: false,
@@ -448,6 +451,7 @@ export default function ShuttleExplorer() {
         </div>
         <p className="text-xl font-bold text-slate-900 mb-2">셔틀 데이터를 불러오는 중</p>
         <p className="text-slate-400 font-medium">최신 셔틀 노선 정보를 준비하고 있습니다.</p>
+        <p className="route-search-notice mt-5" role="note">{ROUTE_NOTICE}</p>
       </div>
     );
   }
@@ -455,7 +459,7 @@ export default function ShuttleExplorer() {
   return (
     <div className="space-y-12 pb-20">
       {/* Search Console */}
-      <section className="premium-card p-5 sm:p-8 lg:p-10 relative overflow-hidden">
+      <section className="premium-card route-search-card p-5 sm:p-8 lg:p-10 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/50 rounded-full blur-3xl -mr-32 -mt-32"></div>
         <div className="relative z-10">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between items-start gap-4 mb-8">
@@ -467,7 +471,7 @@ export default function ShuttleExplorer() {
                     </div>
                     <div>
                         <h2 className="text-2xl font-black text-slate-900 tracking-tight">센터별 셔틀 노선 찾기</h2>
-                        <p className="text-sm font-semibold text-slate-400">물류센터, 근무조와 노선을 순서대로 선택해 주세요. 여러 노선은 비교함에 담아 한눈에 확인할 수 있습니다.</p>
+                        <p className="text-sm font-semibold text-slate-400">센터, 근무조, 노선을 순서대로 선택해 주세요.</p>
                     </div>
                 </div>
 
@@ -486,11 +490,12 @@ export default function ShuttleExplorer() {
                 )}
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8 items-end">
+            <div className="route-search-fields grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-end">
                 <div className="group space-y-3">
-                    <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">물류센터</label>
+                    <label htmlFor="shuttle-center" className="route-field-label text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">1. 물류센터</label>
                     <div className="relative">
                         <select 
+                        id="shuttle-center"
                         className="premium-input appearance-none pr-12 cursor-pointer"
                         value={selectedFC}
                         onChange={(e) => {
@@ -511,9 +516,10 @@ export default function ShuttleExplorer() {
                 </div>
 
                 <div className="group space-y-3">
-                    <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">근무조</label>
+                    <label htmlFor="shuttle-shift" className="route-field-label text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] ml-1">2. 근무조</label>
                     <div className="relative">
                         <select 
+                        id="shuttle-shift"
                         className="premium-input appearance-none pr-12 cursor-pointer disabled:bg-slate-50 disabled:text-slate-300 disabled:border-slate-100"
                         value={selectedShift}
                         disabled={!selectedFC}
@@ -535,7 +541,7 @@ export default function ShuttleExplorer() {
 
                 <div className="group space-y-3">
                     <div className="flex justify-between items-center px-1">
-                        <label className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">노선</label>
+                        <label htmlFor="shuttle-route" className="route-field-label text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">3. 노선</label>
                         {selectedFC && selectedRoute && (
                           <button
                             onClick={handleAddToCompare}
@@ -547,6 +553,7 @@ export default function ShuttleExplorer() {
                     </div>
                     <div className="relative">
                         <select 
+                        id="shuttle-route"
                         className="premium-input appearance-none pr-12 cursor-pointer disabled:bg-slate-50 disabled:text-slate-300 disabled:border-slate-100"
                         value={selectedRoute}
                         disabled={!selectedFC}
@@ -574,6 +581,7 @@ export default function ShuttleExplorer() {
                 {centerLoadError || '선택한 센터의 노선 정보를 불러오고 있습니다.'}
               </div>
             )}
+            <p className="route-search-notice" role="note">{ROUTE_NOTICE}</p>
         </div>
       </section>
 

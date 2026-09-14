@@ -2,13 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: '문의 및 데이터 제보 | Coupang Shuttle Map',
+  title: '문의 및 데이터 제보 | 물류센터 셔틀맵',
   description: '셔틀 노선 오류, 신규 정류장, 개인정보 및 서비스 운영 문의 채널입니다.',
 };
 
 export default function Contact() {
   return (
-    <main className="mx-auto max-w-5xl px-6 py-16 font-sans md:py-20">
+    <main className="policy-page contact-page mx-auto max-w-5xl px-6 py-16 font-sans md:py-20">
       <div className="mb-14 space-y-4 text-center">
         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-4 py-2">
           <span className="h-2 w-2 rounded-full bg-indigo-500" />

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: '운영 및 데이터 정책 | Coupang Shuttle Map',
+  title: '운영 및 데이터 정책 | 물류센터 셔틀맵',
   description: '셔틀 데이터 출처, 업데이트 시각, 변경 로그와 오류 제보 처리 기준입니다.',
 };
 
@@ -26,7 +26,7 @@ const items = [
 
 export default function OperationsPolicy() {
   return (
-    <main className="mx-auto max-w-5xl px-6 py-12 text-slate-800 md:py-20">
+    <main className="policy-page operations-page mx-auto max-w-5xl px-6 py-12 text-slate-800 md:py-20">
       <div className="mb-12 border-b-2 border-slate-900 pb-8">
         <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-indigo-600">
           Operations & Data

@@ -2,19 +2,19 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: '서비스 이용약관 | Coupang Shuttle Map',
-  description: 'Coupang Shuttle Map의 이용 조건, 비공식성 고지 및 책임 범위를 안내합니다.',
+  title: '서비스 이용약관 | 물류센터 셔틀맵',
+  description: '물류센터 셔틀맵의 이용 조건, 비공식성 고지 및 책임 범위를 안내합니다.',
 };
 
 export default function TermsOfService() {
   return (
-    <main className="mx-auto max-w-4xl bg-white px-6 py-12 text-slate-800 md:py-20">
+    <main className="policy-page legal-page terms-page mx-auto max-w-4xl bg-white px-6 py-12 text-slate-800 md:py-20">
       <div className="mb-12 border-b-2 border-slate-900 pb-8">
         <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-indigo-600">
           Terms of Service
         </p>
         <h1 className="mb-4 text-3xl font-bold">서비스 이용약관</h1>
-        <p className="text-sm text-slate-600">Coupang Shuttle Map · 시행일 2026년 7월 19일</p>
+        <p className="text-sm text-slate-600">물류센터 셔틀맵 · 시행일 2026년 7월 19일</p>
       </div>
 
       <div className="space-y-10 break-keep text-sm leading-relaxed md:text-base">

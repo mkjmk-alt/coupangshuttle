@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       headers: {
         Accept: 'application/json',
         'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.7',
-        'User-Agent': 'CoupangShuttleMap/1.0 (https://coupangshuttle.pages.dev/editor)',
+        'User-Agent': 'FulfillmentShuttleMap/1.0 (https://coupangshuttle.pages.dev/editor)',
       },
       next: { revalidate: 86400 },
     });
