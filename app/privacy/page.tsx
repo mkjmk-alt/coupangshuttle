@@ -14,9 +14,7 @@ export default function PrivacyPolicy() {
   return (
     <main className="policy-page legal-page mx-auto max-w-4xl bg-white px-6 py-12 text-slate-800 md:py-20">
       <div className="mb-12 border-b-2 border-slate-900 pb-8">
-        <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-indigo-600">
-          Privacy Policy
-        </p>
+        <p className="mb-3 text-xs font-bold text-indigo-600">개인정보 보호</p>
         <h1 className="mb-4 text-3xl font-bold">개인정보처리방침</h1>
         <p className="text-sm text-slate-600">
           물류센터 셔틀맵(이하 &quot;서비스&quot;) · 시행일 2026년 7월 25일

@@ -47,11 +47,11 @@ const questions = [
 
 export default function FaqPage() {
   return (
-    <main className="policy-page content-page faq-page mx-auto max-w-5xl px-6 py-12 text-slate-800 md:py-20">
+    <main className="policy-page content-page plain-content-page faq-page mx-auto max-w-5xl px-6 py-12 text-slate-800 md:py-20">
       <header>
-        <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-indigo-600">FAQ</p>
+        <p className="mb-3 text-xs font-bold text-indigo-600">자주 묻는 질문</p>
         <h1>자주 묻는 질문</h1>
-        <p>노선·정류장·운행 시각을 확인할 때 자주 생기는 궁금증을 정리했습니다.</p>
+        <p>노선과 정류장을 찾을 때 자주 묻는 내용을 모았습니다.</p>
       </header>
 
       <section className="faq-list" aria-label="자주 묻는 질문 목록">
@@ -63,7 +63,7 @@ export default function FaqPage() {
         ))}
       </section>
 
-      <section className="content-callout content-callout-blue faq-followup">
+      <section className="faq-followup">
         <h2>답을 찾지 못했다면</h2>
         <p>
           노선 변경이나 정류장 오류는 <Link href="/contact">문의 및 데이터 제보</Link>에서 알려 주세요.

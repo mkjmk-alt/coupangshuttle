@@ -304,6 +304,28 @@ textarea:focus-visible, summary:focus-visible { outline: 3px solid var(--primary
 .faq-list details p { margin: 0; padding: 17px 20px 20px; color: #526270; font-size: 14px; line-height: 1.9; word-break: keep-all; }
 .faq-followup { margin-top: 42px; }
 
+/* Plain document treatment for information pages. */
+.plain-content-page .content-callout { border: 0; border-left: 3px solid #cce5d9; border-radius: 0; background: transparent; padding: 4px 0 4px 18px; }
+.plain-content-page .content-callout-blue { border-left-color: #c5d5f5; background: transparent; }
+.plain-content-page .content-card { border: 0; border-top: 1px solid var(--line); border-radius: 0; background: transparent; padding: 18px 0 0; }
+.plain-content-page .faq-list details { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; }
+.plain-content-page .faq-list summary { padding: 18px 2px; font-weight: 700; }
+.plain-content-page .faq-list details[open] summary { border-bottom: 0; background: transparent; }
+.plain-content-page .faq-list details p { padding: 0 2px 20px 24px; }
+.plain-content-page .faq-followup { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: 42px; padding: 24px 0; }
+.plain-content-page .faq-followup h2 { margin-bottom: 10px; color: var(--ink); font-size: 1.3rem; font-weight: 750; }
+.plain-content-page .faq-followup p { margin: 0; color: #526270; line-height: 1.9; word-break: keep-all; }
+.contact-panel { min-height: 100%; padding: 26px 0; border-top: 2px solid var(--primary); border-bottom: 1px solid var(--line); }
+.contact-panel h2 { margin: 0; color: var(--ink); font-size: 1.35rem; font-weight: 750; }
+.contact-panel p { color: #526270; font-size: 14px; line-height: 1.9; word-break: keep-all; }
+.contact-panel a { min-height: 46px; border-radius: 8px; box-shadow: none; font-size: 14px; font-weight: 700; }
+.contact-panel .contact-email { color: var(--primary-dark); font-weight: 750; }
+.contact-note { padding: 26px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.contact-note h2 { color: var(--ink); font-size: 1.25rem; font-weight: 750; }
+.contact-note p { color: #526270; font-size: 14px; line-height: 1.9; word-break: keep-all; }
+.contact-note-warning { margin: 18px 0 0; padding-top: 16px; border-top: 1px solid var(--soft-line); }
+.contact-note-warning b { color: var(--coral-dark); }
+
 /* Text-first stop guide */
 .stop-guide-page { width: min(100%, 1180px); margin: 0 auto; padding: 54px clamp(20px, 4vw, 48px) 72px; color: var(--ink); }
 .stop-guide-hero { padding: 4px 0 32px; }
@@ -425,6 +447,9 @@ textarea:focus-visible, summary:focus-visible { outline: 3px solid var(--primary
   .faq-list summary { padding: 16px; font-size: 14px; }
   .faq-list details p { padding: 15px 16px 18px; font-size: 13px; }
   .faq-followup { margin-top: 34px; }
+  .plain-content-page .faq-followup { margin-top: 34px; }
+  .contact-panel { padding: 22px 0; }
+  .contact-note { margin-top: 34px; padding: 22px 0; }
   .stop-guide-page { padding: 32px 18px 44px; }
   .stop-guide-hero { padding-bottom: 24px; }
   .stop-guide-lead { font-size: 15px; }

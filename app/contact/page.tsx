@@ -9,32 +9,19 @@ export const metadata: Metadata = {
 
 export default function Contact() {
   return (
-    <main className="policy-page contact-page mx-auto max-w-5xl px-6 py-16 font-sans md:py-20">
+    <main className="policy-page contact-page plain-content-page mx-auto max-w-5xl px-6 py-16 font-sans md:py-20">
       <div className="mb-14 space-y-4 text-center">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-4 py-2">
-          <span className="h-2 w-2 rounded-full bg-indigo-500" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
-            Support & Data Feedback
-          </span>
-        </div>
-        <h1 className="font-outfit text-4xl font-black tracking-tight text-slate-900 md:text-6xl">
-          문의 및 데이터 제보
-        </h1>
-        <p className="mx-auto max-w-2xl text-lg font-medium text-slate-500 md:text-xl">
-          별도 로그인 없이 카카오톡 채널이나 이메일로 문의할 수 있습니다.
-          <br className="hidden md:block" /> 확인한 문의부터 순차적으로 답변드리겠습니다.
-        </p>
+        <p className="text-sm font-bold text-indigo-600">문의 및 제보</p>
+        <h1>문의 및 데이터 제보</h1>
+        <p>노선 오류나 서비스 이용 문의는 카카오톡 또는 이메일로 보내 주세요.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-        <section className="premium-card flex flex-col justify-between p-8 transition-all hover:border-yellow-400/50 md:p-10">
+        <section className="contact-panel flex flex-col justify-between">
           <div className="space-y-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FEE500] text-3xl shadow-lg shadow-yellow-100">
-              💬
-            </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-black tracking-tight text-slate-900">카카오톡 채널</h2>
-              <p className="font-medium leading-relaxed text-slate-500">
+              <h2>카카오톡 채널</h2>
+              <p>
                 노선 오류, 신규 정류장, 시간표 변경을 빠르게 제보하기에 적합합니다. 공식 공지 또는
                 변경 내용을 확인할 수 있는 이미지를 함께 보내면 검토에 도움이 됩니다.
               </p>
@@ -60,17 +47,14 @@ export default function Contact() {
           </a>
         </section>
 
-        <section className="premium-card flex flex-col justify-between p-8 transition-all hover:border-indigo-400/50 md:p-10">
+        <section className="contact-panel flex flex-col justify-between">
           <div className="space-y-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900 text-3xl shadow-lg shadow-slate-100">
-              ✉️
-            </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-black tracking-tight text-slate-900">이메일 문의</h2>
-              <p className="font-medium leading-relaxed text-slate-500">
+              <h2>이메일 문의</h2>
+              <p>
                 기술 오류, 개인정보, 서비스 운영 및 제휴처럼 설명이 긴 내용은 이메일로 보내주세요.
               </p>
-              <p className="font-bold text-indigo-600">mkjmk3114@nate.com</p>
+              <p className="contact-email">mkjmk3114@nate.com</p>
             </div>
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-sm font-bold text-slate-600">
@@ -92,23 +76,19 @@ export default function Contact() {
         </section>
       </div>
 
-      <section className="premium-card relative mt-14 overflow-hidden border-none bg-slate-50 p-8 md:p-12">
-        <div className="relative z-10 grid gap-8 md:grid-cols-[auto_1fr] md:items-start">
-          <div className="text-5xl">📝</div>
-          <div className="space-y-5">
-            <div>
-              <h2 className="text-2xl font-black tracking-tight text-slate-900">제보할 때 알려주세요</h2>
-              <p className="mt-2 font-medium leading-relaxed text-slate-500">
+      <section className="contact-note relative mt-14 overflow-hidden">
+        <div>
+          <div>
+            <h2>제보할 때 알려주세요</h2>
+            <p>
                 센터명, 근무조, 노선명, 정류장명, 변경 전·후 내용과 확인한 날짜를 적어주세요. 가능하면
                 소속 센터의 공식 공지를 함께 보내주세요.
-              </p>
-            </div>
-            <div className="rounded-xl border border-rose-100 bg-white p-4 text-sm leading-relaxed text-slate-600">
-              <b className="text-rose-600">개인정보 주의:</b> 주민등록번호, 계좌번호, 건강정보, 편집 키
-              등 문의 처리에 필요하지 않은 정보는 보내지 마세요. 문의는 카카오와 이메일 제공자의
-              시스템을 통해 전송됩니다.
-            </div>
+            </p>
           </div>
+          <p className="contact-note-warning">
+            <b>개인정보 주의:</b> 주민등록번호, 계좌번호, 건강정보, 편집 키 등 불필요한 정보는 보내지
+            마세요. 문의 내용은 카카오와 이메일 제공자의 시스템을 통해 전송됩니다.
+          </p>
         </div>
       </section>
 

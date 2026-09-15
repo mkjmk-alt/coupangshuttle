@@ -77,12 +77,10 @@ export default function Home() {
       <div className="home-guide-wrap">
         <section className="home-guide premium-card">
           <div>
-            <p className="eyebrow">HOW TO RIDE</p>
-            <h2>
-              필요한 내용만 확인하세요
-            </h2>
+            <p className="eyebrow">탑승 전 확인</p>
+            <h2>탑승 전에 확인할 내용</h2>
             <p className="guide-intro">
-              실제 탑승 기준과 운행 변경 사항은 소속 센터의 최신 공식 공지를 우선합니다.
+              노선과 시간은 참고용입니다. 출발 전 소속 센터의 최신 공지를 확인하세요.
             </p>
           </div>
 
@@ -120,28 +118,27 @@ export default function Home() {
 
         <section className="home-resources premium-card" aria-labelledby="home-resources-title">
           <div>
-            <p className="eyebrow">HELP &amp; DATA</p>
-            <h2 id="home-resources-title">처음 이용한다면 이 내용을 먼저 확인하세요</h2>
+            <p className="eyebrow">도움말과 운영 정보</p>
+            <h2 id="home-resources-title">처음 이용할 때 읽어 보세요</h2>
             <p className="guide-intro">
-              노선과 정류장 데이터만 보여드리는 데서 그치지 않고, 조회 결과를 어떻게 읽고 공식 공지와
-              어떻게 비교해야 하는지도 안내합니다.
+              조회 결과를 읽는 방법과 데이터가 바뀌는 기준을 간단히 안내합니다.
             </p>
           </div>
           <div className="resource-grid">
             <Link href="/guide" className="resource-link">
               <span>01</span>
               <strong>셔틀 이용 가이드</strong>
-              <p>센터 선택부터 탑승 전 확인까지 순서대로 읽어 보세요.</p>
+              <p>센터와 근무조를 선택하는 순서부터 확인하세요.</p>
             </Link>
             <Link href="/faq" className="resource-link">
               <span>02</span>
               <strong>자주 묻는 질문</strong>
-              <p>시간 변경, 주소 오류, 공식 공지 우선 원칙을 확인하세요.</p>
+              <p>시간이 달라졌거나 주소가 맞지 않을 때 참고하세요.</p>
             </Link>
             <Link href="/operations" className="resource-link">
               <span>03</span>
               <strong>데이터 운영 정책</strong>
-              <p>자료 출처와 자동 배포·수동 보정의 차이를 공개합니다.</p>
+              <p>데이터 출처와 수정 기준을 확인하세요.</p>
             </Link>
           </div>
         </section>

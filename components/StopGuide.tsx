@@ -174,7 +174,7 @@ export default function StopGuide() {
   return (
     <main className="stop-guide-page">
       <header className="stop-guide-hero">
-        <p className="eyebrow">STOP GUIDE</p>
+        <p className="eyebrow">정류장 이용</p>
         <h1>정류장 안내</h1>
         <p className="stop-guide-lead">지도 없이 정류장명·주소·탑승 시각을 빠르게 확인하세요.</p>
         <p className="stop-guide-sublead">센터와 노선을 고르면 글로 읽기 편한 정류장 목록을 보여드립니다.</p>
@@ -258,7 +258,7 @@ export default function StopGuide() {
       <section className="premium-card stop-guide-results">
         <div className="stop-guide-results-heading">
           <div>
-            <p className="eyebrow">TEXT-FIRST ROUTE LIST</p>
+            <p className="eyebrow">조회 결과</p>
             <h2>{selectedFC ? `${selectedCenterName} 정류장` : '정류장 목록'}</h2>
             <p>
               {selectedFC

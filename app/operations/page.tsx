@@ -27,11 +27,9 @@ const items = [
 
 export default function OperationsPolicy() {
   return (
-    <main className="policy-page operations-page mx-auto max-w-5xl px-6 py-12 text-slate-800 md:py-20">
+    <main className="policy-page operations-page plain-content-page mx-auto max-w-5xl px-6 py-12 text-slate-800 md:py-20">
       <div className="mb-12 border-b-2 border-slate-900 pb-8">
-        <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-indigo-600">
-          Operations & Data
-        </p>
+        <p className="mb-3 text-xs font-bold text-indigo-600">운영 기준</p>
         <h1 className="mb-4 text-3xl font-bold">운영 및 데이터 정책</h1>
         <p className="text-sm text-slate-600">기준일 2026년 7월 19일</p>
       </div>

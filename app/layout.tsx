@@ -49,7 +49,7 @@ export default function RootLayout({
             <Brand />
 
             <div className="sidebar-intro">
-              <p className="eyebrow">COMMUTE / SHUTTLE</p>
+              <p className="eyebrow">셔틀 노선 안내</p>
               <p>오늘의 이동을 조금 더 편하게 확인하세요.</p>
             </div>
 

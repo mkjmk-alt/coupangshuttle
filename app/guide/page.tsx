@@ -9,11 +9,11 @@ export const metadata: Metadata = {
 
 export default function GuidePage() {
   return (
-    <main className="policy-page content-page mx-auto max-w-5xl px-6 py-12 text-slate-800 md:py-20">
+    <main className="policy-page content-page plain-content-page mx-auto max-w-5xl px-6 py-12 text-slate-800 md:py-20">
       <header>
-        <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-indigo-600">RIDE GUIDE</p>
+        <p className="mb-3 text-xs font-bold text-indigo-600">이용 안내</p>
         <h1>셔틀 이용 가이드</h1>
-        <p>노선 조회부터 정류장 확인, 탑승 전 점검까지 필요한 내용을 한곳에 정리했습니다.</p>
+        <p>노선과 정류장을 확인할 때 필요한 내용을 순서대로 안내합니다.</p>
       </header>
 
       <div className="content-stack break-keep text-sm leading-relaxed md:text-base">
@@ -39,10 +39,10 @@ export default function GuidePage() {
             <li><strong>노선</strong>을 선택하고 정류장 순서, 주소, 시간을 확인합니다.</li>
             <li>여러 노선을 비교해야 한다면 조회 화면의 비교 기능을 이용합니다.</li>
           </ol>
-          <p>
-            선택창이 비어 있거나 데이터가 늦게 표시되면 잠시 기다린 뒤 다시 선택해 주세요. 센터
-            파일을 필요한 시점에 불러오는 구조라 첫 조회 때만 시간이 더 걸릴 수 있습니다.
-          </p>
+            <p>
+              선택창이 비어 있으면 센터를 먼저 선택해 주세요. 처음 선택한 센터의 정보는 불러오는 데
+              잠시 시간이 걸릴 수 있습니다.
+            </p>
         </section>
 
         <section>
