@@ -333,5 +333,5 @@
 ## 2026-09-16 | ID: iNxCWQ00gP
 
 - 요청: 현재 보강 작업을 GitHub에 푸시하고 Cloudflare Pages에 배포해 달라는 요청.
-- 답변: 검증된 `main` 커밋을 GitHub `origin/main`에 푸시하고 Cloudflare Pages Production에 배포함. 배포 미리보기 주소는 `https://c7d8e206.coupangshuttle.pages.dev`이며 canonical `https://coupangshuttle.pages.dev`에도 반영됨.
+- 답변: 검증된 `main` 커밋을 GitHub `origin/main`에 푸시하고 Cloudflare Pages Production에 배포함. 최초 배포 미리보기 주소는 `https://c7d8e206.coupangshuttle.pages.dev`이고, 요청 기록 커밋까지 반영한 최종 배포 주소는 `https://82764279.coupangshuttle.pages.dev`이며 canonical `https://coupangshuttle.pages.dev`에도 반영됨.
 - 수정 내용: 코드 기능은 추가로 변경하지 않음. 전체 테스트·TypeScript 검사·프로덕션 빌드 후 `npx @cloudflare/next-on-pages`와 Wrangler로 배포하고 `/`, `/centers`, `/centers/ANS4`, `/updates`, `/operations`, `/sitemap.xml`, `/robots.txt`가 HTTP 200임을 확인함. 배포 사이트맵에 센터 URL 98개와 업데이트 URL이 포함되고 공개 변경 이력에 원본 `Image URL`이 노출되지 않음을 확인함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
