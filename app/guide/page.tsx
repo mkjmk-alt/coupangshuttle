@@ -91,7 +91,7 @@ export default function GuidePage() {
       </div>
 
       <div className="content-links">
-        <Link href="/">노선 조회로 돌아가기</Link>
+        <Link href="/">지도로 돌아가기</Link>
         <Link href="/faq">자주 묻는 질문 보기</Link>
         <Link href="/privacy">개인정보처리방침</Link>
       </div>

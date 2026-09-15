@@ -74,7 +74,7 @@ export default function FaqPage() {
 
       <div className="content-links">
         <Link href="/guide">셔틀 이용 가이드</Link>
-        <Link href="/">노선 조회로 돌아가기</Link>
+        <Link href="/">지도로 돌아가기</Link>
         <Link href="/terms">서비스 이용약관</Link>
       </div>
     </main>

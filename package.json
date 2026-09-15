@@ -9,6 +9,7 @@
     "test:adsense-readiness": "node scripts/adsense-readiness.test.mjs",
     "test:center-pages": "node scripts/center-pages.test.mjs",
     "test:changelog-summary": "node --experimental-strip-types scripts/changelog-summary.test.mjs",
+    "test:mobile-navigation": "node scripts/mobile-navigation.test.mjs",
     "test:data-summary": "node --experimental-strip-types scripts/data-summary.test.mjs",
     "test:plain-content": "node scripts/plain-content.test.mjs",
     "test:stop-guide": "node --experimental-strip-types scripts/stop-guide-data.test.mjs",

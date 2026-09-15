@@ -325,6 +325,12 @@ textarea:focus-visible, summary:focus-visible { outline: 3px solid var(--primary
 .contact-note p { color: #526270; font-size: 14px; line-height: 1.9; word-break: keep-all; }
 .contact-note-warning { margin: 18px 0 0; padding-top: 16px; border-top: 1px solid var(--soft-line); }
 .contact-note-warning b { color: var(--coral-dark); }
+.contact-resource-panel { margin-top: 42px; padding: 26px 0 0; border-top: 1px solid var(--line); }
+.contact-resource-panel h2 { margin: 8px 0 10px; color: var(--ink); font-size: 1.3rem; font-weight: 750; }
+.contact-resource-panel > p:not(.eyebrow) { max-width: 720px; color: #526270; font-size: 14px; line-height: 1.9; word-break: keep-all; }
+.contact-resource-links { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 18px; }
+.contact-resource-links a { padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--primary-dark); font-size: 13px; font-weight: 700; text-decoration: none; }
+.contact-resource-links a:hover { border-color: var(--primary); background: var(--blue-soft); }
 
 /* Center directory and server-rendered center summaries */
 .centers-intro { margin-bottom: 34px; }

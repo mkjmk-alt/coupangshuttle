@@ -105,6 +105,24 @@ export default function Contact() {
         </p>
       </section>
 
+      <section className="contact-resource-panel" aria-labelledby="contact-resource-title">
+        <p className="eyebrow">도움말·정책</p>
+        <h2 id="contact-resource-title">지도 외 안내도 여기서 확인하세요</h2>
+        <p>
+          노선 지도를 이용하는 방법, 자주 묻는 질문, 데이터 변경 기준과 서비스 정책을 한곳에 모았습니다.
+          문의하기 전에 아래 안내를 먼저 확인하면 필요한 정보를 더 빨리 찾을 수 있습니다.
+        </p>
+        <div className="contact-resource-links">
+          <Link href="/guide">셔틀 이용 가이드</Link>
+          <Link href="/faq">자주 묻는 질문</Link>
+          <Link href="/centers">센터별 정보</Link>
+          <Link href="/updates">데이터 변경 이력</Link>
+          <Link href="/operations">운영 및 데이터 정책</Link>
+          <Link href="/privacy">개인정보처리방침</Link>
+          <Link href="/terms">서비스 이용약관</Link>
+        </div>
+      </section>
+
       <div className="mt-10 flex flex-wrap justify-center gap-6 text-sm font-bold">
         <Link href="/privacy" className="text-slate-500 hover:text-indigo-600">
           개인정보처리방침
@@ -113,7 +131,7 @@ export default function Contact() {
           운영 및 데이터 정책
         </Link>
         <Link href="/" className="text-slate-500 hover:text-indigo-600">
-          노선 조회로 돌아가기
+          지도로 돌아가기
         </Link>
       </div>
     </main>

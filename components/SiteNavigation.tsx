@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const navigation = [
-  { href: '/', label: '노선 조회', shortLabel: '조회', icon: 'search' },
+  { href: '/', label: '지도', shortLabel: '지도', icon: 'search' },
   { href: '/stops', label: '정류장 안내', shortLabel: '정류장', icon: 'pin' },
   { href: '/centers', label: '센터 안내', shortLabel: '센터', icon: 'center' },
   { href: '/updates', label: '데이터 변경 이력', shortLabel: '변경', icon: 'updates' },
