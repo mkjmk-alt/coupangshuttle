@@ -341,3 +341,9 @@
 - 요청: 모바일 하단 메뉴의 `조회`를 `지도`로 바꾸고 지도 외의 안내 내용을 `문의` 쪽으로 모으는 방안을 검토해 달라는 요청.
 - 답변: `지도·정류장·문의` 3개 하단 메뉴는 유지하되, `가이드·FAQ·센터·변경 이력·개인정보·약관`은 문의 화면 안의 도움말·정책 링크 묶음으로 제공하는 bounded 설계를 제안함. 구현 전 사용자 확인을 기다리는 중임.
 - 수정 내용: 코드 수정은 아직 하지 않음. `components/SiteNavigation.tsx`와 `app/contact/page.tsx`를 확인하고, 현재 모바일 메뉴가 이미 세 항목으로 제한되어 있음을 검토함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
+
+## 2026-09-16 | ID: VjGjq3Fszs
+
+- 요청: 승인한 방향대로 모바일 메뉴를 `지도·정류장·문의`로 정리하고 지도 외 안내를 문의 화면에 모아 달라는 요청.
+- 답변: 모바일·데스크톱 첫 메뉴를 `지도`로 바꾸고, 문의 화면에 가이드·FAQ·센터·변경 이력·운영 정책·개인정보·약관 링크를 도움말·정책 묶음으로 추가함. 기존 직접 URL과 정류장 메뉴는 유지함.
+- 수정 내용: `components/SiteNavigation.tsx`, `app/contact/page.tsx`, `app/guide/page.tsx`, `app/faq/page.tsx`, `app/pastel.css`를 수정하고 `scripts/mobile-navigation.test.mjs`와 `test:mobile-navigation`을 추가함. 모바일 내비게이션·평문 콘텐츠·AdSense 콘텐츠 테스트, TypeScript 검사, 변경 파일 ESLint, 프로덕션 빌드와 `git diff --check`가 통과함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
