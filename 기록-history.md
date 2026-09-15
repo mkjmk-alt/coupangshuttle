@@ -258,3 +258,9 @@
 - 요청: `http://127.0.0.1:3001/`에서 쿠팡 셔틀 사이트가 아니라 다른 웹 페이지가 열리는 이유를 확인해 달라는 요청.
 - 답변: 3001 브라우저 탭은 `게스트 캘린더 — 연차, 영차!`라는 이전 페이지를 가리키고 있었고, 터미널에서 확인한 결과 당시 3001 포트에는 실행 중인 서버가 없었음. 현재 프로젝트를 `npm run dev -- --port 3001`로 다시 실행한 뒤 탭을 `쿠팡 물류센터 셔틀 노선·정류장 지도 | 물류센터 셔틀맵` 홈으로 전환함.
 - 수정 내용: 소스 코드는 수정하지 않음. `lsof`, `ps`, `curl`로 포트·프로세스·응답 마커를 확인했고, 현재 3001 포트에서 이 프로젝트가 200 응답을 반환하며 `물류센터 셔틀맵`과 `hero-background-route` 마커를 포함하는 것을 검증함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
+
+## 2026-09-15 | ID: BZDfbtUlfU
+
+- 요청: 정류장 안내 기능 변경분을 GitHub에 푸시하고 공개 사이트에 배포해 달라는 요청.
+- 답변: 변경분을 `82bf7bb17d787b0f60d136e19700ef37031e1b1a` 커밋(`✨ Add text-first stop guide`)으로 저장함. GitHub 푸시는 `gh`의 기존 `mkjmk-alt` 토큰이 만료되어 사용자 인증이 필요한 상태로 중단됨. Cloudflare Pages에는 현재 커밋을 직접 배포해 Production 배포 `https://ce5ad89f.coupangshuttle.pages.dev`를 생성했고, canonical `https://coupangshuttle.pages.dev`에서도 새 `/stops` 메뉴를 확인함.
+- 수정 내용: `npm run test:stop-guide`, `npx tsc --noEmit`, 변경 파일 ESLint, `npm run build`, `git diff --check`를 통과한 뒤 커밋함. `npx @cloudflare/next-on-pages`로 `.vercel/output`을 생성하고 `npx wrangler pages deploy .vercel/output/static --project-name coupangshuttle`로 Production 배포함. GitHub 푸시를 위해 `gh auth login --hostname github.com --git-protocol https --web`에서 장치 인증 코드 `E378-950B`가 발급됐으나 사용자가 GitHub 장치 인증을 완료해야 하므로 해당 단계는 미완료로 남김. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
