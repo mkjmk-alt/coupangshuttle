@@ -305,3 +305,9 @@
 - 요청: 최신 변경사항을 GitHub에 푸시하고 Cloudflare Pages에 배포해 달라는 요청.
 - 답변: 로컬 `main`과 GitHub `origin/main`이 커밋 `7fda06eb3e9ffb543da55e3f86844d38ada7bf07`로 일치한 상태를 확인한 뒤, 요청 기록 커밋 `d19c96da459ee605ecf527765fcad480bdade750`을 GitHub `main`에 푸시함. Cloudflare Pages Production에 수동 배포 `https://7b0bdb54.coupangshuttle.pages.dev`를 생성했고 `/operations`가 HTTP 200으로 응답함. canonical `https://coupangshuttle.pages.dev`의 `/operations`도 HTTP 200이며 최신 일반 서식 마커가 포함됨.
 - 수정 내용: 코드·디자인은 수정하지 않음. Git 상태·원격 커밋·Cloudflare 배포 목록을 확인하고 요청 기록만 추가함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
+
+## 2026-09-15 | ID: AFkGzTiQsa
+
+- 요청: 새로 배포된 웹페이지를 기준으로 Google AdSense 승인을 위해 필요한 노력을 확인해 달라는 요청.
+- 답변: 공개 배포본의 기본 기술 조건은 양호함(주요 페이지·`robots.txt`·`sitemap.xml`·`ads.txt`·canonical·AdSense 계정 메타 태그가 응답하고 `/operations`, `/stops`가 HTTP 200). 다만 승인 관점의 핵심 보완점은 ① 2026년 7월 25일로 표시된 셔틀 데이터 최신성 회복, ② 동적 선택 화면에만 머무르지 않는 원본 설명·센터별 맥락 보강, ③ Google 인증 CMP/동의·철회 흐름 점검, ④ AdSense 사이트 등록·소유권 확인·Search Console 색인 확인, ⑤ 제휴 배너 비중과 표시를 콘텐츠보다 앞세우지 않는 운영임. Google은 고정된 페이지 수나 승인 기간을 보장하지 않으며, 충분한 원본 콘텐츠·명확한 탐색·정책 준수·실제 이용자 가치를 중심으로 검토함.
+- 수정 내용: 코드·디자인·배포 파일은 수정하지 않음. 공개 사이트 응답과 로컬 데이터/AdSense 연동을 읽기 전용으로 점검하고 Google 공식 AdSense 문서를 조사함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
