@@ -371,3 +371,9 @@
 - 요청: 노선 목록에 표시되는 노선명이 셀 너비에 맞춰 줄바꿈되지 않도록 수정하고 GitHub 푸시·배포까지 진행해 달라는 요청.
 - 답변: 노선명 배지에 한 줄 표시와 오버플로 말줄임을 적용해 노선명이 글자 단위로 깨지지 않도록 수정함. GitHub `main`에 푸시하고 Cloudflare Pages Production에 배포했으며, 배포 미리보기 주소는 `https://bdabcdfa.coupangshuttle.pages.dev`이고 canonical `https://coupangshuttle.pages.dev`에도 반영됨.
 - 수정 내용: `components/ShuttleExplorer.tsx`의 노선 라벨에 `route-results-route-name` 클래스를 추가하고 `app/pastel.css`에서 `white-space: nowrap`, 오버플로·말줄임을 설정함. `scripts/route-label.test.mjs`와 `test:route-label` 스크립트를 추가함. 노선 라벨 테스트, 기존 데이터·콘텐츠 테스트, TypeScript 검사, 프로덕션 빌드, 배포 CSS 확인이 통과했으며 배포된 `/`, `/stops`, `/contact`, `/centers/ANS4`, `/updates`, `/sitemap.xml`, `/robots.txt`가 모두 HTTP 200이고 사이트맵의 센터 URL 103개를 확인함. 변경 파일 전체 ESLint는 기존 `ShuttleExplorer.tsx`의 선언 순서 및 `any` 규칙 위반으로 실패하지만 새 테스트 파일 ESLint는 통과함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
+
+## 2026-09-16 | ID: mARbd0hxZj
+
+- 요청: 사이드바에 `센터 안내`, `셔틀 이용 가이드`, `자주 묻는 질문`을 추가해 달라는 요청.
+- 답변: 데스크톱 사이드바에 세 안내 메뉴를 추가하고, 모바일 하단 메뉴는 기존 `지도·정류장·문의` 3개를 유지함. GitHub `main`에 푸시하고 Cloudflare Pages Production에 배포했으며, 배포 미리보기 주소는 `https://0e3a7617.coupangshuttle.pages.dev`이고 canonical `https://coupangshuttle.pages.dev`에도 반영됨.
+- 수정 내용: `components/SiteNavigation.tsx`에서 데스크톱용 사이드바 목록과 모바일용 하단 목록을 분리함. `scripts/mobile-navigation.test.mjs`가 데스크톱 6개 메뉴와 모바일 3개 핵심 메뉴를 각각 확인하도록 보강됨. 내비게이션·콘텐츠 테스트, TypeScript 검사, 프로덕션 빌드가 통과했고 배포된 주요 경로(`/`, `/stops`, `/contact`, `/centers/ANS4`, `/updates`, `/sitemap.xml`, `/robots.txt`)가 모두 HTTP 200임을 확인함. 공개 HTML에서 사이드바의 세 안내 링크와 모바일 핵심 링크 3개를 확인했으며 사이트맵의 센터 URL 103개도 유지됨. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
