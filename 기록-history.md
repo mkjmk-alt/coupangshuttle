@@ -292,4 +292,4 @@
 
 - 요청: FAQ 페이지 하단의 `답을 찾지 못했다면` 안내 카드가 위 FAQ 목록과 붙어 있으므로 같은 여백을 적용해 달라는 요청.
 - 답변: FAQ 목록과 하단 안내 카드 사이에 데스크톱 42px, 모바일 34px의 동일한 콘텐츠 간격을 적용함.
-- 수정 내용: `app/faq/page.tsx`에 `faq-followup` 클래스를 추가하고 `app/pastel.css`에 반응형 상단 여백을 추가함. 여백 검증을 `scripts/adsense-readiness.test.mjs`에 추가했으며 구현 전 테스트 실패를 확인한 뒤 통과시킴. `npm run test:adsense-readiness`, `npm run test:stop-guide`, `npx tsc --noEmit`, FAQ 관련 ESLint, `npm run build`, `git diff --check`를 통과함. GitHub 푸시와 Cloudflare Pages 재배포 예정이며 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
+- 수정 내용: `app/faq/page.tsx`에 `faq-followup` 클래스를 추가하고 `app/pastel.css`에 반응형 상단 여백을 추가함. 여백 검증을 `scripts/adsense-readiness.test.mjs`에 추가했으며 구현 전 테스트 실패를 확인한 뒤 통과시킴. `npm run test:adsense-readiness`, `npm run test:stop-guide`, `npx tsc --noEmit`, FAQ 관련 ESLint, `npm run build`, `git diff --check`를 통과함. 커밋 `b673289`를 GitHub `main`에 푸시하고 Cloudflare Pages Production 배포 `https://9acaa58b.coupangshuttle.pages.dev`를 생성했으며, 자동 배포 `https://b36ac379.coupangshuttle.pages.dev`와 canonical FAQ 페이지의 `faq-followup` 마커를 확인함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
