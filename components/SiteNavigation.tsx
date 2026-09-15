@@ -6,6 +6,8 @@ import { usePathname } from 'next/navigation';
 const navigation = [
   { href: '/', label: '노선 조회', shortLabel: '조회', icon: 'search' },
   { href: '/stops', label: '정류장 안내', shortLabel: '정류장', icon: 'pin' },
+  { href: '/centers', label: '센터 안내', shortLabel: '센터', icon: 'center' },
+  { href: '/updates', label: '데이터 변경 이력', shortLabel: '변경', icon: 'updates' },
   { href: '/guide', label: '셔틀 이용 가이드', shortLabel: '가이드', icon: 'guide' },
   { href: '/faq', label: '자주 묻는 질문', shortLabel: 'FAQ', icon: 'faq' },
   { href: '/privacy', label: '개인정보처리방침', shortLabel: '개인정보', icon: 'privacy' },
@@ -24,6 +26,8 @@ function NavigationIcon({ name }: { name: NavigationIconName }) {
     support: 'M20 11.5a7.5 7.5 0 0 1-8 7.5 8.7 8.7 0 0 1-3.6-.8L4 20l1.8-3.5A7.4 7.4 0 0 1 4.5 12 7.5 7.5 0 0 1 12 4.5a7.5 7.5 0 0 1 8 7Z',
     guide: 'M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15ZM4 20.5A2.5 2.5 0 0 1 6.5 18H20',
     faq: 'M12 18h.01M9.1 9a3 3 0 1 1 5.1 2.1c-1.3 1.1-2.2 1.6-2.2 3.4M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z',
+    center: 'M4 5h16v14H4z M8 9h8M8 13h5',
+    updates: 'M5 5h14v14H5z M8 9h8M8 13h5',
   };
 
   return (

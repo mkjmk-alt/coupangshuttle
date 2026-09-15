@@ -92,6 +92,19 @@ export default function Contact() {
         </div>
       </section>
 
+      <section className="contact-note contact-note-guidance">
+        <h2>답변을 빠르게 받는 방법</h2>
+        <p>
+          문의 제목에 센터 코드와 노선명을 적고, 문제가 발생한 날짜·기기·화면을 함께 알려 주세요.
+          제보 내용은 오류 확인과 데이터 검토에만 사용하며, 주민등록번호·계좌번호·편집 키처럼
+          필요하지 않은 개인정보는 수집하지 않습니다.
+        </p>
+        <p>
+          공개 데이터의 기준과 변경 기록은 <Link href="/operations">운영 및 데이터 정책</Link>과{' '}
+          <Link href="/updates">데이터 변경 이력</Link>에서 먼저 확인할 수 있습니다.
+        </p>
+      </section>
+
       <div className="mt-10 flex flex-wrap justify-center gap-6 text-sm font-bold">
         <Link href="/privacy" className="text-slate-500 hover:text-indigo-600">
           개인정보처리방침

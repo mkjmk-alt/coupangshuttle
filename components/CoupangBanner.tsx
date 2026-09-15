@@ -30,13 +30,13 @@ export default function CoupangBanner() {
           <div className="space-y-1">
             <h4 className="text-amber-800 font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>
-              제휴 안내 · 근무 중 간식 준비
+              광고·제휴 안내 · 근무 중 간식 준비
             </h4>
             <p className="text-slate-800 text-sm font-bold leading-snug break-keep">
               근무 중 필요한 <span className="bg-amber-100/80 text-amber-950 px-1.5 py-0.5 rounded font-black">간식이나 음료</span>를 미리 준비해 보세요. 아래 버튼을 누르면 쿠팡 제휴 페이지가 새 창에서 열립니다.
             </p>
             <p className="text-[10px] text-slate-400 font-bold mt-1">
-              * 이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+              광고 고지: 이 링크는 쿠팡 파트너스 활동의 일환이며, 구매 시 운영자에게 일정액의 수수료가 제공될 수 있습니다.
             </p>
           </div>
         </div>

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { getDataFreshness } from '@/utils/dataSummary';
+import { readDataMetadata } from '@/utils/centerDirectory';
 
 export const metadata: Metadata = {
   title: '운영 및 데이터 정책 | 물류센터 셔틀맵',
@@ -26,12 +28,15 @@ const items = [
 ];
 
 export default function OperationsPolicy() {
+  const metadata = readDataMetadata();
+  const freshness = getDataFreshness(metadata.lastUpdated ?? '');
+
   return (
     <main className="policy-page operations-page plain-content-page mx-auto max-w-5xl px-6 py-12 text-slate-800 md:py-20">
       <div className="mb-12 border-b-2 border-slate-900 pb-8">
         <p className="mb-3 text-xs font-bold text-indigo-600">운영 기준</p>
         <h1 className="mb-4 text-3xl font-bold">운영 및 데이터 정책</h1>
-        <p className="text-sm text-slate-600">기준일 2026년 7월 19일</p>
+        <p className="text-sm text-slate-600">공개 데이터 기준일 {metadata.lastUpdated || '확인되지 않음'}</p>
       </div>
 
       <div className="space-y-12 break-keep text-sm leading-relaxed md:text-base">
@@ -41,6 +46,17 @@ export default function OperationsPolicy() {
             셔틀 정보를 가능한 최신 상태로 유지하고, 자동 배포와 관리자의 수동 보정을 구분해
             기록합니다. 다만 이 사이트는 비공식 참고 자료이므로 실제 탑승 전 소속 센터의 공식 공지를
             최종 확인해야 합니다.
+          </p>
+        </section>
+
+        <section className="rounded-2xl border border-amber-100 bg-amber-50/70 p-6">
+          <h2 className="text-lg font-bold text-slate-900">현재 데이터 상태</h2>
+          <p className="mt-2 text-slate-700">{freshness.label}</p>
+          <p className="mt-2 text-slate-700">
+            자동 검사는 주소·정류장명·좌표·시간 순서를 확인하지만 현장 운행을 대신 검증하지는 않습니다.
+            센터별 요약은 <Link href="/centers" className="font-bold text-indigo-700 underline">센터 안내</Link>에서,
+            공개 변경 범위는 <Link href="/updates" className="font-bold text-indigo-700 underline">데이터 변경 이력</Link>에서
+            확인할 수 있습니다.
           </p>
         </section>
 

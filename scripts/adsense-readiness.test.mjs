@@ -36,17 +36,43 @@ assert.match(layout, /metadataBase/);
 assert.match(layout, /alternates/);
 assert.match(layout, /\/guide/);
 assert.match(layout, /\/faq/);
+assert.match(layout, /\/centers/);
+assert.match(layout, /\/updates/);
 
 const navigation = read('components/SiteNavigation.tsx');
 assert.match(navigation, /href: '\/guide'/);
 assert.match(navigation, /href: '\/faq'/);
+assert.match(navigation, /href: '\/centers'/);
+assert.match(navigation, /href: '\/updates'/);
 
 const home = read('app/page.tsx');
 assert.match(home, /\/guide/);
 assert.match(home, /\/faq/);
+assert.match(home, /\/centers/);
+assert.match(home, /\/updates/);
 
 const operations = read('app/operations/page.tsx');
 assert.match(operations, /데이터 출처/);
 assert.match(operations, /정보가 다를 때/);
+
+const privacy = read('app/privacy/page.tsx');
+assert.match(privacy, /AdSense/);
+assert.match(privacy, /계정에서 별도로/);
+
+const banner = read('components/CoupangBanner.tsx');
+assert.match(banner, /쿠팡 파트너스 활동의 일환/);
+assert.match(banner, /수수료/);
+
+const centers = read('app/centers/page.tsx');
+assert.match(centers, /최신 공식 공지/);
+
+const updates = read('app/updates/page.tsx');
+assert.match(updates, /변경 이력을 공개하는 이유/);
+assert.match(updates, /원본 비교 자료/);
+
+const sitemap = read('app/sitemap.ts');
+assert.match(sitemap, /getCenterCodes/);
+assert.match(sitemap, /\/updates/);
+assert.match(sitemap, /\/centers/);
 
 console.log('AdSense readiness content checks passed.');

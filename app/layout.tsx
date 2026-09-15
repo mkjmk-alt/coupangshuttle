@@ -85,6 +85,8 @@ export default function RootLayout({
               <div className="footer-column">
                 <p className="eyebrow">POLICY</p>
                 <Link href="/guide">셔틀 이용 가이드</Link>
+                <Link href="/centers">센터별 정보</Link>
+                <Link href="/updates">데이터 변경 이력</Link>
                 <Link href="/faq">자주 묻는 질문</Link>
                 <Link href="/operations">운영 및 데이터 정책</Link>
                 <Link href="/privacy">개인정보처리방침</Link>

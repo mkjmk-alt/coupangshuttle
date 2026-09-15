@@ -190,6 +190,11 @@ export default function PrivacyPolicy() {
             Cloudflare의 페이지 전송·보안 처리와 Kakao 지도 요청은 핵심 서비스 제공에 필요하므로 이를
             차단하면 일부 또는 전체 기능이 정상 작동하지 않을 수 있습니다.
           </p>
+          <p className="mt-4 text-slate-600">
+            Google AdSense 사이트 등록, 소유권 확인, 개인정보 보호 및 메시지(CMP) 설정과 광고 게재
+            검토는 운영자의 Google 계정에서 별도로 관리합니다. 이 페이지는 이 사이트가 이용자에게
+            안내하는 처리 기준이며, Google 계정의 설정 완료나 광고 승인 결과를 보장하지 않습니다.
+          </p>
         </section>
 
         <section>

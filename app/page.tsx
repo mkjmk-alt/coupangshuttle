@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import fs from 'fs';
 import path from 'path';
+import { getDataFreshness } from '@/utils/dataSummary';
 
 export const metadata = {
   title: '쿠팡 물류센터 셔틀 노선·정류장 지도 | 물류센터 셔틀맵',
@@ -28,6 +29,7 @@ export default function Home() {
   }
 
   const formattedDate = lastUpdated.replace(/-/g, '.');
+  const freshness = getDataFreshness(lastUpdated);
 
   return (
     <main className="home-page max-w-7xl mx-auto px-4 md:px-6 lg:px-12 overflow-x-hidden">
@@ -55,7 +57,9 @@ export default function Home() {
             <p className="hero-service-note">쿠팡 물류센터 근무자를 위한 비공식 노선 안내입니다.</p>
             <div className="update-pill">
               <span className="status-dot" aria-hidden="true" />
-              <span>데이터 최종 업데이트 · {formattedDate}</span>
+              <span>
+                데이터 최종 업데이트 · {formattedDate} · {freshness.status === 'stale' ? '재확인 필요' : '참고용'}
+              </span>
             </div>
           </div>
           <div className="hero-art">
@@ -139,6 +143,16 @@ export default function Home() {
               <span>03</span>
               <strong>데이터 운영 정책</strong>
               <p>데이터 출처와 수정 기준을 확인하세요.</p>
+            </Link>
+            <Link href="/centers" className="resource-link">
+              <span>04</span>
+              <strong>센터별 정보</strong>
+              <p>센터 주소와 근무조별 노선 수를 먼저 확인하세요.</p>
+            </Link>
+            <Link href="/updates" className="resource-link">
+              <span>05</span>
+              <strong>데이터 변경 이력</strong>
+              <p>최근에 바뀐 센터·노선·정류장 범위를 확인하세요.</p>
             </Link>
           </div>
         </section>

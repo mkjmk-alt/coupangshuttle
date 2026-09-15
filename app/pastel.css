@@ -365,6 +365,22 @@ textarea:focus-visible, summary:focus-visible { outline: 3px solid var(--primary
 .center-shift-item li strong { color: var(--muted); font-size: 12px; font-weight: 650; white-space: nowrap; }
 .center-detail-primary-link { display: inline-flex; margin-top: 12px; padding: 10px 14px; border-radius: 8px; background: var(--primary); color: #fff !important; text-decoration: none !important; }
 
+/* Public change history */
+.updates-intro { margin-bottom: 42px; }
+.updates-intro a { color: var(--primary-dark); font-weight: 750; text-decoration: underline; text-underline-offset: 3px; }
+.updates-list { margin-top: 12px; }
+.updates-entries { display: grid; border-top: 1px solid var(--line); }
+.updates-entry { padding: 24px 0; border-bottom: 1px solid var(--line); }
+.updates-entry-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.updates-entry-date { margin: 0 0 7px; color: var(--primary); font-size: 12px; font-weight: 750; letter-spacing: 0.06em; }
+.updates-entry h3 { margin: 0; color: var(--ink); font-size: 1.05rem; font-weight: 750; }
+.updates-entry-heading > span { flex: 0 0 auto; padding: 5px 9px; border: 1px solid #cce5d9; border-radius: 99px; background: var(--mint-soft); color: var(--mint-dark); font-size: 11px; font-weight: 750; }
+.updates-entry-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; margin: 20px 0 0; border: 1px solid var(--line); background: var(--line); }
+.updates-entry-stats div { display: flex; justify-content: space-between; gap: 12px; padding: 11px 13px; background: var(--card); }
+.updates-entry-stats dt { color: var(--muted); font-size: 12px; }
+.updates-entry-stats dd { margin: 0; color: var(--ink); font-size: 12px; font-weight: 750; }
+.updates-entry-centers { margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.65; word-break: keep-all; }
+
 /* Text-first stop guide */
 .stop-guide-page { width: min(100%, 1180px); margin: 0 auto; padding: 54px clamp(20px, 4vw, 48px) 72px; color: var(--ink); }
 .stop-guide-hero { padding: 4px 0 32px; }
@@ -489,6 +505,8 @@ textarea:focus-visible, summary:focus-visible { outline: 3px solid var(--primary
   .center-detail-summary strong { font-size: 1.4rem; }
   .center-detail-summary div { padding: 15px 12px; }
   .center-shift-item ul { grid-template-columns: 1fr; }
+  .updates-entry-heading { flex-direction: column; gap: 10px; }
+  .updates-entry-stats { grid-template-columns: 1fr; }
   .content-card-grid { grid-template-columns: 1fr; }
   .content-stack { gap: 34px; }
   .faq-list summary { padding: 16px; font-size: 14px; }
