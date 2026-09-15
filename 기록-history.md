@@ -329,3 +329,9 @@
 - 요청: 승인된 AdSense 콘텐츠·신뢰성 보강 설계를 이어서 전체 사이트에 구현해 달라는 요청.
 - 답변: 센터별 목록·상세 페이지, 정류장 화면 센터 자동 선택, 공개 변경 이력, 데이터 최신성·품질 안내, 개인정보·광고·제휴 고지, 센터별 사이트맵과 관련 탐색 링크를 구현함. 원본 변경 전후 값과 외부 이미지 URL은 공개 변경 이력에서 제외함.
 - 수정 내용: `app/centers/`, `app/updates/`, `utils/dataSummary.ts`, `utils/centerDirectory.ts`, `utils/changelogSummary.ts`, 관련 페이지·컴포넌트·스타일·사이트맵·검증 스크립트를 추가·수정함. 데이터 원본의 기준일은 임의로 바꾸지 않고 오래된 경우 재확인 필요 문구를 표시함. 데이터 요약·센터 페이지·변경 이력·AdSense 준비·기존 콘텐츠·정류장 데이터 테스트와 프로덕션 빌드가 통과했으며, 전체 ESLint는 기존 `.vercel` 산출물 및 기존 컴포넌트 오류 때문에 실패함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
+
+## 2026-09-16 | ID: iNxCWQ00gP
+
+- 요청: 현재 보강 작업을 GitHub에 푸시하고 Cloudflare Pages에 배포해 달라는 요청.
+- 답변: 검증된 `main` 커밋을 GitHub `origin/main`에 푸시하고 Cloudflare Pages Production에 배포함. 배포 미리보기 주소는 `https://c7d8e206.coupangshuttle.pages.dev`이며 canonical `https://coupangshuttle.pages.dev`에도 반영됨.
+- 수정 내용: 코드 기능은 추가로 변경하지 않음. 전체 테스트·TypeScript 검사·프로덕션 빌드 후 `npx @cloudflare/next-on-pages`와 Wrangler로 배포하고 `/`, `/centers`, `/centers/ANS4`, `/updates`, `/operations`, `/sitemap.xml`, `/robots.txt`가 HTTP 200임을 확인함. 배포 사이트맵에 센터 URL 98개와 업데이트 URL이 포함되고 공개 변경 이력에 원본 `Image URL`이 노출되지 않음을 확인함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
