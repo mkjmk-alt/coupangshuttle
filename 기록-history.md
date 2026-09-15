@@ -281,3 +281,9 @@
 - 요청: 애드센스 승인을 위해 부족한 부분을 처음부터 순서대로 모두 보강해 달라는 요청.
 - 답변: 기능은 유지하면서 원본 이용 가이드·FAQ·데이터 출처·오류 처리 기준을 추가하고, 메뉴·푸터 연결, 페이지별 canonical, robots.txt, sitemap.xml을 함께 보강한 뒤 GitHub와 공개 사이트에 반영하는 방향으로 진행함.
 - 수정 내용: `app/guide/page.tsx`, `app/faq/page.tsx`, `app/robots.ts`, `app/sitemap.ts`, `scripts/adsense-readiness.test.mjs`, AdSense 준비 계획·설계 문서를 추가함. 홈·운영 정책·레이아웃·내비게이션·정책 페이지 metadata와 파스텔 테마 콘텐츠 스타일을 수정하고 `package.json`에 검증 스크립트를 추가함. 구현 전 새 검증 테스트가 가이드 페이지 누락으로 실패하는 것을 확인한 뒤 구현하고 통과시킴. `npm run test:adsense-readiness`, `npm run test:stop-guide`, `npx tsc --noEmit`, 변경 파일 ESLint, `npm run build`, `git diff --check`를 통과함. 커밋 `a08a056`을 GitHub `main`에 푸시하고 Cloudflare Pages Production 배포 `https://2cdc2b58.coupangshuttle.pages.dev`를 생성했으며, 자동 배포 `https://1d8ea467.coupangshuttle.pages.dev`와 canonical `https://coupangshuttle.pages.dev`의 가이드·FAQ·robots·sitemap 응답을 확인함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
+
+## 2026-09-15 | ID: aEq2zoG4th
+
+- 요청: 앞서 진행한 GitHub 푸시와 공개 배포가 완료되었는지 확인해 달라는 요청.
+- 답변: 로컬 `main`과 GitHub `origin/main`이 커밋 `bd3ff7063c123aadbcd989f5a2acd0f87f9bac49`로 일치하고, Cloudflare Pages의 `bd3ff70` 기반 Production 배포 `https://3e165284.coupangshuttle.pages.dev`가 Active 상태임을 확인함. canonical `https://coupangshuttle.pages.dev/guide`와 `/faq`도 HTTP 200을 반환함.
+- 수정 내용: 코드·디자인·배포 파일은 수정하지 않음. Git 상태, 원격 브랜치, Cloudflare 배포 목록과 공개 URL 응답을 읽기 전용으로 확인함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
