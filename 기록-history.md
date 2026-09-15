@@ -335,3 +335,9 @@
 - 요청: 현재 보강 작업을 GitHub에 푸시하고 Cloudflare Pages에 배포해 달라는 요청.
 - 답변: 검증된 `main` 커밋을 GitHub `origin/main`에 푸시하고 Cloudflare Pages Production에 배포함. 최초 배포 미리보기 주소는 `https://c7d8e206.coupangshuttle.pages.dev`이고, 요청 기록 커밋까지 반영한 최종 배포 주소는 `https://82764279.coupangshuttle.pages.dev`이며 canonical `https://coupangshuttle.pages.dev`에도 반영됨.
 - 수정 내용: 코드 기능은 추가로 변경하지 않음. 전체 테스트·TypeScript 검사·프로덕션 빌드 후 `npx @cloudflare/next-on-pages`와 Wrangler로 배포하고 `/`, `/centers`, `/centers/ANS4`, `/updates`, `/operations`, `/sitemap.xml`, `/robots.txt`가 HTTP 200임을 확인함. 배포 사이트맵에 센터 URL 98개와 업데이트 URL이 포함되고 공개 변경 이력에 원본 `Image URL`이 노출되지 않음을 확인함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
+
+## 2026-09-16 | ID: PZ0NnkGMm8
+
+- 요청: 모바일 하단 메뉴의 `조회`를 `지도`로 바꾸고 지도 외의 안내 내용을 `문의` 쪽으로 모으는 방안을 검토해 달라는 요청.
+- 답변: `지도·정류장·문의` 3개 하단 메뉴는 유지하되, `가이드·FAQ·센터·변경 이력·개인정보·약관`은 문의 화면 안의 도움말·정책 링크 묶음으로 제공하는 bounded 설계를 제안함. 구현 전 사용자 확인을 기다리는 중임.
+- 수정 내용: 코드 수정은 아직 하지 않음. `components/SiteNavigation.tsx`와 `app/contact/page.tsx`를 확인하고, 현재 모바일 메뉴가 이미 세 항목으로 제한되어 있음을 검토함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
