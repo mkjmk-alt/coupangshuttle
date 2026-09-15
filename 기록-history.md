@@ -264,3 +264,9 @@
 - 요청: 정류장 안내 기능 변경분을 GitHub에 푸시하고 공개 사이트에 배포해 달라는 요청.
 - 답변: 변경분을 `82bf7bb17d787b0f60d136e19700ef37031e1b1a` 커밋(`✨ Add text-first stop guide`)으로 저장함. GitHub 푸시는 `gh`의 기존 `mkjmk-alt` 토큰이 만료되어 사용자 인증이 필요한 상태로 중단됨. Cloudflare Pages에는 현재 커밋을 직접 배포해 Production 배포 `https://ce5ad89f.coupangshuttle.pages.dev`를 생성했고, canonical `https://coupangshuttle.pages.dev`에서도 새 `/stops` 메뉴를 확인함.
 - 수정 내용: `npm run test:stop-guide`, `npx tsc --noEmit`, 변경 파일 ESLint, `npm run build`, `git diff --check`를 통과한 뒤 커밋함. `npx @cloudflare/next-on-pages`로 `.vercel/output`을 생성하고 `npx wrangler pages deploy .vercel/output/static --project-name coupangshuttle`로 Production 배포함. GitHub 푸시를 위해 `gh auth login --hostname github.com --git-protocol https --web`에서 장치 인증 코드 `E378-950B`가 발급됐으나 사용자가 GitHub 장치 인증을 완료해야 하므로 해당 단계는 미완료로 남김. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
+
+## 2026-09-15 | ID: BHrVgYBab9
+
+- 요청: GitHub 인증 복구 후 다시 GitHub 푸시와 공개 배포를 진행해 달라는 요청.
+- 답변: GitHub `main`에 `e9a502f`까지 푸시하고, 현재 `main` 기준으로 다시 검증·빌드한 뒤 Cloudflare Pages Production에 배포함. 공개 배포된 정류장 안내 화면은 `https://coupangshuttle.pages.dev/stops`에서 확인 가능함.
+- 수정 내용: `gh auth status`에서 `mkjmk-alt` 계정 인증과 `repo` 권한을 확인하고 `git push origin main` 성공을 확인함. `npm run test:stop-guide`, `npx tsc --noEmit`, 변경 파일 ESLint, `npm run build`, `git diff --check`를 통과함. `npx @cloudflare/next-on-pages`와 Wrangler 배포를 완료했으며 배포 ID `5cad87bd-01a9-4eed-b625-8d37e7dbafda`, Production 상태와 canonical URL의 `정류장 안내` 마커를 확인함. 공개 탭을 `https://coupangshuttle.pages.dev/stops`로 전환함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
