@@ -1,6 +1,731 @@
 {
   "entries": [
     {
+      "id": "32d26306-dbc9-49d0-a425-be84e988e886",
+      "timestamp": "2026-09-16 00:56",
+      "source": "automatic",
+      "action": "auto_deploy",
+      "summary": "센터 25개 · 노선 4020개 · 정류장 25470개 변경",
+      "stats": {
+        "centersAdded": 5,
+        "centersRemoved": 0,
+        "centersChanged": 20,
+        "routesAdded": 393,
+        "routesRemoved": 523,
+        "routesChanged": 3104,
+        "stopsAdded": 3514,
+        "stopsRemoved": 4105,
+        "stopsChanged": 17851
+      },
+      "affectedCenters": [
+        "ANS4",
+        "ANS5",
+        "ANS8",
+        "BUC1",
+        "BUC2",
+        "CAL1",
+        "CHA1",
+        "CHA2",
+        "CHA3",
+        "CHA6",
+        "CHA8",
+        "CHA9",
+        "CHW1",
+        "CHW2",
+        "CHW3",
+        "CHW4",
+        "DAE1",
+        "DAE2",
+        "DAE3",
+        "DAE4",
+        "DAE6",
+        "DAE7",
+        "DAE8",
+        "DAJ1",
+        "DIP",
+        "DON1",
+        "ECH1",
+        "ECH2",
+        "ECH3",
+        "ECH4",
+        "GEW2",
+        "GEW3",
+        "GMH1",
+        "GON1",
+        "GON2",
+        "GOY1",
+        "GOY3",
+        "GWJ1",
+        "GWJ2",
+        "GWJ3",
+        "GWJ4",
+        "GWJ5",
+        "GYS1",
+        "GYS2",
+        "GYS3",
+        "HOB1",
+        "INC11",
+        "INC12",
+        "INC13",
+        "INC14",
+        "INC15",
+        "INC16",
+        "INC17",
+        "INC21",
+        "INC22",
+        "INC26",
+        "INC28",
+        "INC30",
+        "INC31",
+        "INC32",
+        "INC36",
+        "INC37",
+        "INC39",
+        "INC4",
+        "INC40",
+        "INC41",
+        "INC42",
+        "INC43",
+        "INC45",
+        "INC47",
+        "INC48",
+        "INC49",
+        "INC5",
+        "KKW1",
+        "KKW3",
+        "KKW5",
+        "MAJ1",
+        "MCN1",
+        "PYT1",
+        "PYT2",
+        "PYT5",
+        "SAN2",
+        "SAN3",
+        "SEL1",
+        "SEN2",
+        "SIH1",
+        "SIH2",
+        "SIH3",
+        "TW1",
+        "VF15",
+        "VF199",
+        "WIR1",
+        "YAN3",
+        "YAN4",
+        "YAN5",
+        "YAN7",
+        "YAS1",
+        "YEO1",
+        "YEO2",
+        "YEO3",
+        "YON1",
+        "YON3",
+        "YON5"
+      ],
+      "affectedRoutes": [
+        {
+          "fc": "HOB1",
+          "shift": "주간조",
+          "route": "노원",
+          "change": "changed"
+        },
+        {
+          "fc": "HOB1",
+          "shift": "주간조",
+          "route": "구로/신림",
+          "change": "changed"
+        },
+        {
+          "fc": "HOB1",
+          "shift": "주간조",
+          "route": "수원/기흥",
+          "change": "changed"
+        },
+        {
+          "fc": "HOB1",
+          "shift": "주간조",
+          "route": "다산/하남",
+          "change": "removed"
+        },
+        {
+          "fc": "HOB1",
+          "shift": "주간조",
+          "route": "왕십리/군자/강동",
+          "change": "removed"
+        },
+        {
+          "fc": "HOB1",
+          "shift": "주간조",
+          "route": "의정부/별내/구리",
+          "change": "changed"
+        },
+        {
+          "fc": "HOB1",
+          "shift": "주간조",
+          "route": "군자/하남",
+          "change": "added"
+        },
+        {
+          "fc": "HOB1",
+          "shift": "오후조",
+          "route": "노원",
+          "change": "changed"
+        },
+        {
+          "fc": "HOB1",
+          "shift": "오후조",
+          "route": "구로/신림",
+          "change": "changed"
+        },
+        {
+          "fc": "HOB1",
+          "shift": "오후조",
+          "route": "수원/기흥",
+          "change": "changed"
+        },
+        {
+          "fc": "HOB1",
+          "shift": "오후조",
+          "route": "의정부/별내/구리",
+          "change": "changed"
+        },
+        {
+          "fc": "HOB1",
+          "shift": "오후조",
+          "route": "군자/하남",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "주간조",
+          "route": "백석",
+          "change": "removed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "주간조",
+          "route": "세종",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "주간조",
+          "route": "송탄",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "주간조",
+          "route": "쌍용",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "주간조",
+          "route": "아산",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "주간조",
+          "route": "평택/안성",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "주간조",
+          "route": "대전",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "주간조",
+          "route": "청주",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "주간조",
+          "route": "천안",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "주간조",
+          "route": "두정",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "오후조",
+          "route": "아산",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "오후조",
+          "route": "대전",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "오후조",
+          "route": "세종",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "오후조",
+          "route": "송탄/평택",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "오후조",
+          "route": "수원/오산",
+          "change": "removed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "오후조",
+          "route": "청주",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "오후조",
+          "route": "천안",
+          "change": "changed"
+        },
+        {
+          "fc": "CHA2",
+          "shift": "오후조",
+          "route": "두정",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "심야조",
+          "route": "광명",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "심야조",
+          "route": "시흥배곧,월곶",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "심야조",
+          "route": "안산상록",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "심야조",
+          "route": "신림",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "심야조",
+          "route": "부곡",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "심야조",
+          "route": "부천",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "주간숏(퇴근만운행)",
+          "route": "시흥",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "주간숏(퇴근만운행)",
+          "route": "안산",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "주간숏(퇴근만운행)",
+          "route": "신림",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "주간숏(퇴근만운행)",
+          "route": "부천",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "주간조",
+          "route": "시흥목감",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "주간조",
+          "route": "안산상록",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "주간조",
+          "route": "신림",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "주간조",
+          "route": "부곡",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "주간조",
+          "route": "광명",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "주간조",
+          "route": "인천간석",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "주간조",
+          "route": "수원",
+          "change": "removed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "주간조",
+          "route": "시흥배곧,월곶",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "주간조",
+          "route": "부천",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "오후조",
+          "route": "광명",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "오후조",
+          "route": "시흥목감",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "오후조",
+          "route": "시흥배곧,월곶",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "오후조",
+          "route": "안산상록",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "오후조",
+          "route": "신림",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "오후조",
+          "route": "부곡",
+          "change": "changed"
+        },
+        {
+          "fc": "SIH1",
+          "shift": "오후조",
+          "route": "부천",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "심야조",
+          "route": "수성",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "심야조",
+          "route": "구미송정",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "경대병원",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "구미옥계",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "구미도량",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "사월역",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "북비산",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "경산",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "산격대우",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "다사",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "성서청구",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "구미구평",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "명덕",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "화원",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "구미송정",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "강촌마을",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "북구",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "주간조",
+          "route": "반야월",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "오후조",
+          "route": "구미도량",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "오후조",
+          "route": "방촌",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "오후조",
+          "route": "만촌",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "오후조",
+          "route": "경산",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "오후조",
+          "route": "다사",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "오후조",
+          "route": "북구B",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "오후조",
+          "route": "구미구평",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "오후조",
+          "route": "명덕",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "오후조",
+          "route": "구미형곡",
+          "change": "changed"
+        },
+        {
+          "fc": "DAE2",
+          "shift": "오후조",
+          "route": "북구A",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "심야조",
+          "route": "문학/주안",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "심야조",
+          "route": "부평",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "심야조",
+          "route": "계양/청라",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "주간조",
+          "route": "계양",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "주간조",
+          "route": "김포 (37센터 경유)",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "주간조",
+          "route": "강서 (37센터 경유)",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "주간조",
+          "route": "검암/석남",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "주간조",
+          "route": "만수/구월",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "주간조",
+          "route": "춘의",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "주간조",
+          "route": "역곡",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "주간조",
+          "route": "문학/주안",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "주간조",
+          "route": "부평",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "오후조",
+          "route": "계양",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "오후조",
+          "route": "김포 (37센터 경유)",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "오후조",
+          "route": "강서 (37센터 경유)",
+          "change": "changed"
+        },
+        {
+          "fc": "INC31",
+          "shift": "오후조",
+          "route": "검암/석남",
+          "change": "changed"
+        }
+      ]
+    },
+    {
       "id": "1e2694c7-f968-4a42-9bad-f2207b6cb461",
       "timestamp": "2026-07-25 21:04",
       "source": "manual",
