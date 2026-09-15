@@ -6,6 +6,7 @@
     "dev": "next dev",
     "prebuild": "node scripts/generate-center-data.mjs",
     "build": "next build",
+    "test:adsense-readiness": "node scripts/adsense-readiness.test.mjs",
     "test:stop-guide": "node --experimental-strip-types scripts/stop-guide-data.test.mjs",
     "start": "next start",
     "lint": "eslint",

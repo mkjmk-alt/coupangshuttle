@@ -4,6 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: '개인정보처리방침 | 물류센터 셔틀맵',
   description: '물류센터 셔틀맵이 실제로 처리하는 정보와 이용자 권리를 안내합니다.',
+  alternates: { canonical: '/privacy' },
 };
 
 const externalLinkClass =

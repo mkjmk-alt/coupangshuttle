@@ -4,6 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: '운영 및 데이터 정책 | 물류센터 셔틀맵',
   description: '셔틀 데이터 출처, 업데이트 시각, 변경 로그와 오류 제보 처리 기준입니다.',
+  alternates: { canonical: '/operations' },
 };
 
 const items = [
@@ -153,9 +154,48 @@ export default function OperationsPolicy() {
           </div>
         </section>
 
+        <section>
+          <h2 className="mb-5 border-b border-slate-200 pb-2 text-xl font-bold">
+            6. 데이터 출처와 검수 기준
+          </h2>
+          <p>
+            공개된 센터별 추출 자료를 기본 데이터로 사용하고, 운영자가 확인한 현장 정보나 이용자
+            제보는 공식 공지·기존 데이터·변경 시점을 비교한 뒤 수동 보정으로 반영합니다. 제보만으로
+            확인되지 않은 내용을 즉시 확정하지 않으며, 실제 탑승에 영향을 줄 수 있는 변경은 근거를
+            확인할 때까지 주의 문구를 유지할 수 있습니다.
+          </p>
+          <p className="mt-4">
+            홈페이지에 표시되는 최종 업데이트 시각은 공개 데이터가 마지막으로 갱신된 기준입니다.
+            해당 시각이 최근이라고 해서 실시간 운행을 보장하는 것은 아니며, 센터의 당일 공지와 현장
+            안내가 항상 우선합니다.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-5 border-b border-slate-200 pb-2 text-xl font-bold">
+            7. 정보가 다를 때의 처리
+          </h2>
+          <ol className="list-decimal space-y-3 pl-5">
+            <li>탑승 전에는 소속 센터의 공식 공지와 현장 안내를 먼저 확인합니다.</li>
+            <li>사이트와 공식 안내가 다르면 공식 안내를 기준으로 이동하고, 사이트 오류를 제보합니다.</li>
+            <li>제보에는 센터명, 근무조, 노선명, 정류장명, 확인 날짜와 변경 근거를 포함합니다.</li>
+            <li>운영자는 확인된 내용만 반영하며, 반영 전까지는 불확실한 정보를 사실처럼 표시하지 않습니다.</li>
+          </ol>
+          <p className="mt-4">
+            사이트 운영 방식과 이용 방법을 처음 확인하는 분은 <Link href="/guide">셔틀 이용 가이드</Link>와{' '}
+            <Link href="/faq">자주 묻는 질문</Link>을 함께 읽어 주세요.
+          </p>
+        </section>
+
         <div className="flex flex-wrap gap-6 border-t border-slate-200 pt-8">
           <Link href="/" className="text-sm font-bold text-slate-400 hover:text-slate-900">
             홈페이지 메인
+          </Link>
+          <Link href="/guide" className="text-sm font-bold text-slate-400 hover:text-slate-900">
+            셔틀 이용 가이드
+          </Link>
+          <Link href="/faq" className="text-sm font-bold text-slate-400 hover:text-slate-900">
+            자주 묻는 질문
           </Link>
           <Link href="/privacy" className="text-sm font-bold text-slate-400 hover:text-slate-900">
             개인정보처리방침

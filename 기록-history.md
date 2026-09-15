@@ -270,3 +270,14 @@
 - 요청: GitHub 인증 복구 후 다시 GitHub 푸시와 공개 배포를 진행해 달라는 요청.
 - 답변: GitHub `main`에 `e9a502f`까지 푸시하고, 현재 `main` 기준으로 다시 검증·빌드한 뒤 Cloudflare Pages Production에 배포함. 공개 배포된 정류장 안내 화면은 `https://coupangshuttle.pages.dev/stops`에서 확인 가능함.
 - 수정 내용: `gh auth status`에서 `mkjmk-alt` 계정 인증과 `repo` 권한을 확인하고 `git push origin main` 성공을 확인함. `npm run test:stop-guide`, `npx tsc --noEmit`, 변경 파일 ESLint, `npm run build`, `git diff --check`를 통과함. `npx @cloudflare/next-on-pages`와 Wrangler 배포를 완료했으며 배포 ID `5cad87bd-01a9-4eed-b625-8d37e7dbafda`, Production 상태와 canonical URL의 `정류장 안내` 마커를 확인함. 공개 탭을 `https://coupangshuttle.pages.dev/stops`로 전환함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
+## 2026-09-15 | ID: zGE0ACBg7J
+
+- 요청: 현재 물류센터 셔틀맵으로 애드센스 승인을 받기 위해 필요한 노력과 준비 사항을 검토해 달라는 요청.
+- 답변: Google 공식 기준을 확인한 결과, 현재 사이트는 라이브 도메인·명확한 노선/정류장 기능·개인정보/약관/문의 페이지가 있어 기반은 괜찮지만, 원본 텍스트 콘텐츠와 신뢰성·정책·크롤링 점검을 보강해야 승인 가능성을 높일 수 있다고 안내함. 원본 이용 가이드/FAQ/데이터 출처/운영 원칙/센터별 맥락을 추가하고, 반복 템플릿·빈 페이지·과도한 광고를 피하며, 개인정보/CMP·ads.txt·AdSense 코드·사이트 소유권·검색 가능성을 제출 전 점검하는 2~3주 우선순위 계획을 제안함. 승인이나 트래픽 보장을 약속하지 않고 Google 공식 문서 링크를 인용함.
+- 수정 내용: Google 공식 AdSense eligibility, pages-ready, approval, account setup, site management, publisher policies 자료를 읽기 전용으로 조사함. 이번 검토에서는 코드·디자인·배포 파일을 수정하지 않음. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
+
+## 2026-09-15 | ID: 2jXaRBNtdl
+
+- 요청: 애드센스 승인을 위해 부족한 부분을 처음부터 순서대로 모두 보강해 달라는 요청.
+- 답변: 기능은 유지하면서 원본 이용 가이드·FAQ·데이터 출처·오류 처리 기준을 추가하고, 메뉴·푸터 연결, 페이지별 canonical, robots.txt, sitemap.xml을 함께 보강한 뒤 GitHub와 공개 사이트에 반영하는 방향으로 진행함.
+- 수정 내용: `app/guide/page.tsx`, `app/faq/page.tsx`, `app/robots.ts`, `app/sitemap.ts`, `scripts/adsense-readiness.test.mjs`, AdSense 준비 계획·설계 문서를 추가함. 홈·운영 정책·레이아웃·내비게이션·정책 페이지 metadata와 파스텔 테마 콘텐츠 스타일을 수정하고 `package.json`에 검증 스크립트를 추가함. 구현 전 새 검증 테스트가 가이드 페이지 누락으로 실패하는 것을 확인한 뒤 구현하고 통과시킴. `npm run test:adsense-readiness`, `npm run test:stop-guide`, `npx tsc --noEmit`, 변경 파일 ESLint, `npm run build`, `git diff --check`를 통과함. 커밋 `a08a056`을 GitHub `main`에 푸시하고 Cloudflare Pages Production 배포 `https://2cdc2b58.coupangshuttle.pages.dev`를 생성했으며, 자동 배포 `https://1d8ea467.coupangshuttle.pages.dev`와 canonical `https://coupangshuttle.pages.dev`의 가이드·FAQ·robots·sitemap 응답을 확인함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.

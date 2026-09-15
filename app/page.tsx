@@ -1,12 +1,14 @@
 
 import ShuttleExplorer from '@/components/ShuttleExplorer';
 import Image from 'next/image';
+import Link from 'next/link';
 import fs from 'fs';
 import path from 'path';
 
 export const metadata = {
   title: '쿠팡 물류센터 셔틀 노선·정류장 지도 | 물류센터 셔틀맵',
   description: '쿠팡 물류센터 근무자를 위한 비공식 셔틀 노선 안내입니다. 센터·근무조별 정류장 위치와 운행 시각을 확인하세요.',
+  alternates: { canonical: '/' },
 };
 
 export default function Home() {
@@ -113,6 +115,34 @@ export default function Home() {
                 다를 수 있습니다.
               </p>
             </details>
+          </div>
+        </section>
+
+        <section className="home-resources premium-card" aria-labelledby="home-resources-title">
+          <div>
+            <p className="eyebrow">HELP &amp; DATA</p>
+            <h2 id="home-resources-title">처음 이용한다면 이 내용을 먼저 확인하세요</h2>
+            <p className="guide-intro">
+              노선과 정류장 데이터만 보여드리는 데서 그치지 않고, 조회 결과를 어떻게 읽고 공식 공지와
+              어떻게 비교해야 하는지도 안내합니다.
+            </p>
+          </div>
+          <div className="resource-grid">
+            <Link href="/guide" className="resource-link">
+              <span>01</span>
+              <strong>셔틀 이용 가이드</strong>
+              <p>센터 선택부터 탑승 전 확인까지 순서대로 읽어 보세요.</p>
+            </Link>
+            <Link href="/faq" className="resource-link">
+              <span>02</span>
+              <strong>자주 묻는 질문</strong>
+              <p>시간 변경, 주소 오류, 공식 공지 우선 원칙을 확인하세요.</p>
+            </Link>
+            <Link href="/operations" className="resource-link">
+              <span>03</span>
+              <strong>데이터 운영 정책</strong>
+              <p>자료 출처와 자동 배포·수동 보정의 차이를 공개합니다.</p>
+            </Link>
           </div>
         </section>
 

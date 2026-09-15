@@ -4,6 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: '서비스 이용약관 | 물류센터 셔틀맵',
   description: '물류센터 셔틀맵의 이용 조건, 비공식성 고지 및 책임 범위를 안내합니다.',
+  alternates: { canonical: '/terms' },
 };
 
 export default function TermsOfService() {

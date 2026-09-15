@@ -8,8 +8,16 @@ import './globals.css';
 import 'leaflet/dist/leaflet.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://coupangshuttle.pages.dev'),
   title: '물류센터 셔틀맵 | 쿠팡 물류센터 셔틀 노선 안내',
   description: '쿠팡 물류센터 근무자를 위한 비공식 셔틀 노선·정류장 참고 안내 서비스',
+  alternates: {
+    canonical: '/',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   other: {
     'google-adsense-account': 'ca-pub-7954802956462064',
   },
@@ -76,6 +84,8 @@ export default function RootLayout({
 
               <div className="footer-column">
                 <p className="eyebrow">POLICY</p>
+                <Link href="/guide">셔틀 이용 가이드</Link>
+                <Link href="/faq">자주 묻는 질문</Link>
                 <Link href="/operations">운영 및 데이터 정책</Link>
                 <Link href="/privacy">개인정보처리방침</Link>
                 <Link href="/terms">서비스 이용약관</Link>

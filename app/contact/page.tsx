@@ -4,6 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: '문의 및 데이터 제보 | 물류센터 셔틀맵',
   description: '셔틀 노선 오류, 신규 정류장, 개인정보 및 서비스 운영 문의 채널입니다.',
+  alternates: { canonical: '/contact' },
 };
 
 export default function Contact() {
