@@ -7,9 +7,14 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
 
 const navigation = read('components/SiteNavigation.tsx');
 assert.match(navigation, /label: '지도', shortLabel: '지도'/);
+assert.match(navigation, /label: '센터 안내'/);
+assert.match(navigation, /label: '셔틀 이용 가이드'/);
+assert.match(navigation, /label: '자주 묻는 질문'/);
+assert.match(navigation, /\['\/', '\/stops', '\/centers', '\/guide', '\/faq', '\/contact'\]/);
 assert.match(navigation, /\['\/', '\/stops', '\/contact'\]/);
-assert.match(navigation, /const primaryNavigation = navigation\.filter/);
-assert.match(navigation, /visibleNavigation = primaryNavigation/);
+assert.match(navigation, /const sidebarNavigation = navigation\.filter/);
+assert.match(navigation, /const mobileNavigation = navigation\.filter/);
+assert.match(navigation, /visibleNavigation = mobile \? mobileNavigation : sidebarNavigation/);
 
 const contact = read('app/contact/page.tsx');
 for (const href of ['/guide', '/faq', '/centers', '/updates', '/operations', '/privacy', '/terms']) {
