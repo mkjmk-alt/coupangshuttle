@@ -364,4 +364,4 @@
 
 - 요청: 중복이 많은 사이드 메뉴 구조를 필요한 경우 수정하고 GitHub 푸시·배포까지 진행해 달라는 요청.
 - 답변: 데스크톱 사이드 메뉴도 모바일과 같은 `지도·정류장 안내·문의·제보` 3개 핵심 메뉴만 표시하도록 단순화하고, 가이드·FAQ·센터·변경 이력·정책 링크는 푸터와 문의 화면에서 제공하도록 수정함.
-- 수정 내용: `components/SiteNavigation.tsx`의 데스크톱 노출 메뉴를 핵심 3개로 제한하고 `scripts/mobile-navigation.test.mjs` 검증을 보강함. 테스트 7종, TypeScript 검사, 변경 파일 ESLint, 프로덕션 빌드가 통과함. 이후 GitHub `main`에 푸시하고 Cloudflare Pages Production에 배포할 예정이며, 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
+- 수정 내용: `components/SiteNavigation.tsx`의 데스크톱 노출 메뉴를 핵심 3개로 제한하고 `scripts/mobile-navigation.test.mjs` 검증을 보강함. 테스트 7종, TypeScript 검사, 변경 파일 ESLint, 프로덕션 빌드가 통과함. GitHub `main`에 푸시하고 Cloudflare Pages Production 배포 `https://211e7155.coupangshuttle.pages.dev`를 생성했으며, canonical 홈과 `/`, `/contact`, `/updates`, `/centers/ANS4`, `/sitemap.xml`, `/robots.txt`가 HTTP 200이고 홈의 사이드 메뉴 링크가 3개임을 확인함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
