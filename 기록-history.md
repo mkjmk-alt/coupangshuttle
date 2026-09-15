@@ -365,3 +365,9 @@
 - 요청: 중복이 많은 사이드 메뉴 구조를 필요한 경우 수정하고 GitHub 푸시·배포까지 진행해 달라는 요청.
 - 답변: 데스크톱 사이드 메뉴도 모바일과 같은 `지도·정류장 안내·문의·제보` 3개 핵심 메뉴만 표시하도록 단순화하고, 가이드·FAQ·센터·변경 이력·정책 링크는 푸터와 문의 화면에서 제공하도록 수정함.
 - 수정 내용: `components/SiteNavigation.tsx`의 데스크톱 노출 메뉴를 핵심 3개로 제한하고 `scripts/mobile-navigation.test.mjs` 검증을 보강함. 테스트 7종, TypeScript 검사, 변경 파일 ESLint, 프로덕션 빌드가 통과함. GitHub `main`에 푸시하고 Cloudflare Pages Production 배포 `https://211e7155.coupangshuttle.pages.dev`를 생성했으며, canonical 홈과 `/`, `/contact`, `/updates`, `/centers/ANS4`, `/sitemap.xml`, `/robots.txt`가 HTTP 200이고 홈의 사이드 메뉴 링크가 3개임을 확인함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
+
+## 2026-09-16 | ID: TT0cuoeKgj
+
+- 요청: 노선 목록에 표시되는 노선명이 셀 너비에 맞춰 줄바꿈되지 않도록 수정하고 GitHub 푸시·배포까지 진행해 달라는 요청.
+- 답변: 노선명 배지에 한 줄 표시와 오버플로 말줄임을 적용해 노선명이 글자 단위로 깨지지 않도록 수정함. GitHub `main`에 푸시하고 Cloudflare Pages Production에 배포했으며, 배포 미리보기 주소는 `https://bdabcdfa.coupangshuttle.pages.dev`이고 canonical `https://coupangshuttle.pages.dev`에도 반영됨.
+- 수정 내용: `components/ShuttleExplorer.tsx`의 노선 라벨에 `route-results-route-name` 클래스를 추가하고 `app/pastel.css`에서 `white-space: nowrap`, 오버플로·말줄임을 설정함. `scripts/route-label.test.mjs`와 `test:route-label` 스크립트를 추가함. 노선 라벨 테스트, 기존 데이터·콘텐츠 테스트, TypeScript 검사, 프로덕션 빌드, 배포 CSS 확인이 통과했으며 배포된 `/`, `/stops`, `/contact`, `/centers/ANS4`, `/updates`, `/sitemap.xml`, `/robots.txt`가 모두 HTTP 200이고 사이트맵의 센터 URL 103개를 확인함. 변경 파일 전체 ESLint는 기존 `ShuttleExplorer.tsx`의 선언 순서 및 `any` 규칙 위반으로 실패하지만 새 테스트 파일 ESLint는 통과함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
