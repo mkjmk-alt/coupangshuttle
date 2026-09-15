@@ -302,6 +302,7 @@ textarea:focus-visible, summary:focus-visible { outline: 3px solid var(--primary
 .faq-list summary::marker { color: var(--primary); }
 .faq-list details[open] summary { border-bottom: 1px solid var(--soft-line); background: #f8fbff; }
 .faq-list details p { margin: 0; padding: 17px 20px 20px; color: #526270; font-size: 14px; line-height: 1.9; word-break: keep-all; }
+.faq-followup { margin-top: 42px; }
 
 /* Text-first stop guide */
 .stop-guide-page { width: min(100%, 1180px); margin: 0 auto; padding: 54px clamp(20px, 4vw, 48px) 72px; color: var(--ink); }
@@ -423,6 +424,7 @@ textarea:focus-visible, summary:focus-visible { outline: 3px solid var(--primary
   .content-stack { gap: 34px; }
   .faq-list summary { padding: 16px; font-size: 14px; }
   .faq-list details p { padding: 15px 16px 18px; font-size: 13px; }
+  .faq-followup { margin-top: 34px; }
   .stop-guide-page { padding: 32px 18px 44px; }
   .stop-guide-hero { padding-bottom: 24px; }
   .stop-guide-lead { font-size: 15px; }

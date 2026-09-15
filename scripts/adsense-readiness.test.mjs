@@ -26,6 +26,10 @@ const faq = read('app/faq/page.tsx');
 assert.match(faq, /공식 셔틀/);
 assert.match(faq, /오류 제보/);
 assert.match(faq, /정류장/);
+assert.match(faq, /faq-followup/);
+
+const pastelStyles = read('app/pastel.css');
+assert.match(pastelStyles, /\.faq-followup\s*\{[^}]*margin-top:\s*42px/s);
 
 const layout = read('app/layout.tsx');
 assert.match(layout, /metadataBase/);

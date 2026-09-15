@@ -287,3 +287,9 @@
 - 요청: 앞서 진행한 GitHub 푸시와 공개 배포가 완료되었는지 확인해 달라는 요청.
 - 답변: 로컬 `main`과 GitHub `origin/main`이 커밋 `bd3ff7063c123aadbcd989f5a2acd0f87f9bac49`로 일치하고, Cloudflare Pages의 `bd3ff70` 기반 Production 배포 `https://3e165284.coupangshuttle.pages.dev`가 Active 상태임을 확인함. canonical `https://coupangshuttle.pages.dev/guide`와 `/faq`도 HTTP 200을 반환함.
 - 수정 내용: 코드·디자인·배포 파일은 수정하지 않음. Git 상태, 원격 브랜치, Cloudflare 배포 목록과 공개 URL 응답을 읽기 전용으로 확인함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
+
+## 2026-09-15 | ID: cApSF3ygK6
+
+- 요청: FAQ 페이지 하단의 `답을 찾지 못했다면` 안내 카드가 위 FAQ 목록과 붙어 있으므로 같은 여백을 적용해 달라는 요청.
+- 답변: FAQ 목록과 하단 안내 카드 사이에 데스크톱 42px, 모바일 34px의 동일한 콘텐츠 간격을 적용함.
+- 수정 내용: `app/faq/page.tsx`에 `faq-followup` 클래스를 추가하고 `app/pastel.css`에 반응형 상단 여백을 추가함. 여백 검증을 `scripts/adsense-readiness.test.mjs`에 추가했으며 구현 전 테스트 실패를 확인한 뒤 통과시킴. `npm run test:adsense-readiness`, `npm run test:stop-guide`, `npx tsc --noEmit`, FAQ 관련 ESLint, `npm run build`, `git diff --check`를 통과함. GitHub 푸시와 Cloudflare Pages 재배포 예정이며 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.

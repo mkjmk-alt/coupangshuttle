@@ -63,7 +63,7 @@ export default function FaqPage() {
         ))}
       </section>
 
-      <section className="content-callout content-callout-blue">
+      <section className="content-callout content-callout-blue faq-followup">
         <h2>답을 찾지 못했다면</h2>
         <p>
           노선 변경이나 정류장 오류는 <Link href="/contact">문의 및 데이터 제보</Link>에서 알려 주세요.
