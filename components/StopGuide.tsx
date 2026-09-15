@@ -52,6 +52,10 @@ export default function StopGuide() {
         if (!result.usesCenterFiles) {
           loadedCenters.current = new Set(Object.keys(result.data));
         }
+        const requestedCenter = new URLSearchParams(window.location.search).get('center') || '';
+        if (requestedCenter && result.data[requestedCenter]) {
+          setSelectedFC(requestedCenter);
+        }
         setLoading(false);
       })
       .catch((error) => {
