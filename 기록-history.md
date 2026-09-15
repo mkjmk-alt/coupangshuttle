@@ -347,3 +347,9 @@
 - 요청: 승인한 방향대로 모바일 메뉴를 `지도·정류장·문의`로 정리하고 지도 외 안내를 문의 화면에 모아 달라는 요청.
 - 답변: 모바일·데스크톱 첫 메뉴를 `지도`로 바꾸고, 문의 화면에 가이드·FAQ·센터·변경 이력·운영 정책·개인정보·약관 링크를 도움말·정책 묶음으로 추가함. 기존 직접 URL과 정류장 메뉴는 유지함.
 - 수정 내용: `components/SiteNavigation.tsx`, `app/contact/page.tsx`, `app/guide/page.tsx`, `app/faq/page.tsx`, `app/pastel.css`를 수정하고 `scripts/mobile-navigation.test.mjs`와 `test:mobile-navigation`을 추가함. 모바일 내비게이션·평문 콘텐츠·AdSense 콘텐츠 테스트, TypeScript 검사, 변경 파일 ESLint, 프로덕션 빌드와 `git diff --check`가 통과함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
+
+## 2026-09-16 | ID: fxRTXiKQd7
+
+- 요청: 최신 모바일 지도 메뉴 변경분을 GitHub에 푸시하고 Cloudflare Pages에 배포해 달라는 요청.
+- 답변: 원격의 자동 셔틀 데이터 갱신 커밋을 먼저 병합한 뒤, 지도 메뉴 변경과 센터 103개 데이터 기준으로 GitHub `main`에 푸시하고 Cloudflare Pages Production에 배포함. 배포 미리보기 주소는 `https://60ccb32e.coupangshuttle.pages.dev`이며 canonical `https://coupangshuttle.pages.dev`에 반영됨.
+- 수정 내용: 원격 자동 데이터 갱신으로 추가된 센터·노선·정류장 데이터를 보존함. 데이터 병합 후 전체 테스트 7종, TypeScript 검사, 프로덕션 빌드가 통과했으며 `/`, `/contact`, `/centers`, `/centers/ANS4`, `/updates`, `/sitemap.xml`, `/robots.txt`가 HTTP 200임을 확인함. 배포 사이트맵에 센터 URL 103개와 업데이트 URL이 포함되고 문의 화면의 `도움말·정책`, 홈의 `지도` 라벨을 확인함. 새 무작위 영문·숫자 혼합 10자리 ID를 생성하고 기존 기록과 중복되지 않음을 확인함.
