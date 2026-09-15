@@ -423,6 +423,7 @@ textarea:focus-visible, summary:focus-visible { outline: 3px solid var(--primary
 .stop-guide-route, .stop-guide-shift { display: inline-flex; align-items: center; min-height: 22px; padding: 2px 8px; border-radius: 7px; font-size: 10px; font-weight: 750; line-height: 1.4; }
 .stop-guide-route { background: var(--blue-soft); color: var(--primary-dark); }
 .stop-guide-shift { background: var(--mint-soft); color: var(--mint-dark); }
+.route-results-route-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stop-guide-item-body h3 { margin: 8px 0 0; color: var(--ink); font-size: 16px; font-weight: 700; line-height: 1.55; word-break: keep-all; }
 .stop-guide-item-body p { margin: 5px 0 0; color: var(--muted); font-size: 13px; line-height: 1.65; word-break: keep-all; }
 .stop-guide-note { display: inline-block; margin-top: 9px; padding: 6px 9px; border: 1px solid #f3d9c7; border-radius: 8px; background: var(--coral-soft); color: var(--coral-dark); font-size: 11px; font-weight: 650; line-height: 1.5; word-break: keep-all; }

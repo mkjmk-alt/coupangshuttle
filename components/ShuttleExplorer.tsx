@@ -810,7 +810,7 @@ export default function ShuttleExplorer() {
                       <td className="px-6 py-6">
                           <div className="flex flex-col gap-1">
                               <div 
-                                className="px-3 py-1 text-white rounded-lg text-[10px] font-black inline-block tracking-widest w-fit"
+                                className="route-results-route-name px-3 py-1 text-white rounded-lg text-[10px] font-black inline-block tracking-widest w-fit"
                                 style={{ backgroundColor: routeColor || '#0f172a' }}
                               >
                                 {compareMode ? `[${stop.fcName}] ${stop.route}` : stop.route}

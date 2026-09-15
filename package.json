@@ -12,6 +12,7 @@
     "test:mobile-navigation": "node scripts/mobile-navigation.test.mjs",
     "test:data-summary": "node --experimental-strip-types scripts/data-summary.test.mjs",
     "test:plain-content": "node scripts/plain-content.test.mjs",
+    "test:route-label": "node scripts/route-label.test.mjs",
     "test:stop-guide": "node --experimental-strip-types scripts/stop-guide-data.test.mjs",
     "start": "next start",
     "lint": "eslint",
