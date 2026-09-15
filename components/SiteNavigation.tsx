@@ -17,6 +17,8 @@ const navigation = [
 
 type NavigationIconName = (typeof navigation)[number]['icon'];
 
+const primaryNavigation = navigation.filter((item) => ['/', '/stops', '/contact'].includes(item.href));
+
 function NavigationIcon({ name }: { name: NavigationIconName }) {
   const paths: Record<NavigationIconName, string> = {
     search: 'M11 4a7 7 0 1 0 4.9 12l4.1 4.1M18 18l2 2',
@@ -39,9 +41,7 @@ function NavigationIcon({ name }: { name: NavigationIconName }) {
 
 export default function SiteNavigation({ mobile = false }: { mobile?: boolean }) {
   const pathname = usePathname();
-  const visibleNavigation = mobile
-    ? navigation.filter((item) => ['/', '/stops', '/contact'].includes(item.href))
-    : navigation;
+  const visibleNavigation = primaryNavigation;
 
   return (
     <div className={mobile ? 'mobile-nav-links' : 'sidebar-nav'}>

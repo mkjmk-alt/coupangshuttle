@@ -8,6 +8,8 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
 const navigation = read('components/SiteNavigation.tsx');
 assert.match(navigation, /label: '지도', shortLabel: '지도'/);
 assert.match(navigation, /\['\/', '\/stops', '\/contact'\]/);
+assert.match(navigation, /const primaryNavigation = navigation\.filter/);
+assert.match(navigation, /visibleNavigation = primaryNavigation/);
 
 const contact = read('app/contact/page.tsx');
 for (const href of ['/guide', '/faq', '/centers', '/updates', '/operations', '/privacy', '/terms']) {
